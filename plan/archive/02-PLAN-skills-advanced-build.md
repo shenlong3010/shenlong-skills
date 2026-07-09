@@ -1,4 +1,4 @@
-# PLAN — Advanced Skills Build (internal registry)
+# 02-PLAN — Advanced Skills Build (internal registry)
 
 **Audience:** A coding agent operating on the internal registry repo.
 **Objective:** Author org-specific skills — ADR, incident postmortem, debug, cost-attribution, burn-rate forecast, compliance review, and port automation — directly in the internal registry, in registry dialect, each eval-gated and provenance-tracked. These encode internal context by design.
@@ -21,7 +21,7 @@
 
 Directory layout and frontmatter shape are identical to the public repo (`agents/ commands/ skills/ tools/`, plus `org-standards/` for policy-shaped artifacts; SKILL.md with `name` / `description` / `metadata`). Preserve the `commands` (directly-invocable) vs `skills` (agent-consumed) distinction.
 
-These advanced skills **build on** the generic skills from the public repo (`PLAN-skill-list-build.md`). Phase 0 vendors a pinned, security-reviewed snapshot of that repo before any advanced skill is authored; advanced skills then compose with the vendored generics (the ADR evaluator uses `grill-me`; `eval-writer` gets wired to real traces; the cost tools reuse `prompt-cache-inflation-check`). Crucially, the vendored snapshot also includes the four creators (`create-agent` / `create-skill` / `create-command` / `create-tool`) and `tools/validate.py` — **every skill below is scaffolded with the matching creator, then filled in.** Hand-rolling is the exception, not the default.
+These advanced skills **build on** the generic skills from the public repo (`01-PLAN-skill-list-build.md`). Phase 0 vendors a pinned, security-reviewed snapshot of that repo before any advanced skill is authored; advanced skills then compose with the vendored generics (the ADR evaluator uses `grill-me`; `eval-writer` gets wired to real traces; the cost tools reuse `prompt-cache-inflation-check`). Crucially, the vendored snapshot also includes the four creators (`create-agent` / `create-skill` / `create-command` / `create-tool`) and `tools/validate.py` — **every skill below is scaffolded with the matching creator, then filled in.** Hand-rolling is the exception, not the default.
 
 ---
 
@@ -39,10 +39,10 @@ These advanced skills **build on** the generic skills from the public repo (`PLA
 
 Scaffold each via the vendored creator (`create-skill` for skills, `create-agent` for the evaluator), then fill the body.
 
-- [ ] `skills/adr-writer` — emits an ADR into `staging/decisions/` in your ADR format. **Must contain:** ADR structure (context / decision / consequences / alternatives); the `gate: human` checkpoint; output to staging, never directly to `decisions/`. `derivation: original`.
+- [ ] `skills/adr-writer` — emits an ADR into `staging/decisions/` in the org ADR format. **Must contain:** ADR structure (context / decision / consequences / alternatives); the `gate: human` checkpoint; output to staging, never directly to `decisions/`. `derivation: original`.
 - [ ] `agents/adr-evaluator` — critiques a proposed ADR: contradiction with existing ADRs (via vendored `knowledge-lint`), missing alternatives, unstated consequences. **Must contain:** the maker/checker pairing with `adr-writer`; composition with `grill-me`. `derivation: adapted`.
 - [ ] `skills/incident-postmortem` — triage → blameless postmortem → `staging/incidents/`. **Must contain:** triage structure; blameless framing; `gate: human`; staging output. Upstream shape: engineering:incident-response (adapted).
-- [ ] **Acceptance:** ADR and postmortem outputs land in `staging/` (never directly in `decisions/` or `incidents/`); a `gate: human` task halts auto-progress; the evaluator runs against a planted contradictory ADR and flags it.
+- [ ] **Acceptance:** ADR and postmortem outputs land in `staging/` (never directly in `decisions/` or `incidents/`); a `gate: human` task halts auto-progress; the evaluator runs against a planted contradictory ADR and flags it; an `.eval.yml` with at least one golden case exists per skill authored in this phase.
 
 ---
 
@@ -52,7 +52,7 @@ Scaffold via the vendored creators (`create-skill`, `create-command` for the rev
 
 - [ ] `skills/debug-procedure` — structured reproduce → isolate → diagnose → fix; **read-only during debug** per guardrails config (write_allowed: false during debug sessions). **Must contain:** the read-only constraint binding; the diagnosis structure. Upstream shape: engineering:debug + systematic-debugger (adapted); the generic reproduce/isolate portion may be sourced from the vendored shape, the production-gate wiring is added here.
 - [ ] `org-standards/compliance-reviewer` — regulatory / policy reviewer; attaches compliance checks by archetype. Policy-shaped → `org-standards/`, not a generic skill. **Must contain:** the compliance-checklist mapping; positioned explicitly as pre-review, not a gate (org SDLC: human-approved merge, always). `derivation: adapted`.
-- [ ] **Acceptance:** `debug-procedure` cannot write during a debug session (guardrail enforced, verified); `compliance-reviewer` emits findings against a planted compliance-relevant diff.
+- [ ] **Acceptance:** `debug-procedure` cannot write during a debug session (guardrail enforced, verified); `compliance-reviewer` emits findings against a planted compliance-relevant diff; an `.eval.yml` with at least one golden case exists per skill authored in this phase.
 
 ---
 
@@ -64,7 +64,7 @@ Scaffold each with the vendored `create-tool`, then fill the body.
 - [ ] `tools/burn-rate-forecast` — per-story burn-rate + projected overrun, appended to `loop-report.md`. **Must contain:** the forecast metric ($/completed-task, projected overrun); integration with the existing loop-report format. `derivation: original`.
 - [ ] `tools/port-project` — automation to scaffold a new app repo from `templates/` with full harness structure. **Must contain:** the porting steps; boundary enforcement (app specifics → app-repo `_variables.yml`; only org-level artifacts → registry). `derivation: original`.
 - [ ] *(optional)* extend the vendored `eval-writer` with internal trace sourcing — wire to real `implement-story` run traces (3–5 golden cases). Composition, not a re-author.
-- [ ] **Acceptance:** `cost-attribution` emits all five buckets on a sample run; burn-rate appears in `loop-report.md`; `port-project` scaffolds a test repo that passes the registry validator.
+- [ ] **Acceptance:** `cost-attribution` emits all five buckets on a sample run; burn-rate appears in `loop-report.md`; `port-project` scaffolds a test repo that passes the registry validator; an `.eval.yml` with at least one golden case exists per skill authored in this phase.
 
 ---
 

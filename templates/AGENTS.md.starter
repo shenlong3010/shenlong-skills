@@ -1,0 +1,14 @@
+# AGENTS.md (starter)
+
+Instructions for any coding agent working in this repo. Keep in sync with CLAUDE.md; this file is the tool-agnostic mirror.
+
+## Setup
+<install/bootstrap commands>
+
+## Verify
+<the single command that must pass before any change is "done">
+
+## Rules
+- Only modify files inside <scope>.
+- Every change ships with its test.
+- Never commit credentials, .env files, or generated artifacts.

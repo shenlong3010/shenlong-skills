@@ -1,0 +1,24 @@
+# CLAUDE.md — project instructions (starter)
+
+## Project
+One paragraph: what this repo is, the stack, the one architectural fact that prevents the most wrong assumptions.
+
+## Commands
+- build: `<cmd>`
+- test: `<cmd>`   (run before claiming anything works)
+- run: `<cmd>`
+
+## Conventions
+- Code style: <formatter/linter and how to run it>
+- Tests live in <path>, named <pattern>; mirror an existing test file's style.
+- Commits: conventional commits.
+
+## Boundaries
+- Never touch: <paths — generated code, vendored dirs, prod config>.
+- Ask before: schema changes, dependency additions, deleting files.
+
+## Gotchas
+One line each, grown over time — add a line whenever the agent makes the same mistake twice.
+
+## Scaling note
+Larger repos: keep this file global-only and add per-directory CLAUDE.md files (src/, tests/, infra/) for directory-specific conventions — Claude Code loads them when working in each directory. Never duplicate a rule at two levels; globals stay here, locals stay local.

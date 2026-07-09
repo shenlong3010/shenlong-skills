@@ -1,209 +1,85 @@
-# CLAUDE.md
+# CLAUDE.md — global
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Applies to the entire repository. Directory-specific conventions live in per-directory guides (below), auto-loaded when working in each directory. Behavioral master with full rule text: `archive/CLAUDE-v2-full.md` (v1 original preserved beside it). Precedence: master wins on behavior; this file and the directory guides win on repo mechanics.
+
+## Hard constraints (read first)
+
+1. **Zero employer-internal content.** No internal server names, app names, domain-model terms, stack idioms tied to internal systems, tokens/keys. Public repo; pipeline is one-way: public → internal, never reverse.
+2. **Never commit `vendor/anthropic/`.** Proprietary Anthropic doc skills, local fetch only (`tools/fetch-doc-skills.sh`); gitignored — never force-add, mirror, or copy their text into committable skills.
+3. **Guards stay proven.** `tools/scan.sh` (secrets + local `.wordlist`) must pass on staged changes; an empty wordlist makes the scan vacuous — treat its warning as a failure.
+4. **No remote push.** Stage and commit locally; `git push` is a human act.
+5. **Attribution.** Adapted/copied content carries `derivation:` + `source:` in frontmatter and a README credits entry. Pull shapes, write original prose.
 
 ## What this repo is
 
-Personal public skill registry for Claude Code / GitHub Copilot. Skills here are generic and app-agnostic by construction — they are designed to be vendored (pinned-snapshot, not live submodule) into a company registry. The pipeline is strictly one-way: public → internal, never reverse.
+Personal Claude Code toolbox — skills, slash commands, subagents, hooks, MCP scaffolds, styles, templates — packaged as a plugin (`.claude-plugin/plugin.json`), `install.sh` as symlink fallback. Company import = downstream cherry-pick at a tag, not the purpose.
+
+## Directory guides
+
+- `skills/CLAUDE.md` — skill anatomy, description trigger-language law, gotcha quality bar, boundary/routing conventions
+- `agents/CLAUDE.md` — reviewer structure, severity-ranked output contract, correlated-blind-spot caveat, expose-don't-rewrite
+- `commands/CLAUDE.md` — invocation/behavior shape, read-real-state law, irreversible-stops rule
+- `tools/CLAUDE.md` — stdlib-only, exit-code contract, scanner redaction, idempotence
+- `hooks/README.md` — hook wiring and handler conventions
+
+`AGENTS.md` (other agents) and `.github/copilot-instructions.md` (Copilot) are global-only distillations — those surfaces don't load directory files, so their authoring notes stay inline there.
 
 ## Commands
 
-Once Phase 0 is built:
-
 ```bash
-# Validate a skill file against the registry dialect
-python tools/validate.py <path-to-SKILL.md>
-
-# Validate all skill files
-python tools/validate.py agents/ commands/ skills/ tools/
-
-# Run pre-commit guards (secret scanner + denylist scan)
-pre-commit run --all-files
-
-# Run CI scans against diff range (not just working tree)
-pre-commit run --from-ref HEAD~1 --to-ref HEAD
+python3 tools/validate.py        # frontmatter + placement, whole repo
+python3 tools/skill-lint.py      # description trigger-quality
+python3 tools/knowledge-lint.py  # broken links, staleness
+bash tools/scan.sh               # secret + wordlist scan of STAGED changes
+python3 tools/scaffold.py <skill|command|agent|tool|hook> <name>
 ```
 
-## Directory layout (target)
+All three linters green before any commit.
 
-```
-agents/        subagent definitions (reviewers, critics)
-commands/      directly-invocable harness ops
-skills/        agent-consumed work skills
-tools/         scripts + MCP-server scaffolds
-docs/
-templates/
-.github/workflows/
-PROVENANCE.md
-```
+## Authoring (global law)
 
-**Key distinction:** `commands` = human-invocable harness operations; `skills` = work the agent consumes mid-task. Both use SKILL.md format but live in separate dirs.
-
-## SKILL.md frontmatter (required shape)
+Everything except the five bootstrap creators is scaffolded via `create-skill` · `create-command` · `create-agent` · `create-tool` · `create-hook` — never hand-rolled. Frontmatter is flat everywhere:
 
 ```yaml
----
-name: <skill-name>
-description: <what it does + when to trigger; pushy, to fight undertriggering>
-metadata:
-  owner: <name>
-  enforcement: advisory | enforced
-  derivation: original | adapted | copied
-  upstream_repo: <url or "n/a">
-  upstream_sha: <sha or "n/a">
-  license: <MIT | Apache-2.0 | n/a>
----
+name: <name>
+description: <what + when to trigger>
+derivation: original | adapted | copied   # if not original: source: <url> required
 ```
 
-Only `name`, `description`, `metadata`, and optionally `license`/`allowed-tools` are valid top-level keys. Registry bookkeeping lives under `metadata`. `tools/validate.py` enforces this.
+No `metadata:` block, no PROVENANCE.md — credits live in README. Nontrivial work follows the toolbox's own chain: `/brainstorm` → `plan-writer` → `plan-reviewer` + `pre-mortem` → `/decompose` → `git-worktrees` + `tdd-loop` → `code-review` / `security-review` → `systematic-debug`.
 
-Every skill also requires a row in `PROVENANCE.md` (columns: skill | upstream | sha | license | derivation).
+## Efficiency routing (auto-pickup)
 
-## Coding behavior rules
+Before reaching for the naive tool, the matching skill applies — these fire on the *action*, not the topic:
 
-These apply to all implementation work in this repo. Source: [Karpathy's CLAUDE.md](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md).
+- about to `grep`/search code → `code-search` (rg ladder, `-l` first, head-cap)
+- about to grep/cat JSON or YAML → `data-query` (jq paths, gron bridge)
+- hunting a *filename* → `file-find` (fd/plocate) — not a content grep
+- about to page `git log -p` / blame → `git-search` (pickaxe, `-L`, true-origin blame)
+- about to fetch a URL / read a page → `web-research` (llms.txt probe, extract-then-rg)
+- port/process/file-handle question → `system-lookup` (ss, lsof +L1, /proc)
+- "which jar/package provides X" → `dependency-lookup` (runtime truth first)
+- raw log dump in front of you → `log-triage` (cluster before reading)
+- multi-page crawl / JS-heavy scrape / extraction pipeline → `crawl4ai` (schema-based, LLM-free)
 
-**1. Think before coding**
+One law across all: search output ≤ ~15% of the context window; files-first, sections-second, full reads last.
 
-Don't assume. Don't hide confusion. Surface tradeoffs.
+## Coding behavior (distilled — full form in archive/CLAUDE-v2-full.md)
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them — don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-**2. Simplicity first**
-
-Minimum code that solves the problem. Nothing speculative.
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-**3. Surgical changes**
-
-Touch only what you must. Clean up only your own mess.
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it — don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-**4. Goal-driven execution**
-
-Define success criteria. Loop until verified.
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-Before any code is written, define what "done" looks like in terms a machine can verify. "Add validation" fails this test. "Users who submit a blank or malformed email field see a specific error message, and both cases have passing tests" passes it. For multi-step work, state a plan first — before autonomous generation goes in the wrong direction.
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-**5. Verification**
-
-Close the gap between code that seems correct and code that actually runs.
-
-Before fixing a bug:
-- Write a test that reliably reproduces it.
-- Fix the code.
-- Run the test. Only when the test passes is the bug fixed — not when it "feels" fixed.
-
-This constraint matters most in loop contexts: an autonomous loop has no human reviewer at each step. The test is the only check.
-
-**6. Debugging**
-
-Reproduce before diagnosing. Change one variable at a time.
-
-Sequence:
-- Read the full error message and stack trace.
-- Reproduce the problem before attempting a fix.
-- Change one variable at a time.
-
-The failure mode this prevents: confident wrong diagnosis — reading an ambiguous error, picking an interpretation, and generating a fix for a problem that was never confirmed to exist.
-
-**7. Dependencies**
-
-Every added package is permanent, uncontrolled code updated on someone else's schedule.
-
-Before reaching for a library:
-- Ask whether the standard library handles it.
-- If not, ask whether the problem is small enough to implement directly.
-
-If a dependency is added, document the decision explicitly: why this library, why not the standard library, what the tradeoff is.
-
-**8. Communication**
-
-Distinguish actionable uncertainty from vague reassurance.
-
-- "I'm not sure this library supports streaming" — useful. Acts on real information.
-- "I think this should work" — not useful. Sounds confident, carries no information.
-
-When uncertainty is the accurate answer, say so precisely. Confident-sounding guesses that turn out wrong waste more time than honest uncertainty upfront.
-
-**9. Common failure modes**
-
-Recognize these patterns in your own behavior and stop immediately — do not continue toward completion.
-
-- **Kitchen Sink** — asked to fix a faucet, renovating the kitchen. Scope has expanded beyond the request without permission.
-- **Wrong Abstraction** — the same logic appears in three places without recognition that it should be a function. Duplication is visible; the fix is not being made.
-- **Optimistic Path** — code written only for the happy case. Bad inputs, dropped connections, and server failures are unhandled.
-- **Runaway Refactor** — one file becomes ten because nothing stops the cascade. Each change feels justified; the total is out of scope.
-
-The prescribed response to recognizing any of these in progress: stop, surface the pattern, and ask before continuing.
-
-## Hard constraints
-
-1. **Zero employer-internal content.** No internal server names, app names, domain-model terms, stack idioms tied to internal systems, tokens/keys, or `/memory`-derived content. Scan the full diff range, not just the working tree — git history is permanent.
-
-2. **Provenance per skill.** Every skill carries the full `metadata` block and a `PROVENANCE.md` row before it is considered complete.
-
-3. **Guards before content.** The pre-commit secret scanner and denylist scanner must exist and be proven (plant a failure, confirm it's caught) before any skill is authored.
-
-4. **No remote push, no vendoring.** Agent stages and commits locally. `git push` to public remote and company-registry import are human gates — agent never performs them.
-
-5. **Denylist wordlist is local-only.** `.gitignore`d. The CI config references it by path. Empty wordlist = vacuous pass; populate it before any acceptance run.
-
-## Authoring flow
-
-All skills except the four bootstrap creators are scaffolded via a creator command, not hand-rolled:
-- `create-agent` → `agents/`
-- `create-skill` → `skills/`
-- `create-command` → `commands/`
-- `create-tool` → `tools/`
-
-The creators share one core helper that writes frontmatter, appends the `PROVENANCE.md` row, and runs `tools/validate.py`. Never duplicate that logic across creators.
-
-## Human gates (agent stops, does not auto-proceed)
-
-- **Public push** — agent commits locally; human runs `git push` after IP/legal sign-off.
-- **Company-registry import** — human vendors a pinned, security-reviewed snapshot at a tag/SHA. Never a live submodule from a personal account into company infrastructure.
-
-## Current state
-
-Repo is in planning phase. Two build plans exist:
-- `plan/PLAN-skill-list-build.md` — public generic skills (phases 0–3, what belongs here)
-- `plan/PLAN-skills-advanced-build.md` — org-specific skills (ADR, postmortem, debug, cost, compliance); executed against the internal registry after the public plan's Phase 0 is complete
-
-No skill files, creators, or tooling exist yet. Phase 0 of `PLAN-skill-list-build.md` must complete before any other phase.
+1. **Think before coding** — surface assumptions; multiple interpretations → present them; unclear → stop and ask.
+2. **Simplicity first** — minimum code; no speculative features or abstractions; if 200 lines could be 50, rewrite.
+3. **Surgical changes** — only what the request requires; match existing style; clean only the orphans your change created.
+4. **Read before write** — never edit a file from memory; re-read after any external change; earlier reads are stale.
+5. **Goal-driven** — machine-verifiable "done" before code; multi-step work gets a plan with a verify per step. *Deep: `decompose`.*
+6. **Verification** — reproducing test → fix → test passes = fixed; run the stated check before claiming done. *Deep: `tdd-loop`.*
+7. **Debugging** — read the actual error; reproduce first; one variable per experiment; record falsified hypotheses. *Deep: `systematic-debug`.*
+8. **Dependencies** — stdlib first; document why + tradeoff when adding; pin versions.
+9. **Environment assumptions** — probe tools and versions (`command -v`, import check); state platform assumptions aloud.
+10. **Secure by default** — parameterized queries; env-var secrets only; validate at trust boundaries; never log credentials/PII.
+11. **Reversibility** — classify before acting; irreversible (delete, push, publish, migrate, spend) → stop and confirm; prefer the reversible path.
+12. **Idempotence** — check-before-create; every step safe to re-run and resumable.
+13. **Checkpoint discipline** — commit at every green verifiable unit; small commits, real messages.
+14. **Context economy** — load sections, not repos; summarize verbose output once; when history dominates, hand off and restart. *Deep: `code-search` for search-output budgets.*
+15. **Honest uncertainty** — precise doubt ("unsure X supports streaming") beats confident vagueness ("should work").
+16. **Evidence over claims** — report what changed, the check run, and its output; never "successfully" without the check in this session.
+17. **Failure-mode self-recognition** — Kitchen Sink · Wrong Abstraction · Optimistic Path · Runaway Refactor · Groundhog Loop (identical retry, no new info) · Success Theater → stop, surface the pattern, ask.
