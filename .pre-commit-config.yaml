@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: toolbox-scan
+        name: secret + wordlist scan (staged)
+        entry: tools/scan.sh
+        language: script
+        pass_filenames: false
+      - id: toolbox-validate
+        name: dialect validate
+        entry: python3 tools/validate.py
+        language: system
+        pass_filenames: false

@@ -1,4 +1,4 @@
-# PLAN — Skill List Build (personal public repo)
+# 01-PLAN — Skill List Build (personal public repo)
 
 **Audience:** A Claude Code session executing this build. Human owner: Luke.
 **Objective:** Author the externally-derived generic skill list as content-complete SKILL.md entries in the personal public repo, in the registry dialect, each provenance-tracked, so import into the company registry is a *copy, not a transform*.
@@ -61,8 +61,8 @@ Everything Phases 1–3 depend on. Ordering inside this phase is dependency-boun
 - [ ] `templates/SKILL.template.md` — the frontmatter shape in § Context plus an empty body skeleton.
 - [ ] `tools/validate.py` — the dialect validator every later acceptance depends on. Checks: frontmatter standard-compliant (only `name` / `description` / `metadata` / optional `license` / `allowed-tools` at top level; bookkeeping under `metadata`), required `metadata` keys present (`owner`, `enforcement`, `derivation`, `upstream_repo`, `upstream_sha`, `license`), file in a valid dialect dir, `PROVENANCE.md` row exists.
 - [ ] `.pre-commit-config.yaml` — secret scanner + a denylist scan against an employer-term wordlist. **Wordlist authored locally, NOT committed** (`.gitignore` it); config references it by path. **Wordlist must be populated before the acceptance** — empty = vacuous pass (false green).
-- [ ] `.github/workflows/scan.yml` — the same two scans in CI on PR and push; fail on any hit; run against the full diff range.
-- [ ] **Acceptance (0A):** wordlist non-empty; a throwaway commit with a fake secret AND a term **in the wordlist** is blocked by pre-commit locally and by CI on a test branch → revert; `tools/validate.py` runs clean on `templates/SKILL.template.md`.
+- [ ] `.github/workflows/scan.yml` — the same two scans in CI on PR and push; fail on any hit; run against the full diff range. The wordlist reaches CI as a repository secret decoded at runtime (it is gitignored, so a path reference alone cannot work in CI), and the scan output reports file, line, and count only — never the matched term — so no internal term ever appears in a public CI log.
+- [ ] **Acceptance (0A):** wordlist non-empty; a throwaway commit with a fake secret AND a term **in the wordlist** is blocked by pre-commit locally and by CI on a test branch, and the CI log does not contain the planted term itself → revert; `tools/validate.py` runs clean on `templates/SKILL.template.md`.
 
 ### 0B — The creators (hand-authored bootstrap)
 
@@ -115,9 +115,15 @@ Scaffold each with `create-skill` / `create-tool`, then fill the body.
 
 ## OUT OF SCOPE — build internal-first, NEVER in this repo
 
-These encode employer IP or internal structure. Author them directly in the internal registry; do not route them through a personal account.
+These encode employer IP or internal structure. They are authored directly in the internal registry via `02-PLAN-skills-advanced-build.md`; do not route them through a personal account. Do not author any of the following here, even as a stub:
 
-- Skills that encode internal tooling, compliance scope, or runtime-specific instrumentation — author directly in the internal registry.
+- ADR writer/evaluator (encodes the internal decision layer)
+- Incident postmortem (encodes the internal incident layer)
+- Debug procedure (encodes the internal production-debug gate)
+- Cost-attribution / bucket-decomposition instrumentation (internal runner + MCP wiring)
+- Burn-rate forecast (internal loop-report wiring)
+- Compliance reviewer (org policy scope)
+- Port automation (internal templates)
 
 ---
 
@@ -126,7 +132,7 @@ These encode employer IP or internal structure. Author them directly in the inte
 The agent stages; the human performs the irreversible act.
 
 - **Public push** — agent stages and commits locally; the human runs `git push` to the public remote *after* IP/legal sign-off. Internal recognition of the work is not the same channel as authorization to publish.
-- **Company-registry import** — the human vendors a pinned, security-reviewed snapshot at a tag/SHA into the company registry. Never a live submodule from a personal account into internal company infrastructure. Consumers pin to tags, never float on `main`.
+- **Company-registry import** — the human vendors a pinned, security-reviewed snapshot at a tag/SHA into the company registry; the snapshot is the release artifact produced by `01B-PLAN-skills-repo-operations.md`. Never a live submodule from a personal account into internal company infrastructure. Consumers pin to tags, never float on `main`.
 
 ---
 
