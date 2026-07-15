@@ -31,7 +31,8 @@ Write the precedence line into the root file: master wins on behavior; root and 
 
 - Every command listed was actually run in this session, or is explicitly marked unverified (evidence over claims).
 - No rule appears at two levels — spot-check by grepping a distinctive phrase from each global rule against the directory guides.
-- Size discipline: root ≤ ~100 lines, directory guides ≤ ~40, Copilot file ≤ ~25. Over budget → move detail to the master or delete it.
+- Size discipline: root ≤ ~100 lines, directory guides ≤ ~40, Copilot file ≤ ~25. Compliance is **constant-sum** — every added rule dilutes attention on the others; over budget means a rule must leave, not that the cap grows.
+- Every NEVER is paired with its do-instead in the same breath ("never commit X — fetch it via Y"); an unpaired prohibition invites workarounds.
 - All referenced paths exist.
 
 ## Boundaries

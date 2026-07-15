@@ -22,4 +22,4 @@ Beautiful code that solves the wrong problem fails here and stage 2 doesn't run 
 - **Readability/maintenance:** naming that lies, dead code, comments that restate instead of explain-why.
 
 ## Output
-Findings ranked **blocker / major / minor / nit**, each with `file:line`, the issue, and the concrete fix. Separate "must fix" from "author's preference call" honestly. Verdict: approve / fix-blockers / needs-rework. Caveat stated up front: same-model review has correlated blind spots — this raises PR quality before human review; it never replaces it.
+Findings ranked **blocker / major / minor / nit**, each with `file:line`, the issue, and the concrete fix. Separate "must fix" from "author's preference call" honestly. Final line, literal: `VERDICT: approve | fix-blockers | needs-rework`. Caveat stated up front: same-model review has correlated blind spots — this raises PR quality before human review; it never replaces it.

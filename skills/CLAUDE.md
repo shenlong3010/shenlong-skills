@@ -6,7 +6,7 @@ Loaded when working in this directory; the root `CLAUDE.md` globals apply on top
 Agent-consumed knowledge for mid-task use: one folder per skill, `SKILL.md` inside, optional `assets/` and `references/` alongside (see `plan-writer/`).
 
 ## Frontmatter
-Root spec applies (flat keys). The `description` must contain explicit trigger language — "Use when / whenever / for …" with concrete phrases a user would actually type — and, where the skill is confusable with a sibling, a "Do NOT use for …" boundary. `skill-lint` enforces this; undertriggering is the common failure mode.
+Root spec applies (flat keys). The `description` must contain explicit trigger language — "Use when / whenever / for …" with concrete phrases a user would actually type — and, where the skill is confusable with a sibling, a "Do NOT use for …" boundary. `skill-lint` enforces this; undertriggering is the common failure mode. Phrase triggers as **events, not topics**: the literal phrases the moment produces ("about to grep", "port already in use", an error string) — models route on literal triggers, not topic labels.
 
 ## Body shape
 1. **Purpose / when** — one short block.
@@ -58,6 +58,7 @@ One line per skill for discovery while authoring here. Regenerate with `python3 
 - `sql-review` — Review a SQL query for plan risks, index needs, and correctness traps
 - `sqlite` — Use SQLite from Python (stdlib sqlite3) correctly — parameterized queries, transactions, Row access, WAL, prag…
 - `stacktrace-analyzer` — Analyze a stack trace or exception dump into ranked root-cause hypotheses with concrete next checks
+- `symbol-lookup` — Find symbol definitions, references, and approximate call hierarchies — the ctags/ast-grep lane between grep a…
 - `system-lookup` — Find what's happening on a machine — which process holds a port or file, what a process is running with, where…
 - `systematic-debug` — Structured root-cause debugging — reproduce, observe, hypothesize, isolate, fix the cause, add the regression …
 - `tdd-loop` — Enforce RED-GREEN-REFACTOR test-driven development — failing test first, minimal code to pass, refactor on green

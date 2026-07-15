@@ -48,6 +48,6 @@ Speed claims are pattern-dependent: literal-rich patterns are where rg-class too
 
 ## Boundaries
 
-- Symbol *definitions* at IDE quality → LSP/ctags, not grep — grep finds text, not scope-resolved definitions.
+- Symbol definitions, references, call hierarchies → `symbol-lookup` (ctags/ast-grep rungs, LSP ceiling stated); grep finds text, not scope-resolved symbols.
 - Monorepo/org scale (millions of files, cross-repo) → indexed servers (zoekt-class); out of this skill's scope.
 - Filename lookups → `file-find`; git history → `git-search`; structured data (JSON/YAML) → `data-query`; runtime who/what → `system-lookup`; diagram/text-format files → `read-diagram`; log dumps → `log-triage`; web content → `web-research`.

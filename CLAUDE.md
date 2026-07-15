@@ -61,6 +61,7 @@ Before reaching for the naive tool, the matching skill applies — these fire on
 - "which jar/package provides X" → `dependency-lookup` (runtime truth first)
 - raw log dump in front of you → `log-triage` (cluster before reading)
 - multi-page crawl / JS-heavy scrape / extraction pipeline → `crawl4ai` (schema-based, LLM-free)
+- "who calls this / where is it defined" → `symbol-lookup` — not a bare grep of the name
 
 One law across all: search output ≤ ~15% of the context window; files-first, sections-second, full reads last.
 

@@ -8,7 +8,7 @@ Loaded when working in this directory; root globals apply. Agents are subagents 
 ## Output contract
 - Findings severity-ranked (`blocker/major/minor/nit` for code, `fatal/major/minor` for plans — match the file's existing scale).
 - Every finding cites the exact location (`file:line`, plan line, or section) plus the issue and a one-line concrete fix.
-- End with a verdict the caller can act on (approve / fix-majors / rewrite).
+- End with a verdict the caller can act on, as a **literal greppable marker line**: `VERDICT: <approve|fix-majors|rewrite>` — every review in a transcript is then auditable with one `rg 'VERDICT:'`.
 
 ## Laws
 - **Critics expose; they don't rewrite.** The maker fixes, the checker checks — no silent rewrites inside a review.
