@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # PostToolUse (Edit|Write): format the touched file if a formatter is configured. Best-effort, never blocks.
 payload=$(cat)
-f=$(printf '%s' "$payload" | python3 -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" 2>/dev/null)
+# Windows Store ships a python3 stub that prints an error yet exits 0 — test output, not exit code.
+PY=python3; [ "$(python3 -c 'print(1)' 2>/dev/null)" = "1" ] || PY=python
+f=$(printf '%s' "$payload" | "$PY" -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" 2>/dev/null)
 [ -z "$f" ] && exit 0
 case "$f" in
   *.py)  command -v ruff >/dev/null && ruff format -q "$f";;

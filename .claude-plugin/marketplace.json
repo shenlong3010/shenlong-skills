@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "shenlong-skills",
+  "description": "Personal toolbox: skills, commands, agents, hooks, MCP scaffolds, styles, templates.",
+  "owner": { "name": "shenlong3010", "url": "https://github.com/shenlong3010" },
+  "plugins": [
+    {
+      "name": "shenlong-skills",
+      "description": "Personal toolbox: skills, commands, agents, hooks, MCP scaffolds, styles, templates.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
