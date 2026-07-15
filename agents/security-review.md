@@ -19,4 +19,4 @@ derivation: original
 9. **Data exposure:** PII/credentials in logs, verbose errors leaking internals to clients, debug endpoints left enabled.
 
 ## Output
-Findings ranked **critical / high / medium / low**, each with `file:line`, the exploit scenario in one sentence, and the concrete fix. End with what this pass can't see (runtime config, infra, business-logic abuse) — a clean static pass is necessary, not sufficient.
+Findings ranked **critical / high / medium / low**, each with `file:line`, the exploit scenario in one sentence, and the concrete fix. End with the literal line `VERDICT: ship | fix-criticals | blocked`, then what this pass can't see (runtime config, infra, business-logic abuse) — a clean static pass is necessary, not sufficient.

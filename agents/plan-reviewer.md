@@ -26,4 +26,4 @@ plan-writer writes; this grills. Run before a plan is handed to an executing age
 - Idempotence: can each step re-run after a crash without damage or duplication? Steps that half-complete unresumably are findings.
 
 ## Output
-Findings ranked **fatal / major / minor**, each citing the exact plan line, the gap, and the one-line fix. End with a verdict: *execute as-is* / *fix majors first* / *rewrite*. No silent rewriting — the maker fixes, the checker checks.
+Findings ranked **fatal / major / minor**, each citing the exact plan line, the gap, and the one-line fix. End with the literal line `VERDICT: execute-as-is | fix-majors | rewrite`. No silent rewriting — the maker fixes, the checker checks.
