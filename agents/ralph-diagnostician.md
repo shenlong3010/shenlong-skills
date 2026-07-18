@@ -4,6 +4,7 @@ description: Deep-dive debugger role of the ralph loop — invoked only when a t
 derivation: adapted
 source: https://github.com/snarktank/ralph
 flow: execute
+domain: agent
 ---
 
 # Ralph Diagnostician (subagent)

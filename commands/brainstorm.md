@@ -4,6 +4,7 @@ description: Socratic refinement of a rough idea into a design brief — before 
 derivation: adapted
 source: https://github.com/obra/superpowers
 flow: plan
+domain: process
 ---
 
 # /brainstorm

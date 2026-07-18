@@ -3,6 +3,7 @@ name: eval-writer
 description: Extract a golden eval case from a run trace or a completed task and emit a .eval.yml next to the relevant skill. Use after a skill run worked (or failed instructively) — "capture this as an eval", "make a golden case", "add a regression case".
 derivation: original
 flow: meta
+domain: agent
 ---
 
 # /eval-writer

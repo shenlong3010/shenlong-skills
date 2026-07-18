@@ -4,6 +4,7 @@ description: Verifier role of the ralph loop — checks a coded task against its
 derivation: adapted
 source: https://github.com/snarktank/ralph
 flow: execute
+domain: agent
 ---
 
 # Ralph Task Inspector (subagent)

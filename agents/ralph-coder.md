@@ -4,6 +4,7 @@ description: Implementor role of the ralph loop — executes exactly one task fi
 derivation: adapted
 source: https://github.com/snarktank/ralph
 flow: execute
+domain: agent
 ---
 
 # Ralph Coder (subagent)

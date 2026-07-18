@@ -4,6 +4,7 @@ description: Structured root-cause debugging — reproduce, observe, hypothesize
 derivation: adapted
 source: https://github.com/obra/superpowers
 flow: debug
+domain: process
 ---
 
 # Systematic Debug

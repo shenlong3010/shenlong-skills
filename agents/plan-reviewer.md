@@ -3,6 +3,7 @@ name: plan-reviewer
 description: Adversarial reviewer for PLAN files — the checker paired with plan-writer's maker. Invoke on any plan before execution — "grill this plan", "review the plan", "is this plan executable". Checks executability (self-contained, verifiable acceptance, gates) plus feasibility; findings ranked by severity.
 derivation: original
 flow: plan
+domain: process
 ---
 
 # Plan Reviewer (subagent)

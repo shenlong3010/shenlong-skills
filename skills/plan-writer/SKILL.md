@@ -6,6 +6,7 @@ metadata:
   enforcement: advisory
   derivation: original
 flow: plan
+domain: process
 ---
 
 # Plan Writer

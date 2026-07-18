@@ -38,7 +38,7 @@ def fields_of(p: Path):
     if not m:
         return None
     lines, cap, desc = m.group(1).splitlines(), False, []
-    flow = ""
+    flow = domain = ""
     for line in lines:
         if line.startswith("description:"):
             desc.append(line.split(":", 1)[1].strip())
@@ -49,7 +49,9 @@ def fields_of(p: Path):
             cap = False
             if line.startswith("flow:"):
                 flow = line.split(":", 1)[1].strip()
-    return " ".join(desc), flow
+            elif line.startswith("domain:"):
+                domain = line.split(":", 1)[1].strip()
+    return " ".join(desc), flow, domain
 
 
 def entries(kind: str):
@@ -68,21 +70,23 @@ def entries(kind: str):
 
 
 def render(kind: str) -> tuple[str, int, int]:
-    grouped: dict[str, list[str]] = {}
+    grouped: dict[str, list[tuple[str, str]]] = {}
     total_chars = count = 0
     for name, f in entries(kind):
         got = fields_of(f)
         if got is None:
             continue
-        desc, flow = got
+        desc, flow, domain = got
         total_chars += len(name) + len(desc)
         count += 1
-        grouped.setdefault(flow or "unassigned", []).append(f"- `{name}` — {first_sentence(desc)}")
+        grouped.setdefault(flow or "unassigned", []).append(
+            (domain or "~", f"- `{name}` ·{domain}· — {first_sentence(desc)}")
+        )
     parts = []
     for flow in (*FLOW_ORDER, "unassigned"):
         if flow in grouped:
             parts.append(f"**{FLOW_LABELS.get(flow, flow)}**")
-            parts.extend(grouped[flow])
+            parts.extend(line for _, line in sorted(grouped[flow]))
             parts.append("")
     return "\n".join(parts).rstrip(), count, total_chars
 

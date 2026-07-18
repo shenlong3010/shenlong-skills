@@ -3,6 +3,7 @@ name: image
 description: Manipulate images with Pillow — resize, convert, crop, compose, thumbnails, EXIF orientation, format conversion. Use for "resize these images", "convert PNG to JPEG", "make thumbnails", "watermark this image", or any raster processing. For extracting text from images use image-ocr; for describing content, native vision.
 derivation: original
 flow: util
+domain: media
 ---
 
 # image

@@ -3,6 +3,7 @@ name: context-audit
 description: Report what is currently occupying context — files, tool outputs, conversation — with rough token weight and trim suggestions. Use when the session feels heavy, before adding large files, or when asked "what's in context", "context usage", "why is this slow".
 derivation: original
 flow: session
+domain: agent
 ---
 
 # /context-audit

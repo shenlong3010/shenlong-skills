@@ -4,6 +4,7 @@ description: Reviews a plan or diff for what a senior engineer catches that a ju
 derivation: adapted
 source: https://github.com/JuliusBrussee/skills
 flow: plan
+domain: process
 ---
 
 # Junior → Senior (subagent)
