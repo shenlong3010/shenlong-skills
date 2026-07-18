@@ -3,6 +3,7 @@ name: docx
 description: Create and edit Word documents (.docx) programmatically with python-docx — headings, styled paragraphs, tables, images, headers/footers, find-and-replace. Use whenever a Word document must be generated or modified by script — reports, memos, letters, template filling — or when asked for a ".docx", "Word doc", or document deliverable. Committable open-source baseline; for tracked changes, comments, or deep OOXML surgery use the vendored Anthropic docx skill (vendor/anthropic, local fetch) instead.
 derivation: original
 flow: deliver
+domain: docs
 ---
 
 # docx — Word documents via python-docx

@@ -3,6 +3,7 @@ name: system-lookup
 description: Find what's happening on a machine — which process holds a port or file, what a process is running with, where disk space went, which service logs matter. Use for "port already in use", "who has this file open", "what is this process", "disk full but can't find the files", or any runtime who/what/where question — use INSTEAD of `ps aux | grep` guessing.
 derivation: original
 flow: lookup
+domain: system
 ---
 
 # System Lookup

@@ -3,6 +3,7 @@ name: handoff-writer
 description: Capture the current session's state into a HANDOFF.md that a fresh session can act on without the transcript. Use before ending a long session, before /compact or /clear, when switching machines, or when asked to "write a handoff", "save state", "brief the next session".
 derivation: original
 flow: session
+domain: agent
 ---
 
 # /handoff-writer

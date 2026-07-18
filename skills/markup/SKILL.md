@@ -3,6 +3,7 @@ name: markup
 description: Parse and extract from HTML and XML — BeautifulSoup selectors, parser choice, encodings, and the XML namespace maze (ElementTree). Use for "scrape this page", "extract data from this HTML", "parse this XML", or any markup a regex is about to be aimed at.
 derivation: original
 flow: util
+domain: data
 ---
 
 # markup

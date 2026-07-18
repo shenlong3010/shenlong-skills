@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FM = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.S)
 FLOWS = ("plan", "execute", "review", "debug", "lookup", "deliver", "session", "util", "meta", "career")
+DOMAINS = ("code", "git", "data", "web", "docs", "media", "system", "agent", "process", "career")
 
 
 def frontmatter(text: str):
@@ -46,6 +47,11 @@ def check_file(path: Path, errors: list):
         errors.append(f"{path}: frontmatter missing `flow` (one of {', '.join(FLOWS)})")
     elif flow not in FLOWS:
         errors.append(f"{path}: unknown flow `{flow}` (allowed: {', '.join(FLOWS)})")
+    domain = fm.get("domain")
+    if not domain:
+        errors.append(f"{path}: frontmatter missing `domain` (one of {', '.join(DOMAINS)})")
+    elif domain not in DOMAINS:
+        errors.append(f"{path}: unknown domain `{domain}` (allowed: {', '.join(DOMAINS)})")
 
 
 def main() -> int:

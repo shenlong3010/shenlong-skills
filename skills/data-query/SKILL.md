@@ -3,6 +3,7 @@ name: data-query
 description: Query JSON/YAML/structured data precisely with jq, gron, and yq instead of grepping it. Use for "find the key/value in this JSON", "extract field X", "search this config/API response", or any moment grep is about to be aimed at structured data — grep on JSON is a false-positive machine (keys vs values, escaping, minified single lines).
 derivation: original
 flow: lookup
+domain: data
 ---
 
 # Data Query

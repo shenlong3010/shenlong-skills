@@ -4,6 +4,7 @@ description: User surface of the ralph loop — /ralph plan|next|auto|status|rep
 derivation: adapted
 source: https://github.com/snarktank/ralph
 flow: execute
+domain: agent
 ---
 
 # /ralph

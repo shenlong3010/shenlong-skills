@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Shared creator core. The five create-* slash commands call this.
 
-Usage: python3 tools/scaffold.py <skill|command|agent|tool|hook> <name> [flow]
+Usage: python3 tools/scaffold.py <skill|command|agent|tool|hook> <name> [flow] [domain]
 
-`flow` is one of the vocabulary in validate.py (default: util — fix it before
-committing). Writes a stub in the right directory with standard frontmatter,
-then runs tools/validate.py so a bad stub fails immediately.
+`flow` and `domain` are from the vocabularies in validate.py (defaults:
+util/code — fix before committing). Writes a stub in the right directory with
+standard frontmatter, then runs tools/validate.py so a bad stub fails
+immediately.
 """
 import subprocess
 import sys
@@ -18,6 +19,7 @@ name: {name}
 description: TODO — what it does and when to trigger; write it pushy, undertriggering is the common failure.
 derivation: original
 flow: {flow}
+domain: {domain}
 ---
 
 """
@@ -95,11 +97,12 @@ DESTS = {
 
 
 def main() -> int:
-    if len(sys.argv) not in (3, 4) or sys.argv[1] not in DESTS:
+    if len(sys.argv) not in (3, 4, 5) or sys.argv[1] not in DESTS:
         print(__doc__)
         return 2
     kind, name = sys.argv[1], sys.argv[2].strip().lower().replace(" ", "-")
-    flow = sys.argv[3].strip().lower() if len(sys.argv) == 4 else "util"
+    flow = sys.argv[3].strip().lower() if len(sys.argv) >= 4 else "util"
+    domain = sys.argv[4].strip().lower() if len(sys.argv) == 5 else "code"
     dest = DESTS[kind](name)
     if dest.exists():
         print(f"refusing to overwrite {dest}")
@@ -107,7 +110,7 @@ def main() -> int:
     dest.parent.mkdir(parents=True, exist_ok=True)
     title = name.replace("-", " ").title()
     body = BODIES[kind].format(name=name, title=title)
-    content = body if kind == "tool" else FRONT.format(name=name, flow=flow) + body
+    content = body if kind == "tool" else FRONT.format(name=name, flow=flow, domain=domain) + body
     dest.write_text(content, encoding="utf-8")
     print(f"created {dest}")
     if kind in ("skill", "command", "agent"):

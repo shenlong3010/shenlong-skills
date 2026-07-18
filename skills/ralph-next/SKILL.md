@@ -4,6 +4,7 @@ description: Orchestrator state machine of the ralph loop — read run state fro
 derivation: adapted
 source: https://github.com/snarktank/ralph
 flow: execute
+domain: agent
 ---
 
 # Ralph Next

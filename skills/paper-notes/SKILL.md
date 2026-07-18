@@ -3,6 +3,7 @@ name: paper-notes
 description: Summarize a paper or technical blog post into structured notes plus a relevance-to-my-stack verdict. Use for "summarize this paper", "notes on this article", "is this arXiv link worth my time".
 derivation: original
 flow: lookup
+domain: docs
 ---
 
 # Paper Notes

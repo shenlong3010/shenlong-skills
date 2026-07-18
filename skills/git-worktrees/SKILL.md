@@ -4,6 +4,7 @@ description: Isolate each work stream in its own git worktree — parallel sessi
 derivation: adapted
 source: https://github.com/obra/superpowers
 flow: execute
+domain: git
 ---
 
 # Git Worktrees

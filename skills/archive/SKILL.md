@@ -3,6 +3,7 @@ name: archive
 description: Create and extract zip/tar archives safely — zip-slip protection, compression settings, permission semantics. Use for "zip these files", "extract this archive", "bundle the outputs", or any packaging step in a script.
 derivation: original
 flow: util
+domain: system
 ---
 
 # archive

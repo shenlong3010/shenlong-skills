@@ -3,6 +3,7 @@ name: decompose
 description: Break a goal, story, or feature into verifiable task units with machine-checkable acceptance and explicit file scope. Use when planning execution — "break this down", "decompose this story", "turn this into tasks" — before any loop or session burns time on an unverifiable blob.
 derivation: original
 flow: plan
+domain: process
 ---
 
 # /decompose

@@ -4,6 +4,7 @@ description: Conventions for building a FastMCP server that is safe and pleasant
 derivation: adapted
 source: https://github.com/anthropics/skills
 flow: meta
+domain: agent
 ---
 
 # MCP Builder

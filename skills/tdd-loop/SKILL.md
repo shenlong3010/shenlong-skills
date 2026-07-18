@@ -4,6 +4,7 @@ description: Enforce RED-GREEN-REFACTOR test-driven development — failing test
 derivation: adapted
 source: https://github.com/obra/superpowers
 flow: execute
+domain: process
 ---
 
 # TDD Loop

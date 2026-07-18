@@ -4,6 +4,7 @@ description: Two-stage code review of a diff or PR — spec compliance first, th
 derivation: adapted
 source: https://github.com/obra/superpowers
 flow: review
+domain: code
 ---
 
 # Code Review (subagent)

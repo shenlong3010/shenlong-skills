@@ -4,6 +4,7 @@ description: Planner phase of the ralph loop — pull stories from whatever trac
 derivation: adapted
 source: https://github.com/snarktank/ralph
 flow: execute
+domain: agent
 ---
 
 # Ralph Plan

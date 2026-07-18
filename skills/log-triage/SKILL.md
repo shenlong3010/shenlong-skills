@@ -3,6 +3,7 @@ name: log-triage
 description: Triage a raw log dump into clustered errors, a timeline, and the anomaly that matters. Use when logs are pasted or fetched — "what's wrong in these logs", "triage this", incident-time log reading — use INSTEAD of reading a raw dump top-to-bottom.
 derivation: original
 flow: debug
+domain: system
 ---
 
 # Log Triage
