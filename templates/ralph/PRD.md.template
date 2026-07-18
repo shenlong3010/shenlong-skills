@@ -1,0 +1,19 @@
+# PRD — {{story_title}}
+
+- **Story id:** {{story_id}} ({{source_adapter}})
+- **Run:** {{run_id}}
+- **Work-type:** {{work_type}} <!-- feature | bugfix | refactor | chore -->
+
+## Problem
+{{problem_statement}}
+
+## Acceptance criteria (story-level)
+<!-- Verbatim from the source where available; derived AC marked (derived). -->
+- [ ] {{ac_1}}
+
+## Out of scope
+- {{non_goal_1}}
+
+## Source notes
+<!-- Links/refs back to the tracker issue or backlog entry. No tracker-specific field dumps. -->
+{{source_notes}}

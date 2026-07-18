@@ -1,0 +1,24 @@
+# Task {{n}} — {{task_title}}
+
+- **Run:** {{run_id}}  ·  **Story:** {{story_id}}
+- **Work-type:** {{work_type}}
+
+## Goal
+{{task_goal}}
+
+## Acceptance criteria (machine-checkable)
+<!-- Every criterion is a command, a file-exists, or a greppable assertion — never "looks good". -->
+- [ ] {{task_ac_1}}
+
+## Files to touch
+<!-- Exhaustive; drift detection diffs exactly these paths. -->
+- {{file_1}}
+
+## Verification commands
+```bash
+{{verify_command}}
+```
+
+<!-- ## Amendment
+     Added by the orchestrator on retry only: the inspector's suggested_patch,
+     copied verbatim into a fenced block under this heading. -->
