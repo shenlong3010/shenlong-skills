@@ -2,6 +2,7 @@
 name: pdf
 description: Read, merge, split, fill, and create PDFs with pypdf and reportlab — text extraction, page ops, form filling, watermarks, generated documents. Use whenever a PDF must be parsed, assembled, or produced by script, or when asked for a ".pdf" deliverable, "merge these PDFs", "extract text from this PDF", "fill this form". For scanned/image PDFs route text extraction to the image-ocr skill.
 derivation: original
+flow: deliver
 ---
 
 # pdf — PDFs via pypdf + reportlab

@@ -2,6 +2,7 @@
 name: terse-rewrite
 description: Rewrite a draft into terse, technically dense engineering prose — no filler, no hedging, no throat-clearing. Use for "make this terse", "tighten this", "rewrite for engineers", or any draft that needs compression without losing content.
 derivation: original
+flow: deliver
 ---
 
 # /terse-rewrite

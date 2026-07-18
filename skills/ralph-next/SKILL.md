@@ -3,6 +3,7 @@ name: ralph-next
 description: Orchestrator state machine of the ralph loop — read run state from disk, pick the one eligible task, spawn the right role subagent (coder/inspector/diagnostician), write state back, stop or continue. Use for "/ralph next", "/ralph auto", "run the next iteration", "continue the loop", or resuming a run in a fresh chat. Requires a run created by ralph-plan.
 derivation: adapted
 source: https://github.com/snarktank/ralph
+flow: execute
 ---
 
 # Ralph Next

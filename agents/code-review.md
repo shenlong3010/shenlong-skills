@@ -3,6 +3,7 @@ name: code-review
 description: Two-stage code review of a diff or PR — spec compliance first, then code quality — with severity-ranked findings citing file:line. Invoke before requesting human review — "review this diff", "code review", "check this PR". Pre-review that raises quality before humans look, not a merge gate.
 derivation: adapted
 source: https://github.com/obra/superpowers
+flow: review
 ---
 
 # Code Review (subagent)

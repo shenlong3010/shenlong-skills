@@ -2,6 +2,7 @@
 name: adr-lite
 description: Write a generic Nygard-format Architecture Decision Record. Use for "write an ADR", "document this decision", "should we record this choice". Generic format only — org-specific ADR pipelines live elsewhere.
 derivation: original
+flow: deliver
 ---
 
 # ADR Lite

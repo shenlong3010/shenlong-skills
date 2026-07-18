@@ -2,6 +2,7 @@
 name: test-scaffold
 description: Generate a unit-test skeleton for a target file or function, matching the repo's existing test framework and conventions. Use when asked to "add tests", "write a test for X", or "scaffold tests".
 derivation: original
+flow: execute
 ---
 
 # /test-scaffold

@@ -2,6 +2,7 @@
 name: code-search
 description: Find code and context efficiently — the lexical → structural → semantic search ladder with token-budget discipline. Use whenever locating code — "where is X defined", "who calls Y", "find the config for Z", tracing dependencies, or any moment a plain grep is about to be fired at a repo. Covers ripgrep/ugrep flags that cut both wall time and output tokens, and when to escalate to ast-grep.
 derivation: original
+flow: lookup
 ---
 
 # Code Search

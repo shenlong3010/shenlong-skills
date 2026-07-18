@@ -3,6 +3,7 @@ name: ralph-coder
 description: Implementor role of the ralph loop — executes exactly one task file to its acceptance criteria, fresh context, no scrollback. Spawned by the ralph-next orchestrator for `[ ]` pending and `[!]` retry (with Amendment) and `[R]` rewritten tasks — never invoked directly by a human.
 derivation: adapted
 source: https://github.com/snarktank/ralph
+flow: execute
 ---
 
 # Ralph Coder (subagent)

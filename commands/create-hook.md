@@ -2,6 +2,7 @@
 name: create-hook
 description: Scaffold a new hook in this toolbox with standard frontmatter, correct directory placement, and immediate validation. Use whenever adding a hook — never hand-roll the file.
 derivation: original
+flow: meta
 ---
 
 # /create-hook

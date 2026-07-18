@@ -5,6 +5,7 @@ Checks every artifact in skills/, commands/, agents/:
   - YAML frontmatter present with non-empty `name` and `description`
   - skills are folders containing SKILL.md; commands/agents are flat .md files
   - if the frontmatter declares a non-original derivation, a `source:` line must exist
+  - `flow:` present and one of the fixed vocabulary (drives the generated catalogs)
 
 Exit 0 = clean, 1 = violations (printed as path: reason).
 """
@@ -14,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FM = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.S)
+FLOWS = ("plan", "execute", "review", "debug", "lookup", "deliver", "session", "util", "meta", "career")
 
 
 def frontmatter(text: str):
@@ -39,6 +41,11 @@ def check_file(path: Path, errors: list):
     derivation = fm.get("derivation", "original")
     if derivation != "original" and not fm.get("source"):
         errors.append(f"{path}: derivation `{derivation}` but no `source:` line")
+    flow = fm.get("flow")
+    if not flow:
+        errors.append(f"{path}: frontmatter missing `flow` (one of {', '.join(FLOWS)})")
+    elif flow not in FLOWS:
+        errors.append(f"{path}: unknown flow `{flow}` (allowed: {', '.join(FLOWS)})")
 
 
 def main() -> int:

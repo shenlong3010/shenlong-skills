@@ -2,6 +2,7 @@
 name: file-find
 description: Find files fast by name, age, or size — fd for scoped search, plocate for instant system-wide indexed lookup, and the find fallback. Use for "where is that file", "newest/biggest files", "files changed since X", or any filename hunt — use INSTEAD of `find` spelunking or `ls -R`; content search belongs to code-search, not here.
 derivation: original
+flow: lookup
 ---
 
 # File Find

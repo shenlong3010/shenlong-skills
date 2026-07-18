@@ -2,6 +2,7 @@
 name: security-review
 description: Pre-ship security pass over a diff or module — injection, authz gaps, secrets, unsafe deserialization, SSRF, dependency CVEs, crypto misuse. Invoke before shipping anything that touches user input, auth, files, URLs, or credentials — "security review", "is this safe to ship". Static reasoning pass, not a pentest.
 derivation: original
+flow: review
 ---
 
 # Security Review (subagent)

@@ -2,6 +2,7 @@
 name: http-requests
 description: Call HTTP APIs robustly with requests — sessions, retries with backoff, timeouts, streaming, auth, corporate-proxy TLS. Use whenever scripting API calls, webhooks, downloads, or any HTTP integration — "call this API", "download this file", "hit this endpoint from Python".
 derivation: original
+flow: util
 ---
 
 # http-requests

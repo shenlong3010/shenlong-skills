@@ -3,6 +3,7 @@ name: ralph-diagnostician
 description: Deep-dive debugger role of the ralph loop — invoked only when a task has exhausted its retry budget, diagnoses the real blocker and may rewrite the task spec. Opt-in via `enable_diagnostician` in .agents/ralph.yml; spawned by the ralph-next orchestrator, never invoked directly by a human.
 derivation: adapted
 source: https://github.com/snarktank/ralph
+flow: execute
 ---
 
 # Ralph Diagnostician (subagent)

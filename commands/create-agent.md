@@ -2,6 +2,7 @@
 name: create-agent
 description: Scaffold a new agent in this toolbox with standard frontmatter, correct directory placement, and immediate validation. Use whenever adding a agent — never hand-roll the file.
 derivation: original
+flow: meta
 ---
 
 # /create-agent

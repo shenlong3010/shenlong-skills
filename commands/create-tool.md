@@ -2,6 +2,7 @@
 name: create-tool
 description: Scaffold a new tool in this toolbox with standard frontmatter, correct directory placement, and immediate validation. Use whenever adding a tool — never hand-roll the file.
 derivation: original
+flow: meta
 ---
 
 # /create-tool

@@ -2,6 +2,7 @@
 name: create-skill
 description: Scaffold a new skill in this toolbox with standard frontmatter, correct directory placement, and immediate validation. Use whenever adding a skill — never hand-roll the file.
 derivation: original
+flow: meta
 ---
 
 # /create-skill

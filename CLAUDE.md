@@ -44,7 +44,10 @@ Everything except the five bootstrap creators is scaffolded via `create-skill` �
 name: <name>
 description: <what + when to trigger>
 derivation: original | adapted | copied   # if not original: source: <url> required
+flow: plan | execute | review | debug | lookup | deliver | session | util | meta | career
 ```
+
+`flow:` = the workflow stage the artifact serves; validate.py enforces the vocabulary, gen-index.py groups every catalog by it.
 
 No `metadata:` block, no PROVENANCE.md — credits live in README. Nontrivial work follows the toolbox's own chain: `/brainstorm` → `plan-writer` → `plan-reviewer` + `pre-mortem` → `/decompose` → `git-worktrees` + `tdd-loop` → `code-review` / `security-review` → `systematic-debug`.
 

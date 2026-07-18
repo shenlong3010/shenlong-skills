@@ -2,6 +2,7 @@
 name: web-research
 description: Search, fetch, and extract web content efficiently — query operators, llms.txt probing, reader/extraction ladder, and token-budget discipline. Use whenever researching online, fetching a page, "look up X", "read this URL", "get the docs for Y", or any moment raw HTML or a headless browser is about to be pointed at a page. The web counterpart of code-search. Do NOT use for interacting with pages (forms, clicks) — that is browser-automation territory.
 derivation: original
+flow: lookup
 ---
 
 # Web Research
