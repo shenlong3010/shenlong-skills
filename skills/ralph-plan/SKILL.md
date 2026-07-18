@@ -3,6 +3,7 @@ name: ralph-plan
 description: Planner phase of the ralph loop — pull stories from whatever tracker exists (Jira MCP, GitHub issues, or a local BACKLOG.md/PRD.md), decompose each into 3–7 machine-verifiable tasks, and scaffold a run under .agents/runs/. Use for "/ralph plan", "plan the loop", "pull my stories", "set up a ralph run", or before any /ralph next when no run exists.
 derivation: adapted
 source: https://github.com/snarktank/ralph
+flow: execute
 ---
 
 # Ralph Plan

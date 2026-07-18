@@ -4,6 +4,7 @@ description: Extract text from images (JPG, PNG, WEBP) deterministically using T
 derivation: adapted
 source: https://github.com/benchflow-ai/skillsbench/tree/main/tasks/jpg-ocr-stat/environment/skills/image-ocr
 license: Apache-2.0 (upstream benchflow-ai/skillsbench)
+flow: lookup
 ---
 
 

@@ -3,6 +3,7 @@ name: ralph
 description: User surface of the ralph loop — /ralph plan|next|auto|status|replan|tickets. Plan stories into runs, iterate one task at a time through coder/inspector/diagnostician subagents, watch state, regenerate tasks after upstream change, or flush discovered-work ticket proposals. Use for "/ralph", "run the loop", "loop status", "replan the run", "flush the tickets".
 derivation: adapted
 source: https://github.com/snarktank/ralph
+flow: execute
 ---
 
 # /ralph

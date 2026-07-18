@@ -2,6 +2,7 @@
 name: pr-writer
 description: Generate a PR title and body from the branch diff against the base branch. Use when opening a pull request, or when asked to "write the PR", "PR description", or "describe this branch".
 derivation: original
+flow: deliver
 ---
 
 # /pr-writer

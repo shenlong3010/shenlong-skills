@@ -2,6 +2,7 @@
 name: create-command
 description: Scaffold a new command in this toolbox with standard frontmatter, correct directory placement, and immediate validation. Use whenever adding a command — never hand-roll the file.
 derivation: original
+flow: meta
 ---
 
 # /create-command

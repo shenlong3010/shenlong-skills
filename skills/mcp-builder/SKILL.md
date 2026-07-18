@@ -3,6 +3,7 @@ name: mcp-builder
 description: Conventions for building a FastMCP server that is safe and pleasant for agents to use. Consult whenever writing or reviewing an MCP server — "new MCP server", "wrap this API for the agent", "review my MCP tools".
 derivation: adapted
 source: https://github.com/anthropics/skills
+flow: meta
 ---
 
 # MCP Builder

@@ -2,6 +2,7 @@
 name: config
 description: Read and write JSON, YAML, and TOML config safely — safe_load only, the YAML Norway problem, datetime serialization, TOML read/write split. Use for "parse this config", "generate YAML", "read pyproject.toml", or any settings-file handling in scripts.
 derivation: original
+flow: util
 ---
 
 # config

@@ -3,6 +3,7 @@ name: ralph-task-inspector
 description: Verifier role of the ralph loop — checks a coded task against its acceptance criteria and returns one of four verdicts (PASS/FAIL/ERROR/DRIFT) with a suggested_patch on FAIL. Spawned by the ralph-next orchestrator after a task is marked `[x]` coded — never invoked directly by a human.
 derivation: adapted
 source: https://github.com/snarktank/ralph
+flow: execute
 ---
 
 # Ralph Task Inspector (subagent)

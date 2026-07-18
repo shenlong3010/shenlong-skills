@@ -2,6 +2,7 @@
 name: pptx
 description: Build and edit PowerPoint decks (.pptx) with python-pptx — slides, layouts, placeholders, text formatting, images, tables, speaker notes. Use whenever slides or a deck must be generated or modified by script, or when asked for a ".pptx", "presentation", "slide deck", or "slides" deliverable. Committable open-source baseline; start from a branded template for corporate output.
 derivation: original
+flow: deliver
 ---
 
 # pptx — PowerPoint via python-pptx

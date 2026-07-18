@@ -2,6 +2,7 @@
 name: pre-mortem
 description: Prospective hindsight on a plan or decision — assume it already failed, explain why. Invoke before committing to significant work — "pre-mortem this", "how does this fail", "what kills this plan". Complements grill-me (questions the plan now) by narrating the failure retrospectively.
 derivation: original
+flow: plan
 ---
 
 # Pre-Mortem (subagent)
