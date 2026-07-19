@@ -16,16 +16,18 @@ Every artifact carries two orthogonal frontmatter axes — `flow:` (workflow sta
 
 | Flow | What lives there |
 |---|---|
-| **plan** | `/brainstorm` → `plan-writer` → adversarial reviewers (`plan-reviewer`, `grill-me`, `pre-mortem`, `junior-to-senior`) → `/decompose` |
-| **execute** | the **ralph loop** (below), `tdd-loop`, `git-worktrees`, `/test-scaffold` |
+| **plan** | `/brainstorm` → `plan-writer` → adversarial reviewers (`plan-reviewer`, `pre-mortem`) → `/decompose` |
+| **execute** | the **ralph loop** (below), `tdd-loop`, `git-worktrees` |
 | **review** | `code-review` + `security-review` agents, `sql-review` |
 | **debug** | `systematic-debug`, `stacktrace-analyzer`, `log-triage` |
-| **lookup** | the efficiency ladder: `code-search`, `symbol-lookup`, `file-find`, `git-search`, `diff-read`, `data-query`, `dependency-lookup`, `system-lookup`, `env-probe`, `repo-index`, `web-research`, `crawl4ai`, `repo-orient`, `read-image`, `read-diagram`, `image-prep`, `image-ocr`, `paper-notes` |
-| **deliver** | `/commit-writer`, `/pr-writer`, `docx`/`pptx`/`xlsx`/`pdf`, `chart`, `/gen-diagram`, `adr-lite`, `runbook-writer`, `/terse-rewrite` |
-| **session** | `/context-audit`, `/handoff-writer`, `caching`, `parallel-tools`, `reasoning-budget-guidance` |
-| **util** | library how-tos: `http-requests`, `sqlite`, `config`, `data-csv`, `markup`, `archive`, `image`, `/regex-forge` |
-| **meta** | the five `/create-*` scaffolders, `/eval-writer`, `mcp-builder`, `setup-instructions` |
+| **lookup** | the efficiency ladder: `code-search` (incl. first-contact repo orientation), `symbol-lookup`, `file-find`, `git-search`, `diff-read`, `data-query`, `dependency-lookup`, `system-lookup`, `env-probe`, `repo-index`, `web-research`, `crawl4ai`, `read-image`, `read-diagram`, `image-prep`, `image-ocr`, `paper-notes`, `paper-deep-dive`, `talk-notes` |
+| **deliver** | `docx`/`pptx`/`xlsx`/`pdf`, `adr-lite`, `runbook-writer` |
+| **session** | `/handoff-writer`, `caching`, `reasoning-budget-guidance` |
+| **util** | library how-tos: `http-requests`, `sqlite`, `config`, `data-csv`, `markup`, `archive`, `image` |
+| **meta** | `/create <kind>` scaffolder, `/eval-writer`, `mcp-builder`, `setup-instructions` |
 | **career** | `interview-drill`, `/resume-impact` |
+
+Deliberately absent (the platform already does it better natively): codebase exploration agents, context accounting, commit/PR message writing, regex work, Mermaid generation, terse rewriting, test scaffolding, parallel-tool discipline, chart design. When Claude Code or the model ships the capability, the toolbox artifact retires — redundant descriptions cost routing accuracy, not just tokens.
 
 ## The ralph loop
 
@@ -76,14 +78,13 @@ Instruction hierarchy: root `CLAUDE.md` is global; `skills/`, `agents/`, `comman
 
 ## Authoring
 
-Use the creators — do not hand-roll files:
+Use the creator — do not hand-roll files:
 
 ```
-/create-skill <name>     /create-command <name>     /create-agent <name>
-/create-tool <name>      /create-hook <name>
+/create <skill|command|agent|tool|hook> <name>
 ```
 
-All five call `tools/scaffold.py <kind> <name> [flow] [domain]`, which writes standard frontmatter and runs `tools/validate.py` immediately. Before any commit: all three linters green (`validate.py`, `skill-lint.py`, `knowledge-lint.py`) and `scan.sh` clean. On Windows, run the Python tools with `PYTHONUTF8=1`.
+It calls `tools/scaffold.py <kind> <name> [flow] [domain]`, which writes standard frontmatter and runs `tools/validate.py` immediately. Before any commit: all three linters green (`validate.py`, `skill-lint.py`, `knowledge-lint.py`) and `scan.sh` clean. On Windows, run the Python tools with `PYTHONUTF8=1`.
 
 ## Guard
 

@@ -1,6 +1,6 @@
 ---
 name: code-search
-description: Find code and context efficiently — the lexical → structural → semantic search ladder with token-budget discipline. Use whenever locating code — "where is X defined", "who calls Y", "find the config for Z", tracing dependencies, or any moment a plain grep is about to be fired at a repo. Covers ripgrep/ugrep flags that cut both wall time and output tokens, and when to escalate to ast-grep.
+description: Find code and context efficiently — the lexical → structural → semantic search ladder with token-budget discipline, plus the first-contact orientation pass for an unfamiliar repo. Use whenever locating code — "where is X defined", "who calls Y", "find the config for Z", tracing dependencies, any moment a plain grep is about to be fired at a repo — and on first contact with a codebase: "how does this codebase work", "where do I start", "map this repo". Covers ripgrep/ugrep flags that cut both wall time and output tokens, and when to escalate to ast-grep.
 derivation: original
 flow: lookup
 domain: code
@@ -43,6 +43,18 @@ fd 'Publisher'                   # FILENAME search — stop grepping for filenam
 
 - Add `-C n` context only when actually needed — context lines inflate output 2–6× depending on match density; default to bare matches, then read the file at the hit.
 - **Budget rule:** search output ≤ ~15% of the context window; hitting it means stop searching and proceed with what you have (context-economy rule, applied).
+
+## First contact with an unfamiliar repo
+
+Orientation before search — five probes, one screen of output, time-boxed (this is orientation, not an audit):
+
+1. **Identity:** README first 50 lines + manifest (pom/build.gradle/package.json/pyproject/go.mod) → language, framework, the dependencies that define the architecture (web framework, queue client, ORM).
+2. **Commands:** real build/run/test invocations from manifest scripts, Makefile/justfile, or CI config — CI is the ground truth for "how it actually builds".
+3. **Layout:** top 2 directory levels; role of each top dir in ≤ 6 words; flag generated/vendored dirs to ignore.
+4. **Entry points:** main()/handler/server bootstrap; route registration; scheduled jobs and consumers.
+5. **Hot paths:** the 3–5 files most central to change — churn (`git log --stat` heuristics), most-imported modules, core domain types.
+
+Read files, don't guess from names — a `utils/` dir can hide the core. Output: identity line, commands block, annotated tree, entry points, hot-path list with one-line reasons.
 
 ## Performance honesty
 

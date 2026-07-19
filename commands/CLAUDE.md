@@ -6,12 +6,12 @@ Loaded when working in this directory; root globals apply. Commands are human-in
 **Invocation** (exact syntax, args, defaults) → **Behavior** (numbered steps) → the artifact or output the user receives.
 
 ## Laws
-- Behavior steps read **real state** — the staged diff, the actual file, the live branch — never session memory (`commit-writer` runs `git diff --cached`; it does not summarize what it remembers changing).
+- Behavior steps read **real state** — the staged diff, the actual file, the live branch — never session memory (`/ralph status` derives from the run dirs on disk; it does not summarize what it remembers doing).
 - Side-effectful steps state exactly what is written where; anything irreversible stops for explicit confirmation instead of executing.
-- Creators (`create-*`) route through `tools/scaffold.py` — never duplicate scaffolding logic in a command body.
+- The creator (`/create <kind> <name>`) routes through `tools/scaffold.py` — never duplicate scaffolding logic in a command body.
 - Rules of thumb for placement: invoked by the human at a moment in time → command; consumed by the agent mid-task → skill.
 - Every command carries a `flow:` key (vocabulary in `tools/validate.py`) — it slots the command into a workflow stage and drives the generated catalog below.
-- New commands via `/create-command`.
+- New commands via `/create command <name>`.
 
 ## Catalog (generated — do not hand-edit)
 
@@ -24,27 +24,12 @@ Grouped by flow. Regenerate with `python3 tools/gen-index.py` after any add/rena
 
 **Execute — build it (loop or TDD)**
 - `ralph` ·agent· — User surface of the ralph loop — /ralph plan|next|auto|status|replan|tickets
-- `test-scaffold` ·code· — Generate a unit-test skeleton for a target file or function, matching the repo's existing test framework and c…
-
-**Deliver — commits, PRs, docs, artifacts**
-- `gen-diagram` ·docs· — Generate a Mermaid diagram (sequence, flowchart, ERD, state, class) from code, a description, or a conversation
-- `terse-rewrite` ·docs· — Rewrite a draft into terse, technically dense engineering prose — no filler, no hedging, no throat-clearing
-- `commit-writer` ·git· — Turn the currently staged diff into a conventional-commit message
-- `pr-writer` ·git· — Generate a PR title and body from the branch diff against the base branch
 
 **Session — context, cost, handoffs**
-- `context-audit` ·agent· — Report what is currently occupying context — files, tool outputs, conversation — with rough token weight and t…
 - `handoff-writer` ·agent· — Capture the current session's state into a HANDOFF.md that a fresh session can act on without the transcript
 
-**Util — library how-tos for scripts**
-- `regex-forge` ·code· — Convert a natural-language matching requirement into a regex with test cases, or explain an existing regex pie…
-
 **Meta — build the toolbox itself**
-- `create-agent` ·agent· — Scaffold a new agent in this toolbox with standard frontmatter, correct directory placement, and immediate val…
-- `create-command` ·agent· — Scaffold a new command in this toolbox with standard frontmatter, correct directory placement, and immediate v…
-- `create-hook` ·agent· — Scaffold a new hook in this toolbox with standard frontmatter, correct directory placement, and immediate vali…
-- `create-skill` ·agent· — Scaffold a new skill in this toolbox with standard frontmatter, correct directory placement, and immediate val…
-- `create-tool` ·agent· — Scaffold a new tool in this toolbox with standard frontmatter, correct directory placement, and immediate vali…
+- `create` ·agent· — Scaffold a new skill, command, agent, tool, or hook in this toolbox — standard frontmatter, correct directory …
 - `eval-writer` ·agent· — Extract a golden eval case from a run trace or a completed task and emit it under evals/ in the native `claude…
 
 **Career — interview and resume practice**

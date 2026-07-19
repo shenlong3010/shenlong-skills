@@ -39,7 +39,7 @@ All three linters green before any commit.
 
 ## Authoring (global law)
 
-Everything except the five bootstrap creators is scaffolded via `create-skill` · `create-command` · `create-agent` · `create-tool` · `create-hook` — never hand-rolled. Frontmatter is flat everywhere:
+Everything except the bootstrap creator is scaffolded via `/create <skill|command|agent|tool|hook>` — never hand-rolled. Frontmatter is flat everywhere:
 
 ```yaml
 name: <name>

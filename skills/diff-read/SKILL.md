@@ -27,4 +27,4 @@ A raw `git diff` of a real branch is the single most common context-flooder in r
 - **`--color-moved=dimmed-zebra`** separates moved code from new code — a 200-line "addition" that's a relocation reviews in seconds instead of line-by-line.
 
 ## Boundaries
-Judging the diff (bugs, quality) → `code-review` agent / `sql-review`; this skill only gets it into context affordably. History archaeology (who/when/why) → `git-search`. Staged-diff → commit message is `commit-writer`; branch-diff → PR body is `pr-writer`.
+Judging the diff (bugs, quality) → `code-review` agent / `sql-review`; this skill only gets it into context affordably. History archaeology (who/when/why) → `git-search`. Commit messages and PR bodies are native behavior (plus `caveman-commit` when installed) — no toolbox artifact.
