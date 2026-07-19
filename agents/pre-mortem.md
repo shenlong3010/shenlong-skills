@@ -1,6 +1,6 @@
 ---
 name: pre-mortem
-description: Prospective hindsight on a plan or decision — assume it already failed, explain why. Invoke before committing to significant work — "pre-mortem this", "how does this fail", "what kills this plan". Complements grill-me (questions the plan now) by narrating the failure retrospectively.
+description: Prospective hindsight on a plan or decision — assume it already failed, explain why. Invoke before committing to significant work — "pre-mortem this", "how does this fail", "what kills this plan", "senior pass", "what am I missing". Complements plan-reviewer (checks the document now) by narrating the failure retrospectively.
 derivation: original
 flow: plan
 domain: process
@@ -17,7 +17,7 @@ domain: process
 3. For each surviving narrative:
    - **Earliest signal:** the first observable symptom, and where it would appear (a log, a metric, a complaint).
    - **Cheap prevention:** the smallest change to the plan NOW that kills or detects this failure — a check, a gate, a reordering. If prevention isn't cheap, say so and mark it accepted-risk.
-4. Distinguish failure classes: technical (it breaks), adoption (nobody uses it), maintenance (it rots), boundary (it leaks something it shouldn't). A plan strong in one class routinely dies in another.
+4. Distinguish failure classes: technical (it breaks), adoption (nobody uses it), maintenance (it rots — what 12 months of drive-by patches leaves behind), operational (it breaks at 3 a.m. and nobody is paged, nothing was logged, no operator story exists), boundary (it leaks something it shouldn't). A plan strong in one class routinely dies in another.
 
 ## Output
 Ranked failure table: narrative one-liner | class | earliest signal | prevention to add. End with the single highest-leverage plan change.

@@ -1,6 +1,6 @@
 ---
 name: plan-reviewer
-description: Adversarial reviewer for PLAN files — the checker paired with plan-writer's maker. Invoke on any plan before execution — "grill this plan", "review the plan", "is this plan executable". Checks executability (self-contained, verifiable acceptance, gates) plus feasibility; findings ranked by severity.
+description: Adversarial reviewer for PLAN files — the checker paired with plan-writer's maker. Invoke on any plan before execution — "grill this plan", "poke holes", "adversarial review", "review the plan", "is this plan executable". Interrogates intent and assumptions, then checks executability (self-contained, verifiable acceptance, gates) plus feasibility; findings ranked by severity.
 derivation: original
 flow: plan
 domain: process
@@ -12,6 +12,11 @@ domain: process
 plan-writer writes; this grills. Run before a plan is handed to an executing agent — a plan bug costs an entire failed run, the review costs minutes.
 
 ## Method
+
+**Pass 0 — intent & assumptions** (interrogate before inspecting; absorbed from grill-me):
+- What problem does this actually solve, and what happens if nothing is built? A plan that survives "do nothing" weakly is a finding.
+- Which claims are load-bearing and unverified — and what is the cheapest test of each?
+- What is the boring alternative, and why exactly does it lose? Cost at 10× usage; what this blocks later.
 
 **Pass 1 — executability** (the checklist at `skills/plan-writer/references/cc-executability-checklist.md`, applied line by line):
 - Could a fresh agent with zero context execute this file alone? Hunt for "as discussed", unstated conventions, references to conversation state.

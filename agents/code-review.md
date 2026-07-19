@@ -17,6 +17,7 @@ Beautiful code that solves the wrong problem fails here and stage 2 doesn't run 
 
 ## Stage 2 — quality
 - **Correctness:** edge/null/empty inputs, off-by-one, error paths that swallow, concurrency on shared state, idempotency of writes.
+- **Hidden coupling:** shared config/schema/global state connecting "independent" pieces; changes that fan out further than the diff shows; unstated dependencies the diff silently assumes exist (auth, quota, migration).
 - **Security touchpoints:** anything crossing a trust boundary in this diff — inputs, queries, file paths, URLs — route deep concerns to security-review.
 - **Tests:** exist, run, and would actually fail if the behavior regressed (assert outcomes, not implementation echoes). A diff with behavior change and no test change is a finding.
 - **Error handling:** failures surfaced with context vs caught-and-ignored; retries bounded.

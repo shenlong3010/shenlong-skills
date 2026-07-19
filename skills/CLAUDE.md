@@ -12,12 +12,12 @@ Root spec applies (flat keys), including the `flow:` key — the workflow stage 
 1. **Purpose / when** — one short block.
 2. **Method** — the procedure, or per-case procedures for classify-then-extract skills (see `read-image`).
 3. **Gotchas** — the skill's real value. Every gotcha must be earned and verifiable; gotchas in library skills are smoke-tested against the real library before shipping (the `data-csv` dtype trap and `config` Norway problem are asserted, not asserted-about).
-4. **Boundaries** — route to sibling skills *by name* (`image-ocr`, `read-diagram`, `gen-diagram` pattern). Never fake an unsupported capability: state "not supported" and route (the `pptx` slide-copy rule).
+4. **Boundaries** — route to sibling skills *by name* (`image-ocr`, `read-diagram`, `image-prep` pattern). Never fake an unsupported capability: state "not supported" and route (the `pptx` slide-copy rule).
 
 ## Conventions
 - Names are generic capability names: `docx`, not `docx-py`; no implementation suffixes. Vendored third-party skills keep their upstream identity (`crawl4ai`, `image-ocr`) — renaming muddies provenance.
 - One source of truth: if another skill owns a method, point to it — don't restate it.
-- New skills only via `/create-skill`; migrated or adapted content passes the scan before its first commit and carries `derivation:` + `source:`.
+- New skills only via `/create skill <name>`; migrated or adapted content passes the scan before its first commit and carries `derivation:` + `source:`.
 
 ## Catalog (generated — do not hand-edit)
 
@@ -45,7 +45,6 @@ One line per skill, grouped by `flow:`, for discovery while authoring here. Rege
 - `repo-index` ·agent· — Pre-build local search indexes — ctags, plocate/updatedb, git commit-graph, a gron cache — so later lookups ar…
 - `code-search` ·code· — Find code and context efficiently — the lexical → structural → semantic search ladder with token-budget discip…
 - `dependency-lookup` ·code· — Answer "where does this symbol/class/package come from" and "who pulls this dependency in" across Maven/Java, …
-- `repo-orient` ·code· — Orient in an unfamiliar codebase fast — entry points, build/run/test commands, layout, hot paths
 - `symbol-lookup` ·code· — Find symbol definitions, references, and approximate call hierarchies — the ctags/ast-grep lane between grep a…
 - `data-query` ·data· — Query JSON/YAML/structured data precisely with jq, gron, and yq instead of grepping it
 - `paper-deep-dive` ·docs· — Deep, multi-pass read of a research paper — assumptions register, derivation walk-through, critical questions
@@ -65,7 +64,6 @@ One line per skill, grouped by `flow:`, for discovery while authoring here. Rege
 
 **Deliver — commits, PRs, docs, artifacts**
 - `adr-lite` ·docs· — Write a generic Nygard-format Architecture Decision Record
-- `chart` ·docs· — Render charts headlessly with matplotlib for reports, decks, and docs — Agg backend, figure lifecycle, savefig…
 - `docx` ·docs· — Create and edit Word documents (.docx) programmatically with python-docx — headings, styled paragraphs, tables…
 - `pdf` ·docs· — Read, merge, split, fill, and create PDFs with pypdf and reportlab — text extraction, page ops, form filling, …
 - `pptx` ·docs· — Build and edit PowerPoint decks (.pptx) with python-pptx — slides, layouts, placeholders, text formatting, ima…
@@ -74,7 +72,6 @@ One line per skill, grouped by `flow:`, for discovery while authoring here. Rege
 
 **Session — context, cost, handoffs**
 - `caching` ·agent· — Caching strategy across the AI stack — prompt/prefix caching, MCP and tool-response caching, session file-read…
-- `parallel-tools` ·agent· — Run independent tool calls in parallel, long commands in background, and fan work out to subagents with token …
 - `reasoning-budget-guidance` ·agent· — Pick the model tier and reasoning effort per task class instead of defaulting to maximum everywhere
 
 **Util — library how-tos for scripts**

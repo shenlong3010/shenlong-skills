@@ -29,7 +29,7 @@ Name the type before extracting: **chart/graph**, **screenshot/UI**, **diagram p
 **Diagram photo / whiteboard**
 - Extract into the read-diagram schema: nodes (id, label), edges (source → target, label, direction), hierarchy/groupings, anomalies.
 - Whiteboards are messy: mark illegible labels as `[illegible]` rather than guessing, and flag arrows whose direction is ambiguous.
-- Offer the round trip: the extracted structure can be re-emitted as Mermaid via gen-diagram — a photographed whiteboard becomes a versionable diagram.
+- Offer the round trip: re-emit the extracted structure as Mermaid directly — a photographed whiteboard becomes a versionable diagram.
 
 **Document photo / scan**
 - Verbatim text is image-ocr's job — route there. This skill reports layout and identity: what document, which sections visible, signatures/stamps present, quality issues that will hurt OCR (skew, shadow, cutoff).
@@ -48,4 +48,4 @@ Every extraction ends with an **Uncertainties** line: what was illegible, croppe
 
 - Bulk verbatim text from an image → **image-ocr** (deterministic, JSON output).
 - Diagram *files* (.mmd, .puml, .svg, Lucid exports) → **read-diagram** (they're text; don't screenshot them).
-- Regenerating or editing a diagram from the extraction → **gen-diagram**.
+- Regenerating or editing a diagram from the extraction → emit Mermaid natively; `read-diagram` owns re-parsing the result.
