@@ -2,6 +2,8 @@
 name: read-diagram
 description: Parse text-based diagram formats — Mermaid, PlantUML, Lucidchart text/CSV exports, and SVG structure — into a structural summary of nodes, edges, labels, and hierarchy that can be reasoned over and edited, then re-emitted as valid syntax. Use whenever a diagram file or diagram source block appears in a task — reading architecture diagrams, reviewing a flowchart, extracting entities from an ERD, comparing two sequence diagrams, or editing a diagram programmatically. Trigger on file extensions .mmd, .mermaid, .puml, .plantuml, .svg, on fenced mermaid/plantuml code blocks, and on Lucidchart CSV exports. Do NOT use for raster images (PNG/JPG) — those are read natively by vision.
 derivation: original
+flow: lookup
+domain: media
 ---
 
 # Read Diagram

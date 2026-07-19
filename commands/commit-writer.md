@@ -2,6 +2,8 @@
 name: commit-writer
 description: Turn the currently staged diff into a conventional-commit message. Use whenever committing — after staging changes, before git commit, or when asked to "write the commit", "commit this", or "commit message".
 derivation: original
+flow: deliver
+domain: git
 ---
 
 # /commit-writer

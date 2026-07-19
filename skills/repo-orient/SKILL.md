@@ -2,6 +2,8 @@
 name: repo-orient
 description: Orient in an unfamiliar codebase fast — entry points, build/run/test commands, layout, hot paths. Use on first contact with a repo, or when asked "how does this codebase work", "where do I start", "map this repo".
 derivation: original
+flow: lookup
+domain: code
 ---
 
 # Repo Orient

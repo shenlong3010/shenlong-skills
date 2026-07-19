@@ -2,6 +2,8 @@
 name: sql-review
 description: Review a SQL query for plan risks, index needs, and correctness traps. Use for "review this query", "why is this slow", "optimize this SQL", or any nontrivial query in a diff.
 derivation: original
+flow: review
+domain: data
 ---
 
 # SQL Review

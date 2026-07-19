@@ -1,0 +1,13 @@
+# LOOP-CONTEXT — {{run_id}}
+
+PAUSE: false
+<!-- Set PAUSE: true to stop the loop before its next spawn. Re-read every
+     iteration, so edits here steer a running auto loop mid-flight. -->
+
+## Guidance
+<!-- Human-written. Persists for the whole run; prepended to every subagent
+     prompt. Direction, style constraints, "don't touch X", priorities. -->
+
+## Learned
+<!-- Orchestrator-written, hard cap 10 bullets — oldest dropped first.
+     Facts discovered during the run that later iterations need. -->

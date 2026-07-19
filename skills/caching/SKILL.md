@@ -2,6 +2,8 @@
 name: caching
 description: Caching strategy across the AI stack — prompt/prefix caching, MCP and tool-response caching, session file-read reuse, HTTP conditional requests. Use when reducing token spend or latency, "cache this", "why is my prompt cache missing", designing MCP servers or loops that repeat calls, or any repeated-cost complaint. Every cache decision here has a key, an invalidation rule, and a measurement.
 derivation: original
+flow: session
+domain: agent
 ---
 
 # Caching

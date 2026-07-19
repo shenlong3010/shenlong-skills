@@ -2,6 +2,8 @@
 name: regex-forge
 description: Convert a natural-language matching requirement into a regex with test cases, or explain an existing regex piece by piece. Use for "regex for X", "what does this regex do", or any pattern-matching request.
 derivation: original
+flow: util
+domain: code
 ---
 
 # /regex-forge

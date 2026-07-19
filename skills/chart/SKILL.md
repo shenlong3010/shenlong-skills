@@ -2,6 +2,8 @@
 name: chart
 description: Render charts headlessly with matplotlib for reports, decks, and docs — Agg backend, figure lifecycle, savefig settings, date axes. Use for "plot this", "chart for the report", or generating any PNG/SVG figure that feeds docx, pptx, or a README.
 derivation: original
+flow: deliver
+domain: docs
 ---
 
 # chart

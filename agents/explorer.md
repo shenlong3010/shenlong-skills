@@ -2,6 +2,8 @@
 name: explorer
 description: Open-ended codebase exploration subagent — answers "how does X work", "where does Y happen", "trace this flow" by running the lookup-skill ladder with a token budget, read-only. Invoke for Task/Explore-style questions too broad for one grep and too specific for repo-orient alone.
 derivation: original
+flow: lookup
+domain: code
 ---
 
 # Explorer (subagent)

@@ -3,6 +3,8 @@ name: junior-to-senior
 description: Reviews a plan or diff for what a senior engineer catches that a junior misses — hidden coupling, ops burden, unstated scope, failure modes. Invoke on drafts before wider review — "senior pass", "what am I missing".
 derivation: adapted
 source: https://github.com/JuliusBrussee/skills
+flow: plan
+domain: process
 ---
 
 # Junior → Senior (subagent)

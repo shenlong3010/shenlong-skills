@@ -1,0 +1,20 @@
+# Ralph loop budgets — instantiated as .agents/ralph.yml (repo-wide, gitignored).
+# ralph-next reads this every iteration; edit values to retune a live loop.
+
+ralph_loop:
+  # FAIL verdicts charged against this per task before escalation.
+  max_retries_per_task: 1
+  # Diagnostician is opt-in: retries exhausted -> [H] human-halt unless true.
+  enable_diagnostician: false
+  # Auto mode stops after this many tasks end in a halt marker.
+  max_failed_tasks: 3
+  # Hard ceiling on subagent spawns per run (auto-mode runaway guard).
+  max_subagent_calls: 50
+  # Output budget for a diagnostician deep-dive.
+  diagnostician_token_cap: 3000
+  # Drift response: warn = note in PROGRESS and continue; strict = mark [D] and halt.
+  refetch_strategy: warn
+  # Step-2b remote lookups (open PRs / recent commits on task paths). false = local git only.
+  repo_context: true
+  # Outbox cap per run; overflow noted in PROGRESS, oldest proposals kept.
+  max_ticket_proposals: 10

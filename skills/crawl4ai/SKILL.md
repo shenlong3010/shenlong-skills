@@ -6,6 +6,8 @@ source: https://github.com/unclecode/crawl4ai
 version: 0.7.4
 crawl4ai_version: ">=0.7.4"
 last_updated: 2025-01-19
+flow: lookup
+domain: web
 ---
 
 # Crawl4AI

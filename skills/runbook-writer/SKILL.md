@@ -2,6 +2,8 @@
 name: runbook-writer
 description: Turn a procedure into an operational runbook with verification after every step. Use for "write a runbook", "document this procedure", "on-call doc for X".
 derivation: original
+flow: deliver
+domain: docs
 ---
 
 # Runbook Writer

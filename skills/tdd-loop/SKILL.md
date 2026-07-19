@@ -3,6 +3,8 @@ name: tdd-loop
 description: Enforce RED-GREEN-REFACTOR test-driven development — failing test first, minimal code to pass, refactor on green. Use whenever implementing features or fixes where correctness matters — "TDD this", "test-first", or any task where tests were requested. The discipline: no production code before a failing test exists.
 derivation: adapted
 source: https://github.com/obra/superpowers
+flow: execute
+domain: process
 ---
 
 # TDD Loop

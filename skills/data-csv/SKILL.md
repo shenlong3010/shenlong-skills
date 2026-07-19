@@ -2,6 +2,8 @@
 name: data-csv
 description: Read, clean, and write CSV/tabular data with pandas (and stdlib csv for streaming) — dtype control, encodings, big files, datetime parsing. Use for "parse this CSV", "clean this data", "combine these files", or any tabular file wrangling where the deliverable is data, not a spreadsheet.
 derivation: original
+flow: util
+domain: data
 ---
 
 # data-csv

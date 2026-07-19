@@ -3,6 +3,8 @@ name: systematic-debug
 description: Structured root-cause debugging — reproduce, observe, hypothesize, isolate, fix the cause, add the regression test. Use for any nontrivial bug — "this is broken", "worked yesterday", "fails only in prod", intermittent failures — before flailing at symptoms. For a pasted stack trace specifically, stacktrace-analyzer feeds step 2.
 derivation: adapted
 source: https://github.com/obra/superpowers
+flow: debug
+domain: process
 ---
 
 # Systematic Debug

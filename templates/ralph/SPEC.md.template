@@ -1,0 +1,17 @@
+# SPEC — {{story_title}}
+
+<!-- Technical approach for this run. ralph-diagnostician may rewrite sections
+     here; every rewrite is logged to PROGRESS.md and marks the task [R]. -->
+
+## Approach
+{{approach}}
+
+## Interfaces / contracts touched
+- {{interface_1}}
+
+## Constraints
+- {{constraint_1}}
+
+## Verification strategy
+<!-- How task-level AC roll up to the story AC; commands the inspector will run. -->
+{{verification_strategy}}

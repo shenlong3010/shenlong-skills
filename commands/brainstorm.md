@@ -3,6 +3,8 @@ name: brainstorm
 description: Socratic refinement of a rough idea into a design brief — before any plan exists. Use when a project or feature is still a vague notion. Use at project inception — "help me think through X", "brainstorm this", "I have an idea", or any vague goal that would otherwise go straight to code. Upstream of plan-writer; output feeds it.
 derivation: adapted
 source: https://github.com/obra/superpowers
+flow: plan
+domain: process
 ---
 
 # /brainstorm

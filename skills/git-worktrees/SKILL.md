@@ -3,6 +3,8 @@ name: git-worktrees
 description: Isolate each work stream in its own git worktree — parallel sessions without branch-switching stomps, clean test baseline before changes. Use when starting a feature alongside other work, running parallel agent sessions, or reviewing a branch without disturbing current state — "work on this separately", "parallel branch".
 derivation: adapted
 source: https://github.com/obra/superpowers
+flow: execute
+domain: git
 ---
 
 # Git Worktrees

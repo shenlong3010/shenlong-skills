@@ -3,6 +3,8 @@ name: grill-me
 description: Socratic adversarial reviewer for a plan or design. Invoke before committing to a plan — "grill this plan", "poke holes", "adversarial review". Asks the questions a hostile senior reviewer would; does not fix, only exposes.
 derivation: adapted
 source: https://github.com/JuliusBrussee/skills
+flow: plan
+domain: process
 ---
 
 # Grill Me (subagent)

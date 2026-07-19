@@ -1,0 +1,18 @@
+# TICKETS — {{run_id}} (outbox)
+
+<!-- Outward half of the open loop. ralph-next APPENDS proposals here (disk
+     write only — never creates tickets itself); /ralph tickets flushes them
+     via the adapter's write capability AFTER human confirmation, row by row.
+     Cap: max_ticket_proposals in .agents/ralph.yml — overflow noted in
+     PROGRESS, oldest proposals kept. Statuses: proposed | flushed | dismissed. -->
+
+| id | Trigger | Title | Source task | Status | Iter | Ticket ref |
+|----|---------|-------|-------------|--------|------|------------|
+
+## Bodies
+
+<!-- One section per proposal id — full body the adapter will post verbatim.
+### {{id}} — {{title}}
+- trigger: [R] spec-rewrite | discovery | [D] drift
+- body: one paragraph, evidence included; for [R]: old → new AC diff.
+-->

@@ -2,6 +2,8 @@
 name: read-image
 description: Extract structured content from raster images — screenshots, charts, diagram photos, whiteboards, UI mockups, document photos. Use whenever an image's CONTENT must be understood and reported, not just seen — "what does this screenshot show", "read this chart", "extract the architecture from this whiteboard photo", "what's in this image". Classifies the image type and applies a per-type extraction procedure with explicit uncertainty. Routes verbatim bulk text to image-ocr and text-format diagram files to read-diagram.
 derivation: original
+flow: lookup
+domain: media
 ---
 
 # Read Image

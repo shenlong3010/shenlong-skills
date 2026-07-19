@@ -2,6 +2,8 @@
 name: interview-drill
 description: Run interactive interview practice — system design or behavioral — with follow-ups and a scored debrief. Use for "mock interview", "drill me on system design", "practice behavioral questions".
 derivation: original
+flow: career
+domain: career
 ---
 
 # Interview Drill

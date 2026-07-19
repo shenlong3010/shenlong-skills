@@ -32,6 +32,7 @@ python3 tools/skill-lint.py      # description trigger-quality
 python3 tools/knowledge-lint.py  # broken links, staleness
 bash tools/scan.sh               # secret + wordlist scan of STAGED changes
 python3 tools/scaffold.py <skill|command|agent|tool|hook> <name>
+claude plugin eval shenlong-skills --tag routing --runs 1 --max-cost-usd 2  # scored eval suite (evals/**; early-access gated)
 ```
 
 All three linters green before any commit.
@@ -44,7 +45,10 @@ Everything except the five bootstrap creators is scaffolded via `create-skill` �
 name: <name>
 description: <what + when to trigger>
 derivation: original | adapted | copied   # if not original: source: <url> required
+flow: plan | execute | review | debug | lookup | deliver | session | util | meta | career
 ```
+
+`flow:` = the workflow stage the artifact serves; validate.py enforces the vocabulary, gen-index.py groups every catalog by it.
 
 No `metadata:` block, no PROVENANCE.md — credits live in README. Nontrivial work follows the toolbox's own chain: `/brainstorm` → `plan-writer` → `plan-reviewer` + `pre-mortem` → `/decompose` → `git-worktrees` + `tdd-loop` → `code-review` / `security-review` → `systematic-debug`.
 
