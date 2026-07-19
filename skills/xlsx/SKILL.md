@@ -2,6 +2,8 @@
 name: xlsx
 description: Create, read, and edit Excel workbooks (.xlsx) with openpyxl — formulas, number formats, styling, charts, freeze panes, large-file modes. Use whenever a spreadsheet must be generated, parsed, or modified by script, or when asked for an ".xlsx", "Excel file", "spreadsheet", or tabular deliverable. Pairs with pandas for bulk data. Committable open-source baseline.
 derivation: original
+flow: deliver
+domain: docs
 ---
 
 # xlsx — Excel via openpyxl

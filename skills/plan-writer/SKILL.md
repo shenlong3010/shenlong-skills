@@ -5,6 +5,8 @@ metadata:
   owner: Luke
   enforcement: advisory
   derivation: original
+flow: plan
+domain: process
 ---
 
 # Plan Writer

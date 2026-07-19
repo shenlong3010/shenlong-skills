@@ -1,0 +1,10 @@
+# TASKS — {{run_id}}
+
+<!-- State-machine truth. Markers: [ ] pending · [x] coded · [v] verified ·
+     [!] fail/retry · [R] diagnostician-rewrote · [H] human-halt · [D] drift.
+     ralph-next processes rows strictly in order: one task reaches [v] (or a
+     halt marker) before the next row is touched. Only ralph-next edits markers. -->
+
+| # | Marker | Task | File | Retries used |
+|---|--------|------|------|--------------|
+| 1 | `[ ]` | {{task_1_title}} | task-1-{{task_1_slug}}.md | 0 |

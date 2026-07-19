@@ -2,6 +2,8 @@
 name: reasoning-budget-guidance
 description: Pick the model tier and reasoning effort per task class instead of defaulting to maximum everywhere. Consult when choosing a model for a task, batching work, or when spend matters — "which model for this", "do I need the big model".
 derivation: original
+flow: session
+domain: agent
 ---
 
 # Reasoning Budget Guidance

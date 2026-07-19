@@ -2,6 +2,8 @@
 name: dependency-lookup
 description: Answer "where does this symbol/class/package come from" and "who pulls this dependency in" across Maven/Java, pip, and npm. Use for "which jar provides class X", "why is package Y installed", "what version is actually loaded", NoClassDefFound/ImportError archaeology, or version-conflict hunts — use INSTEAD of reading manifests and guessing; runtime truth first.
 derivation: original
+flow: lookup
+domain: code
 ---
 
 # Dependency Lookup

@@ -2,6 +2,8 @@
 name: gen-diagram
 description: Generate a Mermaid diagram (sequence, flowchart, ERD, state, class) from code, a description, or a conversation. Round-trip partner of the read-diagram skill. Use for "diagram this", "draw the flow", "sequence diagram for X", "ERD for these tables".
 derivation: original
+flow: deliver
+domain: docs
 ---
 
 # /gen-diagram

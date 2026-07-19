@@ -2,6 +2,8 @@
 name: setup-instructions
 description: Scaffold the layered AI-instruction architecture in any repository — global CLAUDE.md, per-directory CLAUDE.md guides, a behavioral rules master, AGENTS.md, and .github/copilot-instructions.md. Use when starting a new repo, when asked to "set up CLAUDE.md", "add AI instructions", "create agent instructions for this project", or when migrating an existing monolithic CLAUDE.md to the layered form. Do NOT use inside the toolbox repo itself — it is the reference implementation this skill copies.
 derivation: original
+flow: meta
+domain: agent
 ---
 
 # Setup Instructions

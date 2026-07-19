@@ -2,6 +2,8 @@
 name: stacktrace-analyzer
 description: Analyze a stack trace or exception dump into ranked root-cause hypotheses with concrete next checks. Use whenever a trace, exception, panic, or crash log is pasted or found in logs — "what does this error mean", "why is this throwing", "analyze this trace".
 derivation: original
+flow: debug
+domain: code
 ---
 
 # Stacktrace Analyzer

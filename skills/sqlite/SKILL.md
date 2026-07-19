@@ -2,6 +2,8 @@
 name: sqlite
 description: Use SQLite from Python (stdlib sqlite3) correctly — parameterized queries, transactions, Row access, WAL, pragmas. Use for "store this locally", "quick database", "query this .db file", or any single-file persistence in a script or tool.
 derivation: original
+flow: util
+domain: data
 ---
 
 # sqlite

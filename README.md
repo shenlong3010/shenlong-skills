@@ -53,6 +53,7 @@ Third-party skills are pulled with `tools/vendor_anthropic.sh` (pins a SHA, remi
 - `plan-writer`, `read-diagram`, creators, and tooling: original.
 - Vendored skills: see each file's `source:` frontmatter line.
 - `image-ocr`: adapted from benchflow-ai/skillsbench (Apache-2.0).
+- Ralph loop set (`/ralph` command, `ralph-plan`/`ralph-next` skills, `ralph-coder`/`ralph-task-inspector`/`ralph-diagnostician` agents, `templates/ralph/`): loop concept adapted from [snarktank/ralph](https://github.com/snarktank/ralph); implementation original.
 - Anthropic doc skills: local-fetch only, proprietary — not part of this repo's published content.
 
 ## License

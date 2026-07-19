@@ -1,0 +1,23 @@
+# PROGRESS — {{run_id}}
+
+plan-sha: {{plan_sha}}
+story: {{story_id}}
+started: {{date}}
+
+<!-- Last-completed-iteration truth. ralph-next appends one entry per iteration
+     AFTER state is written to disk — crash recovery resumes from the last entry.
+     Drift refetch (tracker re-check) is throttled to every 5th iteration. -->
+
+## Iterations
+
+<!-- Entry shape:
+### iter {{i}} — {{timestamp}}
+- task: {{task_ref}}
+- role: coder | task-inspector | diagnostician
+- verdict: PASS | FAIL | ERROR | DRIFT | n/a
+- marker: {{old}} → {{new}}
+- notes: one line (amendments applied, drift notes, [R] spec rewrites, commits made)
+-->
+
+## Halts
+<!-- [H]/[D]/ERROR events with reason — what the human must resolve to resume. -->

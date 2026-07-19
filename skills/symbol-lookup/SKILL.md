@@ -2,6 +2,8 @@
 name: symbol-lookup
 description: Find symbol definitions, references, and approximate call hierarchies — the ctags/ast-grep lane between grep and a full LSP. Use for "go to definition", "who calls this function", "where is this class defined", "call hierarchy of X", or whenever code-search finds text but the question is about the SYMBOL. Use INSTEAD of grepping a common name and drowning in false positives.
 derivation: original
+flow: lookup
+domain: code
 ---
 
 # Symbol Lookup

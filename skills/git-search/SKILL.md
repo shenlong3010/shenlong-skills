@@ -2,6 +2,8 @@
 name: git-search
 description: Search git history efficiently — pickaxe, regex diffs, line-range history, rename-following, true-origin blame. Use for "when did this change", "who wrote/removed this", "where did this function come from", "find the commit that introduced X", or any history/blame archaeology — use INSTEAD of paging `git log -p` or raw `git blame`. Bisect itself lives in systematic-debug; this skill finds the needle without stepping.
 derivation: original
+flow: lookup
+domain: git
 ---
 
 # Git Search
