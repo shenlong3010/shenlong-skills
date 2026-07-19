@@ -48,6 +48,7 @@ One line per skill, grouped by `flow:`, for discovery while authoring here. Rege
 - `repo-orient` ·code· — Orient in an unfamiliar codebase fast — entry points, build/run/test commands, layout, hot paths
 - `symbol-lookup` ·code· — Find symbol definitions, references, and approximate call hierarchies — the ctags/ast-grep lane between grep a…
 - `data-query` ·data· — Query JSON/YAML/structured data precisely with jq, gron, and yq instead of grepping it
+- `paper-deep-dive` ·docs· — Deep, multi-pass read of a research paper — assumptions register, derivation walk-through, critical questions
 - `paper-notes` ·docs· — Summarize a paper or technical blog post into structured notes plus a relevance-to-my-stack verdict
 - `diff-read` ·git· — Read large diffs token-efficiently — stat first, then targeted per-file hunks, word-diff for prose, function-c…
 - `git-search` ·git· — Search git history efficiently — pickaxe, regex diffs, line-range history, rename-following, true-origin blame
