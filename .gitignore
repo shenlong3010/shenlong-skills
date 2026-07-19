@@ -1,5 +1,8 @@
-# Runtime state from ralph loop runs (per-engineer scratch, never tracked)
+# Runtime state from ralph loop runs (per-engineer scratch, never tracked).
+# Ralph inputs are fetch-local -> execute -> delete: backlog files are working
+# state, ignored even at repo root so an accidental `git add` can't track them.
 .agents/
+/BACKLOG.md
 
 # Session worktrees
 .claude/worktrees/
