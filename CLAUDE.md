@@ -32,6 +32,7 @@ python3 tools/skill-lint.py      # description trigger-quality
 python3 tools/knowledge-lint.py  # broken links, staleness
 bash tools/scan.sh               # secret + wordlist scan of STAGED changes
 python3 tools/scaffold.py <skill|command|agent|tool|hook> <name>
+claude plugin eval shenlong-skills --tag routing --runs 1 --max-cost-usd 2  # scored eval suite (evals/**; early-access gated)
 ```
 
 All three linters green before any commit.
