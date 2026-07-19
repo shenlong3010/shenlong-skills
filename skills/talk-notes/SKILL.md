@@ -28,6 +28,7 @@ The video counterpart of `paper-notes`: extract what a talk actually claims and 
 - **Captions carry no speaker attribution** — panel talks and interviews blend voices into one stream. Flag multi-speaker content and attribute claims only when the transcript context makes the speaker unambiguous.
 - **Timestamps drift** on auto-generated transcripts; treat them as ±30s pointers, not citations.
 - **Conference talks front-load 5–10 minutes of credentials and agenda** — the thesis usually lands after it; don't let the intro segment dominate a segment-budgeted read.
+- **No English track ≠ no transcript.** Some videos carry only manual caption tracks in other languages (the fetch error lists what exists); the MCP wrapper cannot request YouTube's auto-translate. Fetch a manual track (they translate the same audio faithfully) and translate while extracting — never give up on the video, and never silently present translated notes without saying which track they came from.
 
 ## Boundaries
 Written papers/blog posts → `paper-notes` (same output shape, different source). Web pages → `web-research`. Reading slides from a screenshot → `read-image`. This skill never *interacts* with the video platform (playlists, comments) — that would be browser-automation territory.
