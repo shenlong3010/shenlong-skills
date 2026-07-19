@@ -10,5 +10,8 @@ loop-engineering/
 # Local secret/term scan list — contents are private
 .wordlist
 
+# Eval runner output
+evals/results/
+
 # Proprietary vendored docs (local fetch only)
 vendor/anthropic/
