@@ -45,6 +45,21 @@ journalctl -u app.service --since '1 hour ago' -p warning
 
 Dumps beyond a screen → `log-triage` for clustering.
 
+## Windows lane
+
+Everything above is Linux. On Windows (native PowerShell — verified live 2026-07):
+
+```powershell
+Get-NetTCPConnection -State Listen | ? LocalPort -eq 8080   # port → OwningProcess (pid)
+Get-Process -Id <pid>                                        # pid → name, memory
+netstat -ano | findstr :8080                                 # the no-cmdlet fallback
+Get-CimInstance Win32_Process -Filter "ProcessId=<pid>"      # cmdline + ParentProcessId (pstree equivalent)
+handle.exe <path>                                            # who holds a file open (Sysinternals; no lsof otherwise)
+Get-PSDrive C                                                # disk space; du equivalent: Get-ChildItem -Recurse | Measure-Object Length -Sum
+```
+
+Git Bash on Windows has none of ss/lsof//proc — don't probe for them there (env-probe rule); go straight to PowerShell.
+
 ## Gotchas
 
 - `ss`/`lsof` show process names only with privileges — empty name column means rerun with sudo, not "no owner".
