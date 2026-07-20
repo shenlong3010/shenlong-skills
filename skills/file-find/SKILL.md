@@ -30,6 +30,8 @@ sudo updatedb                        # refresh the index (usually a daily cron)
 
 The zoekt-of-filenames: milliseconds regardless of tree size. Trade-off is staleness — files created since the last `updatedb` are invisible; a miss means "not indexed", not "not present". Verify absence with `fd` before concluding.
 
+**Windows: plocate does not exist.** The indexed lane there is Everything (voidtools, `es` CLI) if installed; otherwise stay on `fd` (`-u` when the target may be ignored/hidden) — it is fast enough that the index rarely pays for itself on a single repo.
+
 ## find — the portable fallback
 
 ```bash
@@ -46,4 +48,4 @@ du -xah . | sort -rh | head -20      # biggest things under here, one filesystem
 
 ## Boundaries
 
-- Content inside files → `code-search`; deleted-but-open files eating disk → `system-lookup` (`lsof +L1`); archives' contents → `archive-py` skill's listing patterns (`unzip -l`, `tar -tf`).
+- Content inside files → `code-search`; deleted-but-open files eating disk → `system-lookup` (`lsof +L1`); archives' contents → `archive` skill's listing patterns (`unzip -l`, `tar -tf`).
