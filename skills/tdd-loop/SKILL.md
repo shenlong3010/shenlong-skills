@@ -25,5 +25,5 @@ Commit on green, per cycle. Small commits = cheap bisects later.
 
 ## Boundaries
 - Spikes/throwaway exploration are exempt — but label the code `# SPIKE` and delete it before real implementation starts; spike code that survives becomes untested production code.
-- Behavior at external boundaries (HTTP, DB) → test through the repo's existing fake/mock idiom (see test-scaffold); don't invent a new mocking style mid-TDD.
+- Behavior at external boundaries (HTTP, DB) → test through the repo's existing fake/mock idiom; find it first (grep the test dir for the project's fixture/mock pattern) — don't invent a new mocking style mid-TDD.
 - One assertion-concept per test; a test that checks five behaviors fails uninformatively.

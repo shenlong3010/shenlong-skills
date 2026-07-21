@@ -13,7 +13,8 @@ Installs the one-master-many-adapters instruction architecture: behavior rules l
 ## Step 1 — Inventory (read before write)
 
 - Existing instruction files? `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, `.cursorrules`, etc. **Migration rule:** never overwrite an existing monolith — preserve it verbatim at `archive/CLAUDE-v1.md` and reference it from the new root file.
-- Real commands: extract build/test/lint invocations from the manifest, Makefile/justfile, or CI config — CI is ground truth. For a full pass, run `repo-orient` first.
+- **Refuse the reference repo:** if this repo IS the toolbox that ships this skill (check: a `skills/setup-instructions/` dir exists, or the root README names it the reference implementation), STOP — it is the source this skill copies from, not a target. Say so and exit; do not scaffold over the master.
+- Real commands: extract build/test/lint invocations from the manifest, Makefile/justfile, or CI config — CI is ground truth. For a full pass, run `code-search`'s first-contact orientation first.
 - Candidate directories for local guides: only dirs with genuinely local conventions (`src/`, `tests/`, `infra/`, `migrations/`). An empty guide is noise — skip dirs that would only restate globals.
 
 ## Step 2 — Elicit the repo-specifics (brief, batched)
