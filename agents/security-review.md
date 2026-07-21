@@ -22,3 +22,7 @@ domain: code
 
 ## Output
 Findings ranked **critical / high / medium / low**, each with `file:line`, the exploit scenario in one sentence, and the concrete fix. End with the literal line `VERDICT: ship | fix-criticals | blocked`, then what this pass can't see (runtime config, infra, business-logic abuse) — a clean static pass is necessary, not sufficient.
+
+## Boundaries
+- This subagent is the injection/authz/secrets/crypto checklist; the built-in `/security-review` command is the quick interactive security pass over pending changes — use it for a fast look, this agent for the ranked-findings contract before ship.
+- General correctness, tests, and readability belong to `code-review`; this pass stays on the trust-boundary surface and routes non-security findings there.
