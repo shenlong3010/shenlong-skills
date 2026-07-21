@@ -12,6 +12,12 @@ Exit 0 = clean, 1 = violations (printed as path: reason).
 import re
 import sys
 from pathlib import Path
+# Emit UTF-8 regardless of the platform default codec (e.g. Windows cp1252),
+# so this runs clean in plain PowerShell without PYTHONUTF8=1. Error strings
+# here interpolate artifact paths and frontmatter values, which can be non-ASCII.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent
 FM = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.S)
