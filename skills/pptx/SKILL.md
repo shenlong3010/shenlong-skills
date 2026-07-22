@@ -38,7 +38,7 @@ prs.save("deck.pptx")
 
 ## Core operations
 - **Inspect a template first:** layout indices and placeholder `idx` values differ per template. Loop `for i, l in enumerate(prs.slide_layouts): print(i, l.name)` and `for ph in slide.placeholders: print(ph.placeholder_format.idx, ph.name)` before assuming anything.
-- **16:9:** default template is already widescreen in recent versions; otherwise `prs.slide_width = Inches(13.333); prs.slide_height = Inches(7.5)`.
+- **16:9:** the default template is 4:3 (10in x 7.5in — verified python-pptx 1.x, 2026-07); widescreen needs `prs.slide_width = Inches(13.333); prs.slide_height = Inches(7.5)`, or start from a 16:9 template.
 - **Tables:** `shapes.add_table(rows, cols, left, top, width, height).table`; cell text via `table.cell(r, c).text`.
 - **Speaker notes:** `slide.notes_slide.notes_text_frame.text = "..."`.
 

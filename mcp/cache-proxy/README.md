@@ -6,18 +6,31 @@ telemetry (`record_llm_usage`, `prompt_cache_health`) ride along.
 
 ## Wire it
 
-1. Move your existing server entries out of the client's `.mcp.json` into
-   `upstreams.json` here (same MCPConfig shape — see `upstreams.sample.json`).
-2. Point the client at this proxy instead:
+1. Copy `upstreams.sample.json` to `upstreams.json` (gitignored) and list only
+   the servers safe to cache — idempotent, write-free, no live state. Move those
+   entries **out** of your client config so they aren't also loaded directly.
+2. Point the client at this proxy instead. To activate from **any** project
+   (global user scope), reference this file by absolute path in `~/.claude.json`
+   and provision `fastmcp` in an isolated env via `uvx` — no global install:
 
 ```json
 { "mcpServers": { "cache-proxy": {
-    "command": "python3",
-    "args": ["/path/to/mcp/cache-proxy/server.py"] } } }
+    "type": "stdio",
+    "command": "uvx",
+    "args": ["--with", "fastmcp==3.4.4", "python",
+             "C:/Users/you/path/to/mcp/cache-proxy/server.py"] } } }
 ```
 
-Upstream tools appear under their own names; identical read calls within the
-TTL are served from cache without touching the upstream.
+`server.py` reads `upstreams.json` from beside itself, so the absolute path makes
+it work regardless of your current directory. Upstream tools appear under their
+own names; identical read calls within the TTL are served from cache without
+touching the upstream.
+
+**Route only safe servers.** Coarse invalidation flushes the *whole* cache on any
+write-classified tool, so a server that writes often (memory, semantic-edit)
+nulls its own hit rate — and a live-state server (browser automation) would
+return stale snapshots. Keep those **direct** in your client config; route only
+idempotent reads (hosted-doc lookups, transcript fetches, code search) here.
 
 ## Behavior
 

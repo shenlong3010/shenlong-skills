@@ -8,7 +8,7 @@
 .claude/worktrees/
 
 # Internal design notes/screenshots — must never be committed (public repo)
-loop-engineering/
+workspace/
 
 # Local secret/term scan list — contents are private
 .wordlist
@@ -18,3 +18,14 @@ evals/results/
 
 # Proprietary vendored docs (local fetch only)
 vendor/anthropic/
+
+# Local Claude Code config — personal, per-machine; ship .mcp.json.sample instead
+.mcp.json
+.claude/settings.local.json
+
+# cache-proxy live upstreams — machine-local; ship upstreams.sample.json instead
+mcp/cache-proxy/upstreams.json
+
+# Python bytecode
+__pycache__/
+*.pyc

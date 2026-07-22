@@ -39,6 +39,6 @@ Excel-bound output: `encoding="utf-8-sig"` so Excel detects UTF-8.
 Appending rows in a long loop: stdlib `csv.writer` on an open file beats rebuilding DataFrames. `newline=""` in `open()` on Windows or you get blank lines.
 
 ## Gotchas
-- Merge key dtypes must match (`"7" != 7`) — silent empty joins; normalize before `df.merge`.
+- Merge key dtypes must match (`"7" != 7`): pandas 3+ raises `ValueError: You are trying to merge on str and int64 columns` (verified 3.0.3); pandas <3 silently returned an empty join. Either way, normalize dtypes before `df.merge`.
 - `df[df.col == x]` on a column pandas parsed as float never equals your int — back to dtype discipline.
 - Dates without `parse_dates` are strings; sorting them sorts lexically.
