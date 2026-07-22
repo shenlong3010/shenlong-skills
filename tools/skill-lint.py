@@ -3,6 +3,11 @@
 descriptions must say WHEN to use, not just what. Warnings, exit 0 unless --strict."""
 import re, sys
 from pathlib import Path
+# Emit UTF-8 regardless of the platform default codec (e.g. Windows cp1252),
+# so this runs clean in plain PowerShell without PYTHONUTF8=1.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8")
 ROOT = Path(__file__).resolve().parent.parent
 FM = re.compile(r"\A---\s*\n(.*?)\n---", re.S)
 TRIGGER_WORDS = ("use when", "use whenever", "use for", "use after", "use before", "use on", "trigger", "invoke", "consult", "use this")

@@ -1,5 +1,8 @@
 {
+  "$comment": "Template for cache-proxy upstreams. Copy to upstreams.json (gitignored) and list ONLY idempotent, write-free, non-live-state servers — those are the safe cache candidates. Servers with frequent writes (memory, semantic-edit) trigger coarse whole-cache flushes; live-state servers (browser automation) would return stale results. Keep those direct in your client config, not here.",
   "mcpServers": {
-    "demo": { "command": "python3", "args": ["demo_upstream.py"] }
+    "context7": { "type": "http", "url": "https://mcp.context7.com/mcp" },
+    "deepwiki": { "type": "http", "url": "https://mcp.deepwiki.com/mcp" },
+    "youtube-transcript": { "command": "uvx", "args": ["mcp-youtube-transcript"] }
   }
 }

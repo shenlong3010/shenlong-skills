@@ -12,6 +12,7 @@ Root spec applies (flat keys), including the `flow:` key — the workflow stage 
 1. **Purpose / when** — one short block.
 2. **Method** — the procedure, or per-case procedures for classify-then-extract skills (see `read-image`).
 3. **Gotchas** — the skill's real value. Every gotcha must be earned and verifiable; gotchas in library skills are smoke-tested against the real library before shipping (the `data-csv` dtype trap and `config` Norway problem are asserted, not asserted-about).
+   - **Both platforms or say so:** any skill whose methods are OS-dependent carries both the Linux and Windows lanes (the `system-lookup` pattern), or explicitly names the platform gap and its fallback (the `file-find` plocate note). A silently Linux-only method on a Windows dev box is a routing lie — the 2026-07 campaign scored it FAIL.
 4. **Boundaries** — route to sibling skills *by name* (`image-ocr`, `read-diagram`, `image-prep` pattern). Never fake an unsupported capability: state "not supported" and route (the `pptx` slide-copy rule).
 
 ## Conventions

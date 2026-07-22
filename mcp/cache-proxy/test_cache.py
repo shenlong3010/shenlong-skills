@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Smoke: memoization, write-invalidation, TTL bypass, stats — against the real demo upstream."""
-import asyncio, sys
+import asyncio, sys, tempfile
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import server as S
 from fastmcp import Client
 
 async def main():
-    S.DB_PATH = Path("/tmp/mcp-cache-test.db"); S.DB_PATH.unlink(missing_ok=True)
-    cfg = {"mcpServers": {"demo": {"command": "python3",
+    S.DB_PATH = Path(tempfile.gettempdir()) / "mcp-cache-test.db"; S.DB_PATH.unlink(missing_ok=True)
+    cfg = {"mcpServers": {"demo": {"command": sys.executable,
            "args": [str(Path(__file__).parent / "demo_upstream.py")]}}}
     proxy = S.build(cfg, ttl_rules={"^live_": "live"})
     async with Client(proxy) as c:

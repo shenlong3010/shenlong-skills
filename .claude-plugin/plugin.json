@@ -1,7 +1,16 @@
 {
   "name": "shenlong-skills",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Personal toolbox: skills, commands, agents, hooks, MCP scaffolds, styles, templates.",
+  "agents": [
+    "./agents/code-review.md",
+    "./agents/plan-reviewer.md",
+    "./agents/pre-mortem.md",
+    "./agents/security-review.md",
+    "./agents/ralph-coder.md",
+    "./agents/ralph-task-inspector.md",
+    "./agents/ralph-diagnostician.md"
+  ],
   "hooks": {
     "PreToolUse": [
       {
