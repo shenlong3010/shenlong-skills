@@ -1,0 +1,48 @@
+{
+  "$comment": "Sample project MCP config for this toolbox. Copy to .mcp.json to opt in (Claude Code prompts to trust on first use). The active servers below are portable — they work for any cloner with no machine-specific paths. Credentials via ${ENV_VAR} expansion only, never literals. Personal/install-heavy servers are listed under $optional-servers as copy-paste snippets; move the ones you want into mcpServers and fill in your paths.",
+
+  "mcpServers": {
+    "youtube-transcript": {
+      "$comment": "Real repo dep: talk-notes pulls YouTube transcripts here (falls back to a pasted transcript if absent). Needs `uv` (uvx) on PATH.",
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-youtube-transcript"]
+    },
+    "context7": {
+      "$comment": "Hosted HTTP — up-to-date library docs. No install.",
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "grep": {
+      "$comment": "Hosted HTTP — code search across public GitHub.",
+      "type": "http",
+      "url": "https://mcp.grep.app"
+    },
+    "deepwiki": {
+      "$comment": "Hosted HTTP — AI docs for GitHub repos.",
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
+    }
+  },
+
+  "$optional-servers": {
+    "$comment": "NOT loaded — this key is ignored by Claude Code. Author's personal setup, kept as reference. To use one, cut it into mcpServers above and adjust for your machine.",
+    "playwright": {
+      "$comment": "Browser automation. Needs Node/npx on PATH; downloads the package on first run.",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "serena": {
+      "$comment": "Semantic code tools. Requires `uv` (uvx) on PATH.",
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server", "--context", "ide-assistant"]
+    },
+    "cavemem": {
+      "$comment": "Author's memory server (npm package `cavemem`). Install it, then point command/args at your node + install path. Not required by any repo skill.",
+      "command": "${PATH_TO_NODE}",
+      "args": ["${PATH_TO_CAVEMEM}/dist/index.js", "mcp"]
+    }
+  }
+}
