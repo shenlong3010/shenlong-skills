@@ -58,8 +58,9 @@ def make_image_pdf(path: Path, n: int = 3) -> Path:
 def main() -> None:
     books = TMP / "books"
     books.mkdir(exist_ok=True)
-    for f in books.glob("*.pdf"):
-        f.unlink()
+    for f in books.iterdir():          # all fixtures, not just PDFs — .md/.txt land here too
+        if f.is_file():
+            f.unlink()
 
     # A findable phrase on a known page: page 3 of 5.
     make_pdf(books / "distributed.pdf", [
@@ -168,6 +169,36 @@ def main() -> None:
     with S.db() as c:
         c.execute("UPDATE books SET page_offset=0 WHERE id=?", (bid,))
 
+    # --- text documents (.md/.txt) ride the same pipeline -----------------
+    # The real use case beyond books: work docs you would otherwise reread from
+    # disk every session.
+    (books / "runbook.md").write_text(
+        "# Payment Service Runbook\n\n"
+        "## Rotating credentials\n" + ("Step detail line.\n" * 40) +
+        "\n## Failover procedure\n"
+        "Promote the standby replica before draining traffic.\n" +
+        ("More failover detail.\n" * 40),
+        encoding="utf-8")
+    (books / "notes.txt").write_text("Plain text note about quarterly planning.\n" * 20,
+                                     encoding="utf-8")
+
+    S.ingest_dir(str(books))
+    with S.db() as c:
+        md = c.execute("SELECT * FROM books WHERE path LIKE '%runbook%'").fetchone()
+    assert md["title"] == "Payment Service Runbook", \
+        f"leading H1 should become the title, got {md['title']!r}"
+    assert md["text_quality"] == "ok"
+    assert md["pages"] >= 2, f"long markdown should split into chunks, got {md['pages']}"
+    assert "Rotating credentials" in md["toc_json"], "markdown headings should become the TOC"
+
+    idx = S.full_index(md["id"])
+    assert "sections searchable" in idx, f"text docs count sections, not pages: {idx}"
+    assert "text document" in idx, "text docs must not report a page offset"
+
+    found = S.search_corpus("failover standby replica")
+    assert "runbook" in found.lower() or "Payment Service" in found, \
+        f"markdown content must be searchable: {found}"
+
     # --- span cap ---------------------------------------------------------
     capped = S.get_pages(bid, 1, 999)
     assert capped.startswith("ERROR") and "cap" in capped, "oversized span must be refused"
@@ -186,7 +217,7 @@ def main() -> None:
         after = c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?", (bid,)).fetchone()["n"]
         nbooks = c.execute("SELECT COUNT(*) n FROM books").fetchone()["n"]
     assert before == after, f"re-index duplicated chunks: {before} -> {after}"
-    assert nbooks == 4, f"re-sweep duplicated books: {nbooks}"
+    assert nbooks == 6, f"re-sweep duplicated books: {nbooks}"
 
     print("\nOK — sweep, quality gating, search, page mapping, caps, idempotence all pass.")
 

@@ -36,7 +36,10 @@ mcp = FastMCP("book-corpus")
 DB_PATH = Path(
     os.environ.get("BOOK_CORPUS_DB", Path.home() / ".local" / "share" / "book-corpus.db")
 )
-BOOK_EXTS = {".pdf"}
+PDF_EXTS = {".pdf"}
+TEXT_EXTS = {".md", ".markdown", ".txt", ".rst"}
+BOOK_EXTS = PDF_EXTS | TEXT_EXTS
+TEXT_CHUNK_CHARS = 3000     # ~a page of prose; keeps get_pages spans meaningful
 MAX_PAGE_SPAN = 20          # get_pages hard cap — an unbounded span dumps a chapter
 MAX_HITS = 50               # search_corpus cap — context is the scarce resource
 SNIPPET_CHARS = 240
@@ -134,6 +137,74 @@ def _fts_query(raw: str) -> str:
 
 # ---------------------------------------------------------------- extraction
 
+def _read_text_file(path: Path) -> str:
+    """Read a text/markdown file, tolerating the encodings real files arrive in."""
+    for enc in ("utf-8", "utf-8-sig", "cp1252", "latin-1"):
+        try:
+            return path.read_text(encoding=enc)
+        except UnicodeDecodeError:
+            continue
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _split_text(body: str) -> list[str]:
+    """Split a text document into page-sized chunks, preferring heading breaks.
+
+    Markdown headings are the document's own structure, so a chunk that starts
+    at a heading stays readable on its own. Long sections are split by size so
+    one wall-of-text section cannot become a single unreadable chunk.
+    """
+    lines = body.splitlines()
+    chunks: list[str] = []
+    cur: list[str] = []
+    size = 0
+    for line in lines:
+        is_heading = line.startswith("#") or (line.startswith("=") and len(line) > 3)
+        # A heading starts a new chunk once the current one holds real content;
+        # an over-long section splits on size even without a heading. Parenthesised
+        # deliberately — `a and b or c` would bind as `(a and b) or c` and split
+        # every heading regardless of size.
+        start_new = (is_heading and size >= TEXT_CHUNK_CHARS // 10) or size >= TEXT_CHUNK_CHARS
+        if cur and start_new:
+            chunks.append("\n".join(cur))
+            cur, size = [], 0
+        cur.append(line)
+        size += len(line) + 1
+    if cur:
+        chunks.append("\n".join(cur))
+    return [c for c in chunks if c.strip()] or ([body] if body.strip() else [])
+
+
+def _extract_text_doc(path: Path) -> dict:
+    """Sweep one text/markdown document: headings become the TOC, chunks the pages."""
+    body = _read_text_file(path)
+    chunks = _split_text(body)
+
+    # Every heading becomes a TOC entry, not just the first per chunk — a chunk
+    # routinely holds several sections, and the ones after the first are exactly
+    # what someone navigates to.
+    toc = []
+    for i, chunk in enumerate(chunks, start=1):
+        for line in chunk.splitlines():
+            if line.startswith("#"):
+                toc.append({"title": line.lstrip("#").strip()[:120], "pdf_page": i})
+
+    title = path.stem.replace("_", " ").replace("-", " ").strip()
+    for line in body.splitlines():          # a leading H1 is the document's real title
+        if line.startswith("# "):
+            title = line.lstrip("#").strip()[:200]
+            break
+
+    return {
+        "title": title,
+        "author": "",
+        "pages": len(chunks),
+        "toc": toc,
+        "page_offset": 0,                   # text chunks have no front matter to offset
+        "text_quality": "ok" if body.strip() else "none",
+    }
+
+
 def _extract(path: Path) -> dict:
     """Sweep one PDF: metadata, page count, TOC, text-quality probe.
 
@@ -200,11 +271,13 @@ def _extract(path: Path) -> dict:
 
 @mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
 def ingest_book(path: str) -> str:
-    """Sweep one book into the corpus (metadata, TOC, text-quality probe only).
+    """Sweep one document into the corpus (metadata, TOC, text-quality probe only).
 
-    Use when adding a single book, before reading it. Cheap — does not extract
-    full text; call full_index for that. Safe to re-run: updates in place.
-    Returns the book id, page count, and text quality.
+    Handles PDFs and text documents (.md, .txt, .rst) — books, specs, runbooks,
+    any reference you would otherwise reread from disk each time. Use when
+    adding a single file, before reading it. Cheap — does not extract full text;
+    call full_index for that. Safe to re-run: updates in place.
+    Returns the id, page/section count, and text quality.
     """
     p = Path(path).expanduser()
     if not p.is_file():
@@ -212,7 +285,7 @@ def ingest_book(path: str) -> str:
     if p.suffix.lower() not in BOOK_EXTS:
         return f"ERROR: unsupported type {p.suffix}. Supported: {', '.join(sorted(BOOK_EXTS))}"
     try:
-        info = _extract(p)
+        info = _extract(p) if p.suffix.lower() in PDF_EXTS else _extract_text_doc(p)
     except Exception as e:
         with db() as c:
             c.execute(
@@ -246,9 +319,10 @@ def ingest_book(path: str) -> str:
 
 @mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
 def ingest_dir(path: str, recursive: bool = True) -> str:
-    """Sweep every book in a directory into the corpus (metadata only).
+    """Sweep every document in a directory into the corpus (metadata only).
 
-    Use to bring a whole library in at once. Cheap per book; no full text.
+    Use to bring a whole library or docs folder in at once — PDFs and text
+    documents (.md, .txt, .rst) alike. Cheap per file; no full text.
     Safe to re-run. Returns counts by text quality and names any that failed.
     """
     d = Path(path).expanduser()
@@ -299,8 +373,10 @@ def full_index(book_id: int) -> str:
         return (f"ERROR: '{row['title']}' has no text layer (scanned images). "
                 f"Indexing it would produce searchable nothing. OCR it first, then re-sweep.")
 
+    is_pdf = Path(row["path"]).suffix.lower() in PDF_EXTS
     try:
-        reader = PdfReader(row["path"])
+        pages = (list(PdfReader(row["path"]).pages) if is_pdf
+                 else _split_text(_read_text_file(Path(row["path"]))))
     except Exception as e:
         return f"ERROR: cannot open {row['path']}: {type(e).__name__}: {e}"
 
@@ -308,9 +384,9 @@ def full_index(book_id: int) -> str:
     with db() as c:
         c.execute("DELETE FROM chunks WHERE book_id=?", (book_id,))   # idempotent re-run
         n = 0
-        for i, page in enumerate(reader.pages, start=1):
+        for i, page in enumerate(pages, start=1):
             try:
-                text = (page.extract_text() or "").strip()
+                text = ((page.extract_text() or "") if is_pdf else page).strip()
             except Exception:
                 continue
             if text:
@@ -320,9 +396,14 @@ def full_index(book_id: int) -> str:
                 n += 1
 
         # Now that real page text exists, measure the front-matter offset instead
-        # of trusting the TOC guess made at sweep time.
-        offset, votes, sampled = _measure_offset(extracted)
-        confident = sampled > 0 and votes >= max(10, 0.15 * sampled)
+        # of trusting the TOC guess made at sweep time. Text documents have no
+        # printed page numbers to measure, so their chunk index is the only
+        # numbering and the offset stays 0.
+        if is_pdf:
+            offset, votes, sampled = _measure_offset(extracted)
+            confident = sampled > 0 and votes >= max(10, 0.15 * sampled)
+        else:
+            offset, votes, sampled, confident = 0, 0, len(extracted), False
         # Either way the measurement is authoritative. A rejected measurement
         # must also CLEAR the provisional TOC guess: keeping it would leave every
         # printed-page number resting on an unverified inference while the tool
@@ -330,17 +411,20 @@ def full_index(book_id: int) -> str:
         c.execute("UPDATE books SET page_offset=?, full_indexed_at=? WHERE id=?",
                   (offset if confident else 0, time.time(), book_id))
 
+    unit = "pages" if is_pdf else "sections"
     note = ""
-    if n < (row["pages"] or 0) * 0.5:
+    if is_pdf and n < (row["pages"] or 0) * 0.5:
         note = (f"\n  WARNING: only {n} of {row['pages']} pages yielded text — "
                 f"partial scan or heavy figures; search coverage is incomplete.")
-    if confident:
+    if not is_pdf:
+        page_note = ("\n  text document: numbering is by section chunk, not printed pages.")
+    elif confident:
         page_note = (f"\n  page offset measured at {offset} "
                      f"({votes}/{sampled} pages agree): printed p.1 is pdf p.{offset + 1}.")
     else:
         page_note = ("\n  page offset could not be measured (no consistent printed page "
                      "numbers); pdf and printed numbers are treated as identical.")
-    return (f"indexed '{row['title']}': {n} of {row['pages']} pages searchable."
+    return (f"indexed '{row['title']}': {n} of {row['pages']} {unit} searchable."
             f"{note}{page_note}")
 
 
