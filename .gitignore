@@ -29,3 +29,6 @@ mcp/cache-proxy/upstreams.json
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Playwright MCP session output — a11y snapshots, per-run scratch
+.playwright-mcp/

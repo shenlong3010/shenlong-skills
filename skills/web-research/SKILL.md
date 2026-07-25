@@ -1,6 +1,6 @@
 ---
 name: web-research
-description: Search, fetch, and extract web content efficiently — query operators, llms.txt probing, reader/extraction ladder, and token-budget discipline. Use whenever researching online, fetching a page, "look up X", "read this URL", "get the docs for Y", or any moment raw HTML or a headless browser is about to be pointed at a page. The web counterpart of code-search. Do NOT use for interacting with pages (forms, clicks) — that is browser-automation territory.
+description: Search, fetch, and extract web content efficiently — query operators, llms.txt probing, reader/extraction ladder, and token-budget discipline. Use whenever researching online, fetching a page, "look up X", "read this URL", "get the docs for Y", or any moment raw HTML or a headless browser is about to be pointed at a page. The web counterpart of code-search. Do NOT use for interacting with pages (forms, clicks) or for JS-rendered pages that extraction returns empty — those go to the Playwright MCP tools.
 derivation: original
 flow: lookup
 domain: web
@@ -56,6 +56,8 @@ Save → search → read the hit. Never paste a whole extraction into context wh
 ## Boundaries
 
 - Respect robots.txt and terms; rate-limit anything repeated; paywalled or auth-walled content → stop, never credential-scrape.
-- Page *interaction* (forms, clicks, stateful flows) → browser automation (Playwright-class), not this skill.
+- Page *interaction* (forms, clicks, stateful flows) → the Playwright MCP server (`mcp__playwright__browser_*`), not this skill. No toolbox skill wraps it: the tools are self-describing and the platform ships them.
+  - Also the fallback when a **JS-rendered page defeats extraction** — trafilatura/reader returns nav and footer but no body. That is a render problem, not an extraction problem; no ladder rung fixes it.
+  - Token discipline still applies, and `browser_snapshot` is the trap: the a11y snapshot silently truncates long list/feed pages, so the body reads as empty. Pull text directly instead — `browser_evaluate` with `document.querySelector('main').innerText` (or a scoped `querySelectorAll` map for link lists), sliced, then rg it per Step 4.
 - Building search **for** a website you own (index + search UI) is a different problem entirely — static sites: Pagefind; app-backed: Meilisearch/Typesense — name the need and plan it separately.
 - Freshness: note the page's own date; readers cache — bypass with their no-cache option when currency matters.
