@@ -1,0 +1,143 @@
+2026-07-20T10:10:00Z WARN cache miss key=user:1041 region=us-east
+2026-07-20T10:10:01Z WARN cache miss key=user:1019 region=us-east
+2026-07-20T10:10:02Z WARN cache miss key=user:1050 region=us-east
+2026-07-20T10:10:03Z WARN cache miss key=user:1083 region=us-east
+2026-07-20T10:10:04Z WARN cache miss key=user:1006 region=us-east
+2026-07-20T10:10:05Z WARN cache miss key=user:1009 region=us-east
+2026-07-20T10:10:06Z WARN cache miss key=user:1068 region=us-east
+2026-07-20T10:10:07Z WARN cache miss key=user:1012 region=us-east
+2026-07-20T10:10:08Z WARN cache miss key=user:1046 region=us-east
+2026-07-20T10:10:09Z WARN cache miss key=user:1074 region=us-east
+2026-07-20T10:10:10Z WARN cache miss key=user:1007 region=us-east
+2026-07-20T10:10:11Z WARN cache miss key=user:1064 region=us-east
+2026-07-20T10:10:12Z WARN cache miss key=user:1027 region=us-east
+2026-07-20T10:10:13Z WARN cache miss key=user:1004 region=us-east
+2026-07-20T10:10:14Z WARN cache miss key=user:1011 region=us-east
+2026-07-20T10:10:15Z WARN cache miss key=user:1055 region=us-east
+2026-07-20T10:10:16Z WARN cache miss key=user:1053 region=us-east
+2026-07-20T10:10:17Z WARN cache miss key=user:1008 region=us-east
+2026-07-20T10:10:18Z WARN cache miss key=user:1030 region=us-east
+2026-07-20T10:10:19Z WARN cache miss key=user:1011 region=us-east
+2026-07-20T10:10:20Z WARN cache miss key=user:1070 region=us-east
+2026-07-20T10:10:21Z WARN cache miss key=user:1054 region=us-east
+2026-07-20T10:10:22Z WARN cache miss key=user:1007 region=us-east
+2026-07-20T10:10:23Z WARN cache miss key=user:1072 region=us-east
+2026-07-20T10:10:24Z WARN cache miss key=user:1015 region=us-east
+2026-07-20T10:10:25Z WARN cache miss key=user:1028 region=us-east
+2026-07-20T10:10:26Z WARN cache miss key=user:1080 region=us-east
+2026-07-20T10:10:27Z WARN cache miss key=user:1080 region=us-east
+2026-07-20T10:10:28Z WARN cache miss key=user:1074 region=us-east
+2026-07-20T10:10:29Z WARN cache miss key=user:1007 region=us-east
+2026-07-20T10:10:30Z WARN cache miss key=user:1073 region=us-east
+2026-07-20T10:10:31Z WARN cache miss key=user:1074 region=us-east
+2026-07-20T10:10:32Z WARN cache miss key=user:1050 region=us-east
+2026-07-20T10:10:33Z WARN cache miss key=user:1006 region=us-east
+2026-07-20T10:10:34Z WARN cache miss key=user:1028 region=us-east
+2026-07-20T10:10:35Z WARN cache miss key=user:1005 region=us-east
+2026-07-20T10:10:36Z WARN cache miss key=user:1071 region=us-east
+2026-07-20T10:10:37Z WARN cache miss key=user:1017 region=us-east
+2026-07-20T10:10:38Z WARN cache miss key=user:1037 region=us-east
+2026-07-20T10:10:39Z WARN cache miss key=user:1053 region=us-east
+2026-07-20T10:10:40Z WARN cache miss key=user:1018 region=us-east
+2026-07-20T10:10:41Z WARN cache miss key=user:1069 region=us-east
+2026-07-20T10:10:42Z WARN cache miss key=user:1015 region=us-east
+2026-07-20T10:10:43Z WARN cache miss key=user:1073 region=us-east
+2026-07-20T10:10:44Z WARN cache miss key=user:1039 region=us-east
+2026-07-20T10:10:45Z WARN cache miss key=user:1071 region=us-east
+2026-07-20T10:10:46Z WARN cache miss key=user:1087 region=us-east
+2026-07-20T10:10:47Z WARN cache miss key=user:1023 region=us-east
+2026-07-20T10:10:48Z WARN cache miss key=user:1013 region=us-east
+2026-07-20T10:10:49Z WARN cache miss key=user:1074 region=us-east
+2026-07-20T10:10:50Z WARN cache miss key=user:1073 region=us-east
+2026-07-20T10:10:51Z WARN cache miss key=user:1081 region=us-east
+2026-07-20T10:10:52Z WARN cache miss key=user:1024 region=us-east
+2026-07-20T10:10:53Z WARN cache miss key=user:1047 region=us-east
+2026-07-20T10:10:54Z WARN cache miss key=user:1012 region=us-east
+2026-07-20T10:10:55Z WARN cache miss key=user:1070 region=us-east
+2026-07-20T10:10:56Z WARN cache miss key=user:1091 region=us-east
+2026-07-20T10:10:57Z WARN cache miss key=user:1008 region=us-east
+2026-07-20T10:10:58Z WARN cache miss key=user:1072 region=us-east
+2026-07-20T10:10:59Z WARN cache miss key=user:1007 region=us-east
+2026-07-20T10:11:00Z INFO healthcheck ok
+2026-07-20T10:11:00Z WARN cache miss key=user:1079 region=us-east
+2026-07-20T10:11:01Z WARN cache miss key=user:1026 region=us-east
+2026-07-20T10:11:02Z WARN cache miss key=user:1063 region=us-east
+2026-07-20T10:11:03Z WARN cache miss key=user:1087 region=us-east
+2026-07-20T10:11:04Z WARN cache miss key=user:1068 region=us-east
+2026-07-20T10:11:05Z WARN cache miss key=user:1054 region=us-east
+2026-07-20T10:11:06Z WARN cache miss key=user:1099 region=us-east
+2026-07-20T10:11:07Z WARN cache miss key=user:1040 region=us-east
+2026-07-20T10:11:08Z WARN cache miss key=user:1059 region=us-east
+2026-07-20T10:11:09Z WARN cache miss key=user:1074 region=us-east
+2026-07-20T10:11:10Z WARN cache miss key=user:1058 region=us-east
+2026-07-20T10:11:11Z WARN cache miss key=user:1046 region=us-east
+2026-07-20T10:11:12Z WARN cache miss key=user:1038 region=us-east
+2026-07-20T10:11:13Z WARN cache miss key=user:1031 region=us-east
+2026-07-20T10:11:14Z WARN cache miss key=user:1023 region=us-east
+2026-07-20T10:11:15Z WARN cache miss key=user:1089 region=us-east
+2026-07-20T10:11:16Z WARN cache miss key=user:1099 region=us-east
+2026-07-20T10:11:17Z WARN cache miss key=user:1031 region=us-east
+2026-07-20T10:11:18Z WARN cache miss key=user:1010 region=us-east
+2026-07-20T10:11:19Z WARN cache miss key=user:1073 region=us-east
+2026-07-20T10:11:20Z WARN cache miss key=user:1038 region=us-east
+2026-07-20T10:11:21Z WARN cache miss key=user:1067 region=us-east
+2026-07-20T10:11:22Z WARN cache miss key=user:1063 region=us-east
+2026-07-20T10:11:23Z WARN cache miss key=user:1043 region=us-east
+2026-07-20T10:11:24Z WARN cache miss key=user:1093 region=us-east
+2026-07-20T10:11:25Z WARN cache miss key=user:1057 region=us-east
+2026-07-20T10:11:26Z WARN cache miss key=user:1036 region=us-east
+2026-07-20T10:11:27Z WARN cache miss key=user:1077 region=us-east
+2026-07-20T10:11:28Z WARN cache miss key=user:1009 region=us-east
+2026-07-20T10:11:29Z WARN cache miss key=user:1015 region=us-east
+2026-07-20T10:11:30Z WARN cache miss key=user:1065 region=us-east
+2026-07-20T10:11:31Z WARN cache miss key=user:1053 region=us-east
+2026-07-20T10:11:32Z WARN cache miss key=user:1021 region=us-east
+2026-07-20T10:11:33Z WARN cache miss key=user:1096 region=us-east
+2026-07-20T10:11:34Z WARN cache miss key=user:1043 region=us-east
+2026-07-20T10:11:35Z WARN cache miss key=user:1019 region=us-east
+2026-07-20T10:11:36Z WARN cache miss key=user:1062 region=us-east
+2026-07-20T10:11:37Z WARN cache miss key=user:1053 region=us-east
+2026-07-20T10:11:38Z WARN cache miss key=user:1005 region=us-east
+2026-07-20T10:11:39Z WARN cache miss key=user:1085 region=us-east
+2026-07-20T10:11:40Z WARN cache miss key=user:1009 region=us-east
+2026-07-20T10:11:41Z WARN cache miss key=user:1097 region=us-east
+2026-07-20T10:11:42Z WARN cache miss key=user:1071 region=us-east
+2026-07-20T10:11:43Z WARN cache miss key=user:1073 region=us-east
+2026-07-20T10:11:44Z WARN cache miss key=user:1040 region=us-east
+2026-07-20T10:11:45Z WARN cache miss key=user:1043 region=us-east
+2026-07-20T10:11:46Z WARN cache miss key=user:1088 region=us-east
+2026-07-20T10:11:47Z WARN cache miss key=user:1044 region=us-east
+2026-07-20T10:11:48Z WARN cache miss key=user:1076 region=us-east
+2026-07-20T10:11:49Z WARN cache miss key=user:1063 region=us-east
+2026-07-20T10:11:50Z WARN cache miss key=user:1074 region=us-east
+2026-07-20T10:11:51Z WARN cache miss key=user:1058 region=us-east
+2026-07-20T10:11:52Z WARN cache miss key=user:1008 region=us-east
+2026-07-20T10:11:53Z WARN cache miss key=user:1011 region=us-east
+2026-07-20T10:11:54Z WARN cache miss key=user:1034 region=us-east
+2026-07-20T10:11:55Z WARN cache miss key=user:1060 region=us-east
+2026-07-20T10:11:56Z WARN cache miss key=user:1089 region=us-east
+2026-07-20T10:11:57Z WARN cache miss key=user:1085 region=us-east
+2026-07-20T10:11:58Z WARN cache miss key=user:1008 region=us-east
+2026-07-20T10:11:59Z WARN cache miss key=user:1007 region=us-east
+2026-07-20T10:12:00Z INFO healthcheck ok
+2026-07-20T10:13:00Z INFO healthcheck ok
+2026-07-20T10:14:00Z INFO healthcheck ok
+2026-07-20T10:15:00Z INFO healthcheck ok
+2026-07-20T10:16:00Z INFO healthcheck ok
+2026-07-20T10:17:00Z INFO healthcheck ok
+2026-07-20T10:17:04Z ERROR db pool acquire timeout after 5000ms pool=orders
+2026-07-20T10:17:05Z ERROR db pool acquire timeout after 5000ms pool=orders
+2026-07-20T10:17:06Z ERROR request_id=abc123 500 POST /orders db pool exhausted
+2026-07-20T10:17:06Z FATAL orders-service unable to serve: db pool exhausted (0/20 free)
+2026-07-20T10:18:00Z INFO healthcheck ok
+2026-07-20T10:19:00Z INFO healthcheck ok
+2026-07-20T10:20:00Z INFO healthcheck ok
+2026-07-20T10:21:00Z INFO healthcheck ok
+2026-07-20T10:22:00Z INFO healthcheck ok
+2026-07-20T10:23:00Z INFO healthcheck ok
+2026-07-20T10:24:00Z INFO healthcheck ok
+2026-07-20T10:25:00Z INFO healthcheck ok
+2026-07-20T10:26:00Z INFO healthcheck ok
+2026-07-20T10:27:00Z INFO healthcheck ok
+2026-07-20T10:28:00Z INFO healthcheck ok
+2026-07-20T10:29:00Z INFO healthcheck ok
