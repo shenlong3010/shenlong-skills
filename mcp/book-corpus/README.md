@@ -61,8 +61,18 @@ offset defaulted to zero and every printed-page lookup drifted. `full_index`
 instead votes on the page numbers printed on the pages themselves: for each
 page, a number in the first or last line votes for `pdf_page - printed`. The
 true offset wins by a landslide because it is the only value that agrees across
-the whole book — CLRS measures 21 with 1230 of 1306 pages agreeing. When no
-consistent numbering exists, the tool says so rather than inventing one.
+the whole book — CLRS measures 21 with 1230 of 1306 pages agreeing.
+
+When the vote is weak the measurement is rejected **and the provisional TOC
+guess is cleared**, so printed numbers fall back to pdf numbers and the tool
+says so. Keeping the guess was the subtler bug: one book carried a TOC-inferred
+offset of 17 while `full_index` reported that measurement had failed, leaving
+every printed page number resting on an inference the tool had just disclaimed.
+It happened to be correct, which is exactly what made it dangerous.
+
+Front matter precedes printed p.1 and is usually in roman numerals, which a
+single linear offset cannot express. Those pages report `front matter` rather
+than a negative number.
 
 **Search terms are quoted for you.** FTS5 treats `-` as NOT, so `red-black tree`
 is a syntax error rather than a search. Bare terms are quoted into literals;
@@ -77,6 +87,16 @@ judged on the **best** sampled page, not the mean: front matter, part dividers,
 and full-page figures are legitimately near-empty, so averaging misflags real
 books. `full_index` refuses a `none` book outright and routes you to OCR;
 partial extractions warn with a page count so incomplete coverage is visible.
+
+## Why there is no companion skill
+
+An early `read-book` skill wrapped these tools in prose — a reading procedure,
+an output shape, a summarizing method. Using it against a real book showed the
+prose contributed nothing: summarizing a passage is baseline model capability,
+and the two behaviors that *did* matter (check the corpus before extracting;
+search, then load only the hit's span) belong in the tool descriptions above,
+where they fire automatically instead of costing description tokens every
+session. The server is the whole artifact.
 
 ## Limits (v1, deliberate)
 

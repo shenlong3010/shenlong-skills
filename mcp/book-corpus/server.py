@@ -69,8 +69,15 @@ def db() -> sqlite3.Connection:
     return conn
 
 
-def _printed(pdf_page: int, offset: int) -> int:
-    return pdf_page - (offset or 0)
+def _printed(pdf_page: int, offset: int) -> str:
+    """Printed page label for a physical page.
+
+    Front matter sits before printed p.1 and is usually numbered in roman
+    numerals, which a single linear offset cannot express — it goes negative.
+    Report those pages as front matter rather than printing 'p.-10'.
+    """
+    n = pdf_page - (offset or 0)
+    return str(n) if n >= 1 else "front matter"
 
 
 def _measure_offset(pages: list[tuple[int, str]]) -> tuple[int, int, int]:
@@ -316,9 +323,12 @@ def full_index(book_id: int) -> str:
         # of trusting the TOC guess made at sweep time.
         offset, votes, sampled = _measure_offset(extracted)
         confident = sampled > 0 and votes >= max(10, 0.15 * sampled)
-        if confident:
-            c.execute("UPDATE books SET page_offset=? WHERE id=?", (offset, book_id))
-        c.execute("UPDATE books SET full_indexed_at=? WHERE id=?", (time.time(), book_id))
+        # Either way the measurement is authoritative. A rejected measurement
+        # must also CLEAR the provisional TOC guess: keeping it would leave every
+        # printed-page number resting on an unverified inference while the tool
+        # reports that measurement failed — wrong numbers, stated confidently.
+        c.execute("UPDATE books SET page_offset=?, full_indexed_at=? WHERE id=?",
+                  (offset if confident else 0, time.time(), book_id))
 
     note = ""
     if n < (row["pages"] or 0) * 0.5:
@@ -338,8 +348,9 @@ def full_index(book_id: int) -> str:
 def list_books(filter: str = "", limit: int = 30) -> str:
     """List books in the corpus, newest sweep first, with their index state.
 
-    Use to see what the library holds before searching, or to find a book_id.
-    `filter` matches title, author, or path (case-insensitive).
+    Call this FIRST, before extracting or reading any book file directly — a
+    book already in the corpus should be queried, not re-read. `filter` matches
+    title, author, or path (case-insensitive).
     Returns id, title, pages, text quality, and whether full text is indexed.
     """
     q = """SELECT b.*, (SELECT COUNT(*) FROM chunks WHERE book_id=b.id) AS n_chunks
@@ -374,8 +385,12 @@ def search_corpus(query: str, limit: int = 10, book_id: int = 0) -> str:
 
     Use for "which of my books cover X" and to locate a passage before reading
     it. Only searches books that have had full_index run. Pass book_id to
-    search within one book. Returns ranked snippets with pdf and printed page
-    numbers — feed those to get_pages.
+    search within one book.
+
+    Returns ranked snippets with page numbers: feed those to get_pages and read
+    that span alone — never load a whole book to answer a question about one
+    passage. Hyphenated and punctuated terms are handled automatically. Hits in
+    a book's index pages look like keyword lists; prefer prose hits.
     """
     if not query.strip():
         return "ERROR: empty query. Pass search terms, e.g. search_corpus('consensus protocol')."
@@ -406,7 +421,10 @@ def search_corpus(query: str, limit: int = 10, book_id: int = 0) -> str:
         if not n_indexed:
             return ("No books have full text indexed yet. list_books() shows what is swept; "
                     "call full_index(book_id) on one before searching.")
-        return f"No hits for {query!r} across {n_indexed} indexed book(s)."
+        return (f"No hits for {query!r} across {n_indexed} indexed book(s). "
+                f"This is not proof the topic is absent: only full-indexed books are "
+                f"searched (list_books shows which), keyword search misses paraphrase, "
+                f"and a book flagged text_quality=none has no searchable text at all.")
 
     lines = [f"{len(rows)} hit(s) for {query!r} across {n_indexed} indexed book(s):"]
     for r in rows:
@@ -452,7 +470,9 @@ def get_pages(book_id: int, start: int, end: int = 0, printed: bool = False) -> 
         return (f"No text on pdf pages {s}-{e} of '{row['title']}' "
                 f"(blank, images, or beyond its {row['pages']} pages).")
 
-    out = [f"'{row['title']}' — pdf pages {s}-{e} (printed {_printed(s, off)}-{_printed(e, off)}):"]
+    span = (f"printed {_printed(s, off)}" if s == e
+            else f"printed {_printed(s, off)}–{_printed(e, off)}")
+    out = [f"'{row['title']}' — pdf pages {s}-{e} ({span}):"]
     for r in rows:
         out.append(f"\n--- pdf p.{r['pdf_page']} (printed p.{_printed(r['pdf_page'], off)}) ---")
         out.append(r["text"])

@@ -142,6 +142,22 @@ def main() -> None:
     assert S._measure_offset([(1, "no numbers here"), (2, "none either")])[1] <= 1, \
         "unnumbered pages must not produce a confident offset"
 
+    # A rejected measurement must CLEAR the provisional TOC guess, not defer to
+    # it. Regression: a real book kept a TOC-inferred offset of 17 while
+    # full_index reported measurement had failed, so every printed page number
+    # rested on an unverified guess the tool had just disclaimed.
+    with S.db() as c:
+        c.execute("UPDATE books SET page_offset=99 WHERE id=?", (nid,))   # fake TOC guess
+    S.full_index(nid)                       # 2 pages, no printed numbers -> not confident
+    with S.db() as c:
+        left = c.execute("SELECT page_offset FROM books WHERE id=?", (nid,)).fetchone()
+    assert left["page_offset"] == 0, \
+        f"unmeasurable offset must reset to 0, not keep the guess ({left['page_offset']})"
+
+    # Front matter precedes printed p.1; a linear offset would report negatives.
+    assert S._printed(3, 10) == "front matter", "pre-p.1 pages must not render as negative"
+    assert S._printed(30, 10) == "20"
+
     # --- printed-page addressing with end omitted -------------------------
     # Regression: end=0 meant "just this page", but the offset was added to the
     # zero, producing a span reaching back into the front matter.
