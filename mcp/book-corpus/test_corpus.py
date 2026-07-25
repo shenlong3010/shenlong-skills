@@ -121,6 +121,37 @@ def main() -> None:
     print(page[:200])
     assert "Raft consensus" in page, "get_pages(3) must return the page holding the phrase"
 
+    # --- hyphenated / punctuated terms are not FTS syntax errors ----------
+    # Regression: 'red-black tree' failed on a real book — FTS5 read the hyphen
+    # as NOT. Technical vocabulary is full of these; users should not need to
+    # know FTS5 grammar.
+    assert S._fts_query("red-black tree") == '"red-black" "tree"'
+    assert S._fts_query('"exact phrase"') == '"exact phrase"', "explicit phrases pass through"
+    assert S._fts_query("a OR b") == '"a" OR "b"', "operators survive, operands get quoted"
+    hyphen = S.search_corpus("leader-election OR consensus", book_id=bid)
+    assert not hyphen.startswith("ERROR"), f"hyphenated query must not error: {hyphen}"
+
+    # --- measured page offset ---------------------------------------------
+    # Regression: offset was inferred from the TOC and silently wrong (0 instead
+    # of 21) on a book whose outline lists only part names. It is now measured
+    # from the numbers printed on the pages themselves.
+    numbered = [(i, f"Chapter text for page {i - 4}\nbody line\n{i - 4}") for i in range(5, 40)]
+    off, votes, sampled = S._measure_offset(numbered)
+    assert off == 4, f"offset should measure 4 from printed numbers, got {off} ({votes}/{sampled})"
+    assert votes >= 30, f"a consistent book should vote overwhelmingly, got {votes}"
+    assert S._measure_offset([(1, "no numbers here"), (2, "none either")])[1] <= 1, \
+        "unnumbered pages must not produce a confident offset"
+
+    # --- printed-page addressing with end omitted -------------------------
+    # Regression: end=0 meant "just this page", but the offset was added to the
+    # zero, producing a span reaching back into the front matter.
+    with S.db() as c:
+        c.execute("UPDATE books SET page_offset=2 WHERE id=?", (bid,))
+    one = S.get_pages(bid, 1, printed=True)
+    assert "pdf pages 3-3" in one, f"printed p.1 with offset 2 must be pdf p.3 alone: {one[:120]}"
+    with S.db() as c:
+        c.execute("UPDATE books SET page_offset=0 WHERE id=?", (bid,))
+
     # --- span cap ---------------------------------------------------------
     capped = S.get_pages(bid, 1, 999)
     assert capped.startswith("ERROR") and "cap" in capped, "oversized span must be refused"

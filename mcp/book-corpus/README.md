@@ -51,9 +51,24 @@ nothing is indexed yet, rather than returning a confident empty result.
 ## Two things it gets right that are easy to get wrong
 
 **PDF page ≠ printed page.** Front matter offsets them, so "go to page 340"
-lands in the wrong place if you store only one. Both are stored; the offset is
-inferred from the TOC's first chapter entry, every tool reports both, and
-`get_pages(..., printed=True)` accepts the number on the paper.
+lands in the wrong place if you store only one. Both are stored, every tool
+reports both, and `get_pages(..., printed=True)` accepts the number on the paper.
+
+The offset is **measured, not guessed**. Inferring it from the TOC's first
+chapter entry looked reasonable and was silently wrong on real books — many
+outlines list only part names ("I Foundations") and never "Chapter 1", so the
+offset defaulted to zero and every printed-page lookup drifted. `full_index`
+instead votes on the page numbers printed on the pages themselves: for each
+page, a number in the first or last line votes for `pdf_page - printed`. The
+true offset wins by a landslide because it is the only value that agrees across
+the whole book — CLRS measures 21 with 1230 of 1306 pages agreeing. When no
+consistent numbering exists, the tool says so rather than inventing one.
+
+**Search terms are quoted for you.** FTS5 treats `-` as NOT, so `red-black tree`
+is a syntax error rather than a search. Bare terms are quoted into literals;
+explicit `"phrases"` and uppercase `AND`/`OR`/`NOT` pass through untouched. The
+tokenizer still strips `+` and `:`, so `C++` matches bare "c" — for
+symbol-heavy searches, use a distinctive adjacent word.
 
 **Text quality is decided at sweep time, not discovered later.** A scanned PDF
 has no text layer, and indexing it yields *searchable nothing* — worse than no

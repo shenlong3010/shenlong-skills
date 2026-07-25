@@ -73,6 +73,58 @@ def _printed(pdf_page: int, offset: int) -> int:
     return pdf_page - (offset or 0)
 
 
+def _measure_offset(pages: list[tuple[int, str]]) -> tuple[int, int, int]:
+    """Measure front-matter offset from the page numbers printed on the pages.
+
+    Every book prints its own page number in the running head or foot, so the
+    offset can be observed instead of guessed: for each page, any number in the
+    first or last line is a candidate printed number, voting for
+    `pdf_page - printed`. The true offset wins by a landslide because it is the
+    only value that agrees across the whole book.
+
+    This replaces inferring from the TOC, which fails on the many books whose
+    outline lists only part names ("I Foundations") and never "Chapter 1".
+
+    Returns (offset, winning_votes, pages_sampled) so callers can judge
+    confidence; a weak margin means the book has no usable printed numbers.
+    """
+    votes: dict[int, int] = {}
+    for pdf_page, text in pages:
+        lines = [l.strip() for l in text.splitlines() if l.strip()]
+        if not lines:
+            continue
+        for cand in lines[:1] + lines[-1:]:
+            for m in re.findall(r"\b(\d{1,4})\b", cand):
+                printed = int(m)
+                if 0 < printed <= pdf_page:          # printed number never exceeds physical
+                    votes[pdf_page - printed] = votes.get(pdf_page - printed, 0) + 1
+    if not votes:
+        return 0, 0, len(pages)
+    offset, count = max(votes.items(), key=lambda kv: kv[1])
+    return offset, count, len(pages)
+
+
+def _fts_query(raw: str) -> str:
+    """Turn ordinary search words into a valid FTS5 query.
+
+    Technical vocabulary is full of characters FTS5 treats as operators:
+    'red-black tree' parses the hyphen as NOT and errors, 'C++' and 'std::vector'
+    are syntax errors outright. Users should not have to know FTS5 grammar, so
+    bare terms are quoted into literals.
+
+    Deliberate operator use survives: a query already containing double quotes,
+    or using uppercase AND/OR/NOT between terms, is passed through untouched.
+    """
+    if '"' in raw:
+        return raw                                  # caller wrote their own phrase syntax
+    tokens = raw.split()
+    if any(t in ("AND", "OR", "NOT") for t in tokens):
+        # Keep operators bare; quote the operands around them.
+        return " ".join(t if t in ("AND", "OR", "NOT") else f'"{t}"'
+                        for t in tokens if t.strip())
+    return " ".join(f'"{t}"' for t in tokens if t.strip())
+
+
 # ---------------------------------------------------------------- extraction
 
 def _extract(path: Path) -> dict:
@@ -112,8 +164,9 @@ def _extract(path: Path) -> dict:
     except Exception:
         pass
 
-    # Infer front-matter offset: first TOC entry that looks like chapter 1 tells
-    # us how far the printed numbering lags the physical index.
+    # A provisional offset from the TOC: the first entry that looks like chapter
+    # one. Weak — many books list only part names — so full_index() replaces it
+    # with a measured value once real page text is available.
     for e in toc:
         if re.match(r"^(chapter\s+)?1\b|^introduction\b", e["title"], re.I):
             offset = e["pdf_page"] - 1
@@ -244,6 +297,7 @@ def full_index(book_id: int) -> str:
     except Exception as e:
         return f"ERROR: cannot open {row['path']}: {type(e).__name__}: {e}"
 
+    extracted: list[tuple[int, str]] = []
     with db() as c:
         c.execute("DELETE FROM chunks WHERE book_id=?", (book_id,))   # idempotent re-run
         n = 0
@@ -255,14 +309,29 @@ def full_index(book_id: int) -> str:
             if text:
                 c.execute("INSERT INTO chunks(text,book_id,pdf_page) VALUES(?,?,?)",
                           (text, book_id, i))
+                extracted.append((i, text))
                 n += 1
+
+        # Now that real page text exists, measure the front-matter offset instead
+        # of trusting the TOC guess made at sweep time.
+        offset, votes, sampled = _measure_offset(extracted)
+        confident = sampled > 0 and votes >= max(10, 0.15 * sampled)
+        if confident:
+            c.execute("UPDATE books SET page_offset=? WHERE id=?", (offset, book_id))
         c.execute("UPDATE books SET full_indexed_at=? WHERE id=?", (time.time(), book_id))
 
     note = ""
     if n < (row["pages"] or 0) * 0.5:
-        note = (f"  WARNING: only {n} of {row['pages']} pages yielded text — "
+        note = (f"\n  WARNING: only {n} of {row['pages']} pages yielded text — "
                 f"partial scan or heavy figures; search coverage is incomplete.")
-    return f"indexed '{row['title']}': {n} of {row['pages']} pages searchable.{note}"
+    if confident:
+        page_note = (f"\n  page offset measured at {offset} "
+                     f"({votes}/{sampled} pages agree): printed p.1 is pdf p.{offset + 1}.")
+    else:
+        page_note = ("\n  page offset could not be measured (no consistent printed page "
+                     "numbers); pdf and printed numbers are treated as identical.")
+    return (f"indexed '{row['title']}': {n} of {row['pages']} pages searchable."
+            f"{note}{page_note}")
 
 
 @mcp.tool(annotations={"readOnlyHint": True})
@@ -310,12 +379,13 @@ def search_corpus(query: str, limit: int = 10, book_id: int = 0) -> str:
     """
     if not query.strip():
         return "ERROR: empty query. Pass search terms, e.g. search_corpus('consensus protocol')."
+    fts_query = _fts_query(query)
     lim = max(1, min(limit, MAX_HITS))
     sql = """SELECT c.book_id, c.pdf_page, b.title, b.page_offset,
                     snippet(chunks, 0, '>>', '<<', ' … ', 12) AS snip
              FROM chunks c JOIN books b ON b.id=c.book_id
              WHERE chunks MATCH ?"""
-    args: list = [query]
+    args: list = [fts_query]
     if book_id:
         sql += " AND c.book_id=?"
         args.append(book_id)
@@ -328,8 +398,9 @@ def search_corpus(query: str, limit: int = 10, book_id: int = 0) -> str:
             n_indexed = c.execute(
                 "SELECT COUNT(*) AS n FROM books WHERE full_indexed_at IS NOT NULL").fetchone()["n"]
     except sqlite3.OperationalError as e:
-        return (f"ERROR: bad FTS query {query!r}: {e}. Use plain terms, quoted \"exact phrase\", "
-                f"or term1 OR term2 — bare punctuation is a syntax error.")
+        return (f"ERROR: could not run query {query!r}: {e}. Plain words and hyphenated "
+                f"terms are handled automatically; if you wrote your own \"quoted phrase\" "
+                f"or AND/OR/NOT operators, check they are balanced.")
 
     if not rows:
         if not n_indexed:
@@ -361,7 +432,10 @@ def get_pages(book_id: int, start: int, end: int = 0, printed: bool = False) -> 
             return f"ERROR: no book with id {book_id}. Call list_books() to see valid ids."
         off = row["page_offset"] or 0
         s = start + off if printed else start
-        e = (end + off if printed else end) or s
+        # end=0 means "just the start page". Resolve that BEFORE adding the
+        # offset — offsetting a zero produces a bogus span reaching back into
+        # the front matter.
+        e = s if not end else (end + off if printed else end)
         if e < s:
             s, e = e, s
         if e - s + 1 > MAX_PAGE_SPAN:
