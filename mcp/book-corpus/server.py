@@ -401,7 +401,14 @@ def ingest_dir(path: str, recursive: bool = True, force: bool = False) -> str:
         lines += problems[:20]
         if len(problems) > 20:
             lines.append(f"  ... and {len(problems) - 20} more")
-    lines.append("Next: full_index(book_id) on a book before searching its text.")
+    with db() as c:
+        pend = c.execute("SELECT COUNT(*) n, COALESCE(SUM(pages),0) p FROM books "
+                         "WHERE full_indexed_at IS NULL AND text_quality != 'none'").fetchone()
+    if pend["n"]:
+        lines.append(f"NOT SEARCHABLE YET: {pend['n']} document(s) hold metadata only "
+                     f"({pend['p']} pages). search_corpus sees full-indexed documents only — "
+                     f"run index_pending() to work through the backlog "
+                     f"(~{pend['p'] * 0.032 / 60:.0f} min), or full_index(id) for one.")
     return "\n".join(lines)
 
 
@@ -474,6 +481,59 @@ def full_index(book_id: int) -> str:
                      "numbers); pdf and printed numbers are treated as identical.")
     return (f"indexed '{row['title']}': {n} of {row['pages']} {unit} searchable."
             f"{note}{page_note}")
+
+
+@mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
+def index_pending(limit: int = 25, max_pages: int = 0) -> str:
+    """Full-index documents that are swept but not yet searchable, smallest first.
+
+    Use to make a library searchable in bulk after ingest_dir — search_corpus
+    only sees full-indexed documents, so a swept-but-unindexed corpus returns
+    nothing. Roughly 0.03s per page; call repeatedly to work through a backlog.
+    Skips scanned documents. Returns per-document results and what remains.
+    """
+    with db() as c:
+        q = ("SELECT id,title,pages FROM books WHERE full_indexed_at IS NULL "
+             "AND text_quality != 'none'")
+        args: list = []
+        if max_pages:
+            q += " AND pages <= ?"
+            args.append(max_pages)
+        q += " ORDER BY pages ASC LIMIT ?"
+        args.append(max(1, min(limit, 200)))
+        pending = c.execute(q, args).fetchall()
+
+    if not pending:
+        with db() as c:
+            left = c.execute("SELECT COUNT(*) n FROM books WHERE full_indexed_at IS NULL "
+                             "AND text_quality != 'none'").fetchone()["n"]
+        return ("Nothing pending — every swept document with a text layer is indexed."
+                if not left else
+                f"No documents match (max_pages={max_pages}); {left} still pending overall.")
+
+    done, pages_done, failed = 0, 0, []
+    for b in pending:
+        res = full_index(b["id"])
+        if res.startswith("ERROR"):
+            failed.append(f"  #{b['id']} {b['title'][:50]}: {res[7:90]}")
+        else:
+            done += 1
+            pages_done += b["pages"] or 0
+
+    with db() as c:
+        rest = c.execute("SELECT COUNT(*) n, COALESCE(SUM(pages),0) p FROM books "
+                         "WHERE full_indexed_at IS NULL AND text_quality != 'none'").fetchone()
+
+    lines = [f"indexed {done} document(s), {pages_done} pages."]
+    if failed:
+        lines.append(f"failed ({len(failed)}):")
+        lines += failed[:10]
+    if rest["n"]:
+        lines.append(f"{rest['n']} document(s) still pending ({rest['p']} pages, "
+                     f"~{rest['p'] * 0.032 / 60:.0f} min). Call again to continue.")
+    else:
+        lines.append("Backlog clear — the whole corpus is searchable.")
+    return "\n".join(lines)
 
 
 @mcp.tool(annotations={"readOnlyHint": True})

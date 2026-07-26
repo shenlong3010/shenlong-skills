@@ -230,6 +230,23 @@ def main() -> None:
     assert left == 0, f"stale chunks must be dropped when the file changes, {left} left"
     assert fi["full_indexed_at"] is None, "a changed file must no longer read as indexed"
 
+    # --- bulk indexing of the backlog -------------------------------------
+    # Sweeping leaves documents searchable-in-name-only; index_pending is what
+    # turns a swept library into a searchable one.
+    with S.db() as c:
+        before = c.execute("SELECT COUNT(*) n FROM books WHERE full_indexed_at IS NULL "
+                           "AND text_quality != 'none'").fetchone()["n"]
+    assert before > 0, "fixtures should leave something pending"
+    bulk = S.index_pending()
+    assert "indexed" in bulk, f"index_pending should report work done: {bulk}"
+    with S.db() as c:
+        after = c.execute("SELECT COUNT(*) n FROM books WHERE full_indexed_at IS NULL "
+                          "AND text_quality != 'none'").fetchone()["n"]
+    assert after == 0, f"backlog should be clear, {after} left"
+    # Scanned documents are skipped, not retried forever.
+    assert "Backlog clear" in bulk, f"expected a clear backlog: {bulk}"
+    assert S.index_pending().startswith("Nothing pending"), "a clear backlog must say so"
+
     # --- span cap ---------------------------------------------------------
     capped = S.get_pages(bid, 1, 999)
     assert capped.startswith("ERROR") and "cap" in capped, "oversized span must be refused"
