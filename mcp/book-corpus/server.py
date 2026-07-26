@@ -66,7 +66,15 @@ def db() -> sqlite3.Connection:
         toc_json TEXT,
         text_quality TEXT,               -- ok | sparse | none | error
         swept_at REAL,
-        full_indexed_at REAL)""")
+        full_indexed_at REAL,
+        file_size INTEGER,               -- size+mtime fingerprint: an unchanged
+        file_mtime REAL)""")             #    file is skipped on re-sweep
+    # Older DBs predate the fingerprint columns; add them rather than forcing a
+    # rebuild of a corpus that may hold hundreds of books.
+    have = {r[1] for r in conn.execute("PRAGMA table_info(books)")}
+    for col, decl in (("file_size", "INTEGER"), ("file_mtime", "REAL")):
+        if col not in have:
+            conn.execute(f"ALTER TABLE books ADD COLUMN {col} {decl}")
     conn.execute("""CREATE VIRTUAL TABLE IF NOT EXISTS chunks USING fts5(
         text, book_id UNINDEXED, pdf_page UNINDEXED, tokenize='porter')""")
     return conn
@@ -270,20 +278,39 @@ def _extract(path: Path) -> dict:
 # ---------------------------------------------------------------- tools
 
 @mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
-def ingest_book(path: str) -> str:
+def ingest_book(path: str, force: bool = False) -> str:
     """Sweep one document into the corpus (metadata, TOC, text-quality probe only).
 
     Handles PDFs and text documents (.md, .txt, .rst) — books, specs, runbooks,
     any reference you would otherwise reread from disk each time. Use when
     adding a single file, before reading it. Cheap — does not extract full text;
-    call full_index for that. Safe to re-run: updates in place.
+    call full_index for that.
+
+    Safe and fast to re-run: a file whose size and mtime are unchanged is
+    skipped, so adding one document to a large corpus costs one file's work.
+    Pass force=True to re-read a file the fingerprint says is unchanged.
     Returns the id, page/section count, and text quality.
     """
     p = Path(path).expanduser()
     if not p.is_file():
-        return f"ERROR: no file at {p}. Pass an absolute path to a .pdf file."
+        return f"ERROR: no file at {p}. Pass an absolute path to a document file."
     if p.suffix.lower() not in BOOK_EXTS:
         return f"ERROR: unsupported type {p.suffix}. Supported: {', '.join(sorted(BOOK_EXTS))}"
+
+    # An unchanged file is skipped outright: re-opening and re-sampling every
+    # book to re-derive metadata that cannot have changed made adding one book
+    # to a 160-book library cost a full re-sweep (~6 minutes).
+    st = p.stat()
+    if not force:
+        with db() as c:
+            prev = c.execute(
+                "SELECT id,file_size,file_mtime,pages,text_quality FROM books WHERE path=?",
+                (str(p),)).fetchone()
+        if (prev and prev["file_size"] == st.st_size
+                and prev["file_mtime"] == st.st_mtime):
+            return (f"unchanged #{prev['id']}: {p.name} — {prev['pages']} pages, "
+                    f"text_quality={prev['text_quality']} (skipped; pass force=True to re-read).")
+
     try:
         info = _extract(p) if p.suffix.lower() in PDF_EXTS else _extract_text_doc(p)
     except Exception as e:
@@ -297,33 +324,49 @@ def ingest_book(path: str) -> str:
 
     with db() as c:
         c.execute(
-            """INSERT INTO books(path,title,author,pages,page_offset,toc_json,text_quality,swept_at)
-               VALUES(?,?,?,?,?,?,?,?)
+            """INSERT INTO books(path,title,author,pages,page_offset,toc_json,text_quality,
+                                 swept_at,file_size,file_mtime)
+               VALUES(?,?,?,?,?,?,?,?,?,?)
                ON CONFLICT(path) DO UPDATE SET
                  title=excluded.title, author=excluded.author, pages=excluded.pages,
                  page_offset=excluded.page_offset, toc_json=excluded.toc_json,
-                 text_quality=excluded.text_quality, swept_at=excluded.swept_at""",
+                 text_quality=excluded.text_quality, swept_at=excluded.swept_at,
+                 file_size=excluded.file_size, file_mtime=excluded.file_mtime""",
             (str(p), info["title"], info["author"], info["pages"], info["page_offset"],
-             json.dumps(info["toc"]), info["text_quality"], time.time()),
+             json.dumps(info["toc"]), info["text_quality"], time.time(),
+             st.st_size, st.st_mtime),
         )
         bid = c.execute("SELECT id FROM books WHERE path=?", (str(p),)).fetchone()["id"]
+        # The file changed (or we were forced), so any existing full-text index
+        # describes the old content. Drop it rather than serve stale hits.
+        stale = c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?", (bid,)).fetchone()["n"]
+        if stale:
+            c.execute("DELETE FROM chunks WHERE book_id=?", (bid,))
+            c.execute("UPDATE books SET full_indexed_at=NULL WHERE id=?", (bid,))
 
     warn = ""
+    if stale:
+        warn += (f"  NOTE: file changed since it was indexed; its {stale} stale chunks were "
+                 f"dropped. Call full_index({bid}) to make the new content searchable.")
     if info["text_quality"] != "ok":
-        warn = (f"  WARNING: text layer is '{info['text_quality']}' — likely scanned. "
-                f"Full-text search will not work; OCR it first.")
+        warn += (f"  WARNING: text layer is '{info['text_quality']}' — likely scanned. "
+                 f"Full-text search will not work; OCR it first.")
     return (f"swept #{bid}: {info['title']} — {info['pages']} pages, "
             f"{len(info['toc'])} TOC entries, text_quality={info['text_quality']}, "
             f"page_offset={info['page_offset']}.{warn}")
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
-def ingest_dir(path: str, recursive: bool = True) -> str:
+def ingest_dir(path: str, recursive: bool = True, force: bool = False) -> str:
     """Sweep every document in a directory into the corpus (metadata only).
 
     Use to bring a whole library or docs folder in at once — PDFs and text
     documents (.md, .txt, .rst) alike. Cheap per file; no full text.
-    Safe to re-run. Returns counts by text quality and names any that failed.
+
+    Cheap to re-run after adding files: unchanged documents are skipped by a
+    size+mtime check, so a re-sweep costs roughly the new files only. Pass
+    force=True to re-read everything.
+    Returns counts by text quality, how many were skipped, and any failures.
     """
     d = Path(path).expanduser()
     if not d.is_dir():
@@ -335,19 +378,24 @@ def ingest_dir(path: str, recursive: bool = True) -> str:
 
     tally: dict[str, int] = {}
     problems = []
+    skipped = 0
     for f in files:
-        res = ingest_book(str(f))
+        res = ingest_book(str(f), force=force)
         if res.startswith("ERROR"):
             tally["error"] = tally.get("error", 0) + 1
             problems.append(f"  {f.name}: {res[7:]}")
+        elif res.startswith("unchanged"):
+            skipped += 1
         else:
             q = res.split("text_quality=")[1].split(",")[0]
             tally[q] = tally.get(q, 0) + 1
             if q != "ok":
                 problems.append(f"  {f.name}: text_quality={q} (scanned? needs OCR)")
 
-    lines = [f"swept {len(files)} file(s) under {d}",
-             "  " + ", ".join(f"{k}={v}" for k, v in sorted(tally.items()))]
+    processed = len(files) - skipped
+    lines = [f"swept {len(files)} file(s) under {d}: {processed} read, {skipped} unchanged"]
+    if tally:
+        lines.append("  " + ", ".join(f"{k}={v}" for k, v in sorted(tally.items())))
     if problems:
         lines.append(f"needs attention ({len(problems)}):")
         lines += problems[:20]

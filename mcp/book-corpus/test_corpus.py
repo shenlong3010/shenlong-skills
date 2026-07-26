@@ -5,6 +5,7 @@ Builds real PDFs with reportlab and runs the real tools against a temp DB — no
 mocks. Run: python test_corpus.py
 """
 import os
+import time
 import sys
 import tempfile
 from pathlib import Path
@@ -199,6 +200,36 @@ def main() -> None:
     assert "runbook" in found.lower() or "Payment Service" in found, \
         f"markdown content must be searchable: {found}"
 
+    # --- incremental re-sweep ---------------------------------------------
+    # Adding one document must not cost a full re-read. Unchanged files are
+    # skipped on size+mtime; a re-sweep of an untouched library reads nothing.
+    again = S.ingest_dir(str(books))
+    assert "0 read" in again, f"unchanged re-sweep must read nothing: {again}"
+
+    (books / "newbook.md").write_text("# Late Arrival\n\nAdded after the first sweep.\n",
+                                      encoding="utf-8")
+    inc = S.ingest_dir(str(books))
+    assert "1 read" in inc, f"only the new file should be read: {inc}"
+
+    # A changed file IS re-read, and its stale full-text index is dropped —
+    # otherwise search would keep serving content the file no longer has.
+    with S.db() as c:
+        mid = c.execute("SELECT id FROM books WHERE path LIKE '%runbook%'").fetchone()["id"]
+    S.full_index(mid)
+    with S.db() as c:
+        assert c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?",
+                         (mid,)).fetchone()["n"] > 0
+    time.sleep(0.01)
+    (books / "runbook.md").write_text("# Payment Service Runbook\n\nRewritten content.\n",
+                                      encoding="utf-8")
+    changed = S.ingest_book(str(books / "runbook.md"))
+    assert not changed.startswith("unchanged"), "a modified file must be re-read"
+    with S.db() as c:
+        left = c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?", (mid,)).fetchone()["n"]
+        fi = c.execute("SELECT full_indexed_at FROM books WHERE id=?", (mid,)).fetchone()
+    assert left == 0, f"stale chunks must be dropped when the file changes, {left} left"
+    assert fi["full_indexed_at"] is None, "a changed file must no longer read as indexed"
+
     # --- span cap ---------------------------------------------------------
     capped = S.get_pages(bid, 1, 999)
     assert capped.startswith("ERROR") and "cap" in capped, "oversized span must be refused"
@@ -217,7 +248,7 @@ def main() -> None:
         after = c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?", (bid,)).fetchone()["n"]
         nbooks = c.execute("SELECT COUNT(*) n FROM books").fetchone()["n"]
     assert before == after, f"re-index duplicated chunks: {before} -> {after}"
-    assert nbooks == 6, f"re-sweep duplicated books: {nbooks}"
+    assert nbooks == 7, f"re-sweep duplicated books: {nbooks}"
 
     print("\nOK — sweep, quality gating, search, page mapping, caps, idempotence all pass.")
 
