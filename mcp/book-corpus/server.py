@@ -68,11 +68,14 @@ def db() -> sqlite3.Connection:
         swept_at REAL,
         full_indexed_at REAL,
         file_size INTEGER,               -- size+mtime fingerprint: an unchanged
-        file_mtime REAL)""")             #    file is skipped on re-sweep
-    # Older DBs predate the fingerprint columns; add them rather than forcing a
-    # rebuild of a corpus that may hold hundreds of books.
+        file_mtime REAL,                 --   file is skipped on re-sweep
+        focus INTEGER DEFAULT 0          -- 1 = in the reading folder right now
+        )""")
+    # Older DBs predate these columns; add them rather than forcing a rebuild of
+    # a corpus that may hold hundreds of books.
     have = {r[1] for r in conn.execute("PRAGMA table_info(books)")}
-    for col, decl in (("file_size", "INTEGER"), ("file_mtime", "REAL")):
+    for col, decl in (("file_size", "INTEGER"), ("file_mtime", "REAL"),
+                      ("focus", "INTEGER DEFAULT 0")):
         if col not in have:
             conn.execute(f"ALTER TABLE books ADD COLUMN {col} {decl}")
     conn.execute("""CREATE VIRTUAL TABLE IF NOT EXISTS chunks USING fts5(
@@ -405,10 +408,10 @@ def ingest_dir(path: str, recursive: bool = True, force: bool = False) -> str:
         pend = c.execute("SELECT COUNT(*) n, COALESCE(SUM(pages),0) p FROM books "
                          "WHERE full_indexed_at IS NULL AND text_quality != 'none'").fetchone()
     if pend["n"]:
-        lines.append(f"NOT SEARCHABLE YET: {pend['n']} document(s) hold metadata only "
-                     f"({pend['p']} pages). search_corpus sees full-indexed documents only — "
-                     f"run index_pending() to work through the backlog "
-                     f"(~{pend['p'] * 0.032 / 60:.0f} min), or full_index(id) for one.")
+        lines.append(f"{pend['n']} document(s) hold metadata only and are NOT searchable. "
+                     f"That is the intended resting state — index what you actually read: "
+                     f"put it in the reading folder and call sync_focus(), or full_index(id) "
+                     f"for one document.")
     return "\n".join(lines)
 
 
@@ -484,79 +487,101 @@ def full_index(book_id: int) -> str:
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
-def index_pending(limit: int = 25, max_pages: int = 0, budget_seconds: int = 240) -> str:
-    """Full-index documents that are swept but not yet searchable, smallest first.
+def sync_focus(path: str, budget_seconds: int = 240) -> str:
+    """Make the reading folder the focus set: index what is in it, unfocus what left.
 
-    Use to make a library searchable in bulk after ingest_dir — search_corpus
-    only sees full-indexed documents, so a swept-but-unindexed corpus returns
-    nothing. Roughly 0.03s per page.
+    Point this at the folder holding what you are actively reading. Documents in
+    it are swept, full-indexed, and become the default scope for search_corpus.
+    Documents that have left the folder stop being the default — but KEEP their
+    text, so a book you finished stays searchable via scope="all".
 
-    Stops cleanly at budget_seconds (default 4 min) so a large backlog returns
-    progress instead of being killed by a client timeout. Work already done is
-    committed per document, so calling it repeatedly resumes where it stopped.
-    Skips scanned documents. Returns what was indexed and what remains.
+    Nothing is ever un-indexed: reading a document promotes it permanently, and
+    the corpus grows only with documents you actually opened. Safe to re-run;
+    unchanged documents cost nothing. Stops cleanly at budget_seconds with
+    progress saved. Returns what entered focus, what left, and what was indexed.
     """
-    with db() as c:
-        q = ("SELECT id,title,pages FROM books WHERE full_indexed_at IS NULL "
-             "AND text_quality != 'none'")
-        args: list = []
-        if max_pages:
-            q += " AND pages <= ?"
-            args.append(max_pages)
-        q += " ORDER BY pages ASC LIMIT ?"
-        args.append(max(1, min(limit, 200)))
-        pending = c.execute(q, args).fetchall()
+    d = Path(path).expanduser()
+    if not d.is_dir():
+        return (f"ERROR: not a directory: {d}. Pass the folder holding what you are "
+                f"reading, e.g. sync_focus('L:/books/reading').")
 
-    if not pending:
-        with db() as c:
-            left = c.execute("SELECT COUNT(*) n FROM books WHERE full_indexed_at IS NULL "
-                             "AND text_quality != 'none'").fetchone()["n"]
-        return ("Nothing pending — every swept document with a text layer is indexed."
-                if not left else
-                f"No documents match (max_pages={max_pages}); {left} still pending overall.")
-
-    done, pages_done, failed = 0, 0, []
+    on_disk = [f for f in d.rglob("*") if f.suffix.lower() in BOOK_EXTS]
     started = time.time()
-    ran_out = False
-    for b in pending:
+
+    entered, indexed, failed, ran_out = [], [], [], False
+    for f in on_disk:
         if budget_seconds and time.time() - started > budget_seconds:
             ran_out = True
             break
-        res = full_index(b["id"])
+        res = ingest_book(str(f))
         if res.startswith("ERROR"):
-            failed.append(f"  #{b['id']} {b['title'][:50]}: {res[7:90]}")
-        else:
-            done += 1
-            pages_done += b["pages"] or 0
+            failed.append(f"  {f.name}: {res[7:90]}")
+            continue
+        with db() as c:
+            row = c.execute("SELECT id,title,focus,full_indexed_at,text_quality "
+                            "FROM books WHERE path=?", (str(f),)).fetchone()
+        if not row:
+            continue
+        if not row["focus"]:
+            entered.append(row["title"][:55])
+        with db() as c:
+            c.execute("UPDATE books SET focus=1 WHERE id=?", (row["id"],))
+        if row["full_indexed_at"] is None and row["text_quality"] != "none":
+            r = full_index(row["id"])
+            (failed if r.startswith("ERROR") else indexed).append(
+                f"  {row['title'][:55]}" + (f": {r[7:90]}" if r.startswith("ERROR") else ""))
+
+    # Anything focused but no longer in the folder drops out of the default
+    # scope. Its chunks stay: a finished book must remain searchable, or search
+    # goes silent on a book you know you read.
+    paths = {str(f) for f in on_disk}
+    left = []
+    with db() as c:
+        for row in c.execute("SELECT id,title,path FROM books WHERE focus=1"):
+            if row["path"] not in paths:
+                c.execute("UPDATE books SET focus=0 WHERE id=?", (row["id"],))
+                left.append(row["title"][:55])
 
     with db() as c:
-        rest = c.execute("SELECT COUNT(*) n, COALESCE(SUM(pages),0) p FROM books "
-                         "WHERE full_indexed_at IS NULL AND text_quality != 'none'").fetchone()
+        st = c.execute("""SELECT
+            SUM(CASE WHEN focus=1 THEN 1 ELSE 0 END) focus,
+            SUM(CASE WHEN focus=0 AND full_indexed_at IS NOT NULL THEN 1 ELSE 0 END) reference
+            FROM books""").fetchone()
 
-    lines = [f"indexed {done} document(s), {pages_done} pages "
-             f"in {time.time() - started:.0f}s."]
-    if ran_out:
-        lines.append(f"stopped at the {budget_seconds}s budget — progress is saved.")
+    lines = [f"focus folder: {d}  ({time.time() - started:.0f}s)"]
+    if entered:
+        lines.append(f"entered focus ({len(entered)}):")
+        lines += [f"  {t}" for t in entered[:15]]
+    if indexed:
+        lines.append(f"newly indexed ({len(indexed)}):")
+        lines += indexed[:15]
+    if left:
+        lines.append(f"left focus, still searchable via scope='all' ({len(left)}):")
+        lines += [f"  {t}" for t in left[:15]]
     if failed:
         lines.append(f"failed ({len(failed)}):")
         lines += failed[:10]
-    if rest["n"]:
-        lines.append(f"{rest['n']} document(s) still pending ({rest['p']} pages, "
-                     f"~{rest['p'] * 0.032 / 60:.0f} min). Call index_pending() again "
-                     f"to resume — it picks up where this left off.")
-    else:
-        lines.append("Backlog clear — the whole corpus is searchable.")
+    if ran_out:
+        lines.append(f"stopped at the {budget_seconds}s budget — progress saved, "
+                     f"call sync_focus again to continue.")
+    if not (entered or indexed or left or failed):
+        lines.append("no changes — focus set already matches the folder.")
+    lines.append(f"now: {st['focus'] or 0} in focus, {st['reference'] or 0} reference "
+                 f"(finished but searchable).")
     return "\n".join(lines)
 
 
 @mcp.tool(annotations={"readOnlyHint": True})
 def list_books(filter: str = "", limit: int = 30) -> str:
-    """List books in the corpus, newest sweep first, with their index state.
+    """List documents in the corpus with their state, newest sweep first.
 
-    Call this FIRST, before extracting or reading any book file directly — a
-    book already in the corpus should be queried, not re-read. `filter` matches
+    Call this FIRST, before extracting or reading any document directly — one
+    already in the corpus should be queried, not re-read. `filter` matches
     title, author, or path (case-insensitive).
-    Returns id, title, pages, text quality, and whether full text is indexed.
+
+    Each row is one of three states: `focus` (in the reading folder, searched by
+    default), `reference` (finished but still searchable via scope='all'), or
+    `swept` (metadata only, not searchable until full_index).
     """
     q = """SELECT b.*, (SELECT COUNT(*) FROM chunks WHERE book_id=b.id) AS n_chunks
            FROM books b"""
@@ -574,9 +599,14 @@ def list_books(filter: str = "", limit: int = 30) -> str:
         return ("Corpus is empty. Call ingest_dir('/path/to/books') to sweep a library."
                 if not filter else f"No books match '{filter}' (corpus holds {total}).")
 
-    lines = [f"{len(rows)} of {total} book(s):"]
+    lines = [f"{len(rows)} of {total} document(s):"]
     for r in rows:
-        state = f"full-text ({r['n_chunks']}p)" if r["n_chunks"] else "metadata only"
+        if r["focus"]:
+            state = f"focus ({r['n_chunks']}p indexed)"
+        elif r["n_chunks"]:
+            state = f"reference ({r['n_chunks']}p indexed)"
+        else:
+            state = "swept (not searchable)"
         flag = "" if r["text_quality"] == "ok" else f" [text:{r['text_quality']}]"
         lines.append(f"  #{r['id']} {r['title']} — {r['pages']}p, {state}{flag}")
     if total > len(rows):
@@ -585,12 +615,15 @@ def list_books(filter: str = "", limit: int = 30) -> str:
 
 
 @mcp.tool(annotations={"readOnlyHint": True})
-def search_corpus(query: str, limit: int = 10, book_id: int = 0) -> str:
-    """Full-text search across every indexed book; returns book + page hits.
+def search_corpus(query: str, limit: int = 10, book_id: int = 0,
+                  scope: str = "focus") -> str:
+    """Full-text search; defaults to what you are currently reading.
 
-    Use for "which of my books cover X" and to locate a passage before reading
-    it. Only searches books that have had full_index run. Pass book_id to
-    search within one book.
+    scope="focus" (default) searches only documents in the reading folder, so
+    hits come from the material actually in front of you rather than every book
+    that happens to mention the word. scope="all" searches everything indexed,
+    including documents you finished reading — use it for "which of my books
+    cover X". Pass book_id to search within one document.
 
     Returns ranked snippets with page numbers: feed those to get_pages and read
     that span alone — never load a whole book to answer a question about one
@@ -599,39 +632,67 @@ def search_corpus(query: str, limit: int = 10, book_id: int = 0) -> str:
     """
     if not query.strip():
         return "ERROR: empty query. Pass search terms, e.g. search_corpus('consensus protocol')."
+    if scope not in ("focus", "all"):
+        return f"ERROR: scope must be 'focus' or 'all', got {scope!r}."
     fts_query = _fts_query(query)
     lim = max(1, min(limit, MAX_HITS))
-    sql = """SELECT c.book_id, c.pdf_page, b.title, b.page_offset,
-                    snippet(chunks, 0, '>>', '<<', ' … ', 12) AS snip
-             FROM chunks c JOIN books b ON b.id=c.book_id
-             WHERE chunks MATCH ?"""
-    args: list = [fts_query]
-    if book_id:
-        sql += " AND c.book_id=?"
-        args.append(book_id)
-    sql += " ORDER BY rank LIMIT ?"
-    args.append(lim)
+
+    def run(sc: str) -> list:
+        sql = """SELECT c.book_id, c.pdf_page, b.title, b.page_offset,
+                        snippet(chunks, 0, '>>', '<<', ' … ', 12) AS snip
+                 FROM chunks c JOIN books b ON b.id=c.book_id
+                 WHERE chunks MATCH ?"""
+        args: list = [fts_query]
+        if sc == "focus":
+            sql += " AND b.focus=1"
+        if book_id:
+            sql += " AND c.book_id=?"
+            args.append(book_id)
+        sql += " ORDER BY rank LIMIT ?"
+        args.append(lim)
+        with db() as c:
+            return c.execute(sql, args).fetchall()
 
     try:
+        rows = run(scope)
         with db() as c:
-            rows = c.execute(sql, args).fetchall()
-            n_indexed = c.execute(
-                "SELECT COUNT(*) AS n FROM books WHERE full_indexed_at IS NOT NULL").fetchone()["n"]
+            counts = c.execute("""SELECT
+                SUM(CASE WHEN focus=1 AND full_indexed_at IS NOT NULL THEN 1 ELSE 0 END) f,
+                SUM(CASE WHEN full_indexed_at IS NOT NULL THEN 1 ELSE 0 END) a
+                FROM books""").fetchone()
     except sqlite3.OperationalError as e:
         return (f"ERROR: could not run query {query!r}: {e}. Plain words and hyphenated "
                 f"terms are handled automatically; if you wrote your own \"quoted phrase\" "
                 f"or AND/OR/NOT operators, check they are balanced.")
 
-    if not rows:
-        if not n_indexed:
-            return ("No books have full text indexed yet. list_books() shows what is swept; "
-                    "call full_index(book_id) on one before searching.")
-        return (f"No hits for {query!r} across {n_indexed} indexed book(s). "
-                f"This is not proof the topic is absent: only full-indexed books are "
-                f"searched (list_books shows which), keyword search misses paraphrase, "
-                f"and a book flagged text_quality=none has no searchable text at all.")
+    n_focus, n_all = counts["f"] or 0, counts["a"] or 0
+    searched = n_focus if scope == "focus" else n_all
 
-    lines = [f"{len(rows)} hit(s) for {query!r} across {n_indexed} indexed book(s):"]
+    if not rows:
+        if not n_all:
+            return ("Nothing is indexed yet. Put what you are reading in the reading "
+                    "folder and call sync_focus('<that folder>'), or full_index(book_id) "
+                    "for one document.")
+        if scope == "focus":
+            if not n_focus:
+                return (f"Nothing is in focus, so a focus-scoped search has nothing to "
+                        f"look at. {n_all} document(s) are indexed — retry with "
+                        f"scope='all', or sync_focus() the reading folder.")
+            # The whole point of the focus default is precision, so never let it
+            # hide a real hit: say plainly that the wider corpus has one.
+            if run("all"):
+                return (f"No hits for {query!r} in the {n_focus} document(s) you are "
+                        f"reading — but the wider corpus has hits. "
+                        f"Retry with scope='all' to search all {n_all} indexed document(s).")
+        return (f"No hits for {query!r} across {searched} indexed document(s) "
+                f"(scope={scope}). This is not proof the topic is absent: only "
+                f"full-indexed documents are searched (list_books shows which), keyword "
+                f"search misses paraphrase, and a document flagged text_quality=none has "
+                f"no searchable text at all.")
+
+    where = (f"{searched} document(s) in focus" if scope == "focus"
+             else f"all {searched} indexed document(s)")
+    lines = [f"{len(rows)} hit(s) for {query!r} across {where}:"]
     for r in rows:
         snip = re.sub(r"\s+", " ", r["snip"])[:SNIPPET_CHARS]
         lines.append(f"  #{r['book_id']} {r['title']} — pdf p.{r['pdf_page']} "

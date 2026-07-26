@@ -106,7 +106,7 @@ def main() -> None:
         bid = c.execute("SELECT id FROM books WHERE path LIKE '%distributed%'").fetchone()["id"]
     print(S.full_index(bid))
 
-    hits = S.search_corpus("Raft consensus")
+    hits = S.search_corpus("Raft consensus", scope="all")
     print(hits)
     assert "distributed" in hits.lower(), "known phrase did not return its book"
     assert "pdf p.3" in hits, f"phrase is on pdf page 3; got:\n{hits}"
@@ -114,7 +114,7 @@ def main() -> None:
     # --- searching an unindexed book returns guidance, not a lie ----------
     with S.db() as c:
         nid = c.execute("SELECT id FROM books WHERE path LIKE '%networks%'").fetchone()["id"]
-    miss = S.search_corpus("congestion", book_id=nid)
+    miss = S.search_corpus("congestion", book_id=nid, scope="all")
     print(miss)
     assert "No hits" in miss, "unindexed book should yield no hits, not fabricated ones"
 
@@ -130,7 +130,7 @@ def main() -> None:
     assert S._fts_query("red-black tree") == '"red-black" "tree"'
     assert S._fts_query('"exact phrase"') == '"exact phrase"', "explicit phrases pass through"
     assert S._fts_query("a OR b") == '"a" OR "b"', "operators survive, operands get quoted"
-    hyphen = S.search_corpus("leader-election OR consensus", book_id=bid)
+    hyphen = S.search_corpus("leader-election OR consensus", book_id=bid, scope="all")
     assert not hyphen.startswith("ERROR"), f"hyphenated query must not error: {hyphen}"
 
     # --- measured page offset ---------------------------------------------
@@ -196,7 +196,7 @@ def main() -> None:
     assert "sections searchable" in idx, f"text docs count sections, not pages: {idx}"
     assert "text document" in idx, "text docs must not report a page offset"
 
-    found = S.search_corpus("failover standby replica")
+    found = S.search_corpus("failover standby replica", scope="all")
     assert "runbook" in found.lower() or "Payment Service" in found, \
         f"markdown content must be searchable: {found}"
 
@@ -230,22 +230,61 @@ def main() -> None:
     assert left == 0, f"stale chunks must be dropped when the file changes, {left} left"
     assert fi["full_indexed_at"] is None, "a changed file must no longer read as indexed"
 
-    # --- bulk indexing of the backlog -------------------------------------
-    # Sweeping leaves documents searchable-in-name-only; index_pending is what
-    # turns a swept library into a searchable one.
+    # --- focus folder drives indexing -------------------------------------
+    # The reading folder is the whole control surface: what is in it gets
+    # indexed and becomes the default search scope.
+    reading = TMP / "reading"
+    reading.mkdir(exist_ok=True)
+    for f in reading.iterdir():
+        if f.is_file():
+            f.unlink()
+    import shutil
+    shutil.copy(books / "networks.pdf", reading / "networks.pdf")
+
+    sync = S.sync_focus(str(reading))
+    print(sync)
     with S.db() as c:
-        before = c.execute("SELECT COUNT(*) n FROM books WHERE full_indexed_at IS NULL "
-                           "AND text_quality != 'none'").fetchone()["n"]
-    assert before > 0, "fixtures should leave something pending"
-    bulk = S.index_pending()
-    assert "indexed" in bulk, f"index_pending should report work done: {bulk}"
+        foc = c.execute("SELECT id,focus,full_indexed_at FROM books "
+                        "WHERE path LIKE ?", (f"%{reading.name}%networks%",)).fetchone()
+    assert foc and foc["focus"] == 1, "a document in the reading folder must be in focus"
+    assert foc["full_indexed_at"] is not None, "entering focus must index the document"
+
+    # Focus scope searches only what is being read.
+    inscope = S.search_corpus("congestion")
+    assert "congestion" in inscope.lower() or "hit" in inscope, \
+        f"focus search should find the focused document: {inscope}"
+
+    # A focus-scoped miss must NOT hide a real hit elsewhere — that silent
+    # empty result is the failure this whole design exists to avoid.
+    quiet = S.search_corpus("Raft consensus")          # only in the non-focus book
+    assert "scope='all'" in quiet, \
+        f"a focus miss with hits elsewhere must name the retry: {quiet}"
+    assert "hit" in S.search_corpus("Raft consensus", scope="all"), \
+        "scope='all' must reach documents outside focus"
+
+    # Leaving the folder drops focus but KEEPS the text: a finished book stays
+    # searchable, or search goes silent on a book you know you read.
     with S.db() as c:
-        after = c.execute("SELECT COUNT(*) n FROM books WHERE full_indexed_at IS NULL "
-                          "AND text_quality != 'none'").fetchone()["n"]
-    assert after == 0, f"backlog should be clear, {after} left"
-    # Scanned documents are skipped, not retried forever.
-    assert "Backlog clear" in bulk, f"expected a clear backlog: {bulk}"
-    assert S.index_pending().startswith("Nothing pending"), "a clear backlog must say so"
+        chunks_before = c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?",
+                                  (foc["id"],)).fetchone()["n"]
+    (reading / "networks.pdf").unlink()
+    out2 = S.sync_focus(str(reading))
+    print(out2)
+    with S.db() as c:
+        gone = c.execute("SELECT focus,full_indexed_at FROM books WHERE id=?",
+                         (foc["id"],)).fetchone()
+        chunks_after = c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?",
+                                 (foc["id"],)).fetchone()["n"]
+    assert gone["focus"] == 0, "leaving the folder must clear focus"
+    assert chunks_after == chunks_before, \
+        f"leaving focus must KEEP the text ({chunks_before} -> {chunks_after})"
+    assert gone["full_indexed_at"] is not None, "a finished document stays indexed"
+    assert "hit" in S.search_corpus("congestion", scope="all"), \
+        "a finished document must still be findable via scope='all'"
+
+    # Idempotent: a second sync with no changes does no work.
+    again = S.sync_focus(str(reading))
+    assert "no changes" in again, f"unchanged sync should be a no-op: {again}"
 
     # --- span cap ---------------------------------------------------------
     capped = S.get_pages(bid, 1, 999)
@@ -265,7 +304,7 @@ def main() -> None:
         after = c.execute("SELECT COUNT(*) n FROM chunks WHERE book_id=?", (bid,)).fetchone()["n"]
         nbooks = c.execute("SELECT COUNT(*) n FROM books").fetchone()["n"]
     assert before == after, f"re-index duplicated chunks: {before} -> {after}"
-    assert nbooks == 7, f"re-sweep duplicated books: {nbooks}"
+    assert nbooks == 8, f"re-sweep duplicated books: {nbooks}"   # 7 fixtures + the reading/ copy
 
     print("\nOK — sweep, quality gating, search, page mapping, caps, idempotence all pass.")
 

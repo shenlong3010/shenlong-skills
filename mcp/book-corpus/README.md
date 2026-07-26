@@ -24,29 +24,51 @@ DB defaults to `~/.local/share/book-corpus.db`; override with `BOOK_CORPUS_DB`.
 It is created on demand and lives outside the repo — book files and the index
 are never committed.
 
-## Two-phase ingest, on purpose
+## Three states
 
-A library is mostly unread, so extraction cost is paid only where it earns out:
+A library is mostly unread, so extraction is paid only where it earns out — and
+what earns it is *reading the thing*, not its size.
 
-| phase | cost | gives you |
+| state | what it means | searchable |
 |---|---|---|
-| `ingest_dir` / `ingest_book` — **sweep** | cheap, samples ~5 pages | title, author, page count, TOC, text-layer verdict |
-| `full_index` — **full text** | costly, reads every page | per-page FTS5 search inside that book |
+| **swept** | never opened; metadata, TOC, text-layer verdict only | no |
+| **focus** | sitting in the reading folder right now | yes — **default scope** |
+| **reference** | finished reading, left the folder | yes, via `scope="all"` |
 
-Sweep the whole library once; `full_index` a book when you actually start
-reading it. `search_corpus` only sees fully-indexed books and says so when
-nothing is indexed yet, rather than returning a confident empty result.
+`ingest_dir` sweeps (cheap, samples ~5 pages). `sync_focus` promotes what is in
+the reading folder: it indexes new arrivals and drops departures back to
+reference. `full_index` does one document by hand.
+
+**Nothing is ever un-indexed.** Reading a document promotes it permanently, so a
+book you finished stays findable months later — you stop rereading it long
+before you stop consulting it. Dropping its text to save space would make search
+go quiet on a book you *know* covers the topic, which is worse than never having
+indexed it: the silence looks like a real answer.
+
+Growth is therefore bounded by what you actually read, not by a cleanup rule.
+Measured at ~1.9 KB/page.
+
+**Why the default scope is focus.** With a large corpus indexed, a query for
+"caching" returns hits from every book that mentions the word, burying the one
+in front of you. Scoping to what you are reading makes results relevant rather
+than merely fewer. A focus-scoped search that finds nothing while the wider
+corpus has hits says so explicitly and names the retry — that silent-miss case
+is the one failure this design exists to prevent.
 
 ## Tools
 
 | tool | what it gives you |
 |---|---|
-| `list_books(filter, limit)` | what's in the corpus and its index state |
+| `sync_focus(path)` | index what is in the reading folder; unfocus what left |
+| `search_corpus(query, limit, book_id, scope)` | ranked page hits; `scope="focus"` (default) or `"all"` |
+| `list_books(filter, limit)` | the corpus with each document's state |
 | `get_toc(book_id)` | chapter list with pdf + printed page numbers |
-| `search_corpus(query, limit, book_id)` | ranked page hits with snippets |
 | `get_pages(book_id, start, end, printed)` | full text of a page span (20-page cap) |
-| `ingest_book(path)` / `ingest_dir(path)` | sweep one book / a directory |
-| `full_index(book_id)` | the expensive per-page pass |
+| `ingest_book(path)` / `ingest_dir(path)` | sweep one document / a directory |
+| `full_index(book_id)` | index one document by hand |
+
+Typical loop: `ingest_dir` the library once, then move what you are reading into
+the reading folder and call `sync_focus`. Everything else follows from search.
 
 ## Two things it gets right that are easy to get wrong
 

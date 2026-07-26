@@ -30,15 +30,28 @@ The five **`chunks_*`** tables (`_data`, `_idx`, `_content`, `_docsize`,
 not meant to be read or edited by hand. Leave them alone.
 
 `books` columns: `id, path, title, author, pages, page_offset, toc_json,
-text_quality, swept_at, full_indexed_at, file_size, file_mtime`.
+text_quality, swept_at, full_indexed_at, file_size, file_mtime, focus`.
+
+`focus=1` means the document is in the reading folder right now and is what
+`search_corpus` looks at by default. `focus=0` with a non-null `full_indexed_at`
+is a *reference* document — finished, still searchable via `scope="all"`.
 
 ## Everyday queries
 
 ```sql
--- What is in the corpus, biggest first
+-- What is in the corpus, biggest first, by state
 SELECT id, title, pages, text_quality,
-       CASE WHEN full_indexed_at IS NULL THEN 'metadata only' ELSE 'full text' END AS state
+       CASE WHEN focus = 1 THEN 'focus'
+            WHEN full_indexed_at IS NOT NULL THEN 'reference'
+            ELSE 'swept' END AS state
 FROM books ORDER BY pages DESC LIMIT 20;
+
+-- What am I reading right now
+SELECT id, title, pages FROM books WHERE focus = 1;
+
+-- What have I finished but can still search
+SELECT id, title, pages FROM books
+WHERE focus = 0 AND full_indexed_at IS NOT NULL ORDER BY title;
 
 -- One line of corpus state.  NOTE: `indexed` is a reserved word — quote it or
 -- alias to something else, or you get a bare "syntax error".
