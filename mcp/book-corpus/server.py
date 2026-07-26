@@ -484,13 +484,17 @@ def full_index(book_id: int) -> str:
 
 
 @mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
-def index_pending(limit: int = 25, max_pages: int = 0) -> str:
+def index_pending(limit: int = 25, max_pages: int = 0, budget_seconds: int = 240) -> str:
     """Full-index documents that are swept but not yet searchable, smallest first.
 
     Use to make a library searchable in bulk after ingest_dir — search_corpus
     only sees full-indexed documents, so a swept-but-unindexed corpus returns
-    nothing. Roughly 0.03s per page; call repeatedly to work through a backlog.
-    Skips scanned documents. Returns per-document results and what remains.
+    nothing. Roughly 0.03s per page.
+
+    Stops cleanly at budget_seconds (default 4 min) so a large backlog returns
+    progress instead of being killed by a client timeout. Work already done is
+    committed per document, so calling it repeatedly resumes where it stopped.
+    Skips scanned documents. Returns what was indexed and what remains.
     """
     with db() as c:
         q = ("SELECT id,title,pages FROM books WHERE full_indexed_at IS NULL "
@@ -512,7 +516,12 @@ def index_pending(limit: int = 25, max_pages: int = 0) -> str:
                 f"No documents match (max_pages={max_pages}); {left} still pending overall.")
 
     done, pages_done, failed = 0, 0, []
+    started = time.time()
+    ran_out = False
     for b in pending:
+        if budget_seconds and time.time() - started > budget_seconds:
+            ran_out = True
+            break
         res = full_index(b["id"])
         if res.startswith("ERROR"):
             failed.append(f"  #{b['id']} {b['title'][:50]}: {res[7:90]}")
@@ -524,13 +533,17 @@ def index_pending(limit: int = 25, max_pages: int = 0) -> str:
         rest = c.execute("SELECT COUNT(*) n, COALESCE(SUM(pages),0) p FROM books "
                          "WHERE full_indexed_at IS NULL AND text_quality != 'none'").fetchone()
 
-    lines = [f"indexed {done} document(s), {pages_done} pages."]
+    lines = [f"indexed {done} document(s), {pages_done} pages "
+             f"in {time.time() - started:.0f}s."]
+    if ran_out:
+        lines.append(f"stopped at the {budget_seconds}s budget — progress is saved.")
     if failed:
         lines.append(f"failed ({len(failed)}):")
         lines += failed[:10]
     if rest["n"]:
         lines.append(f"{rest['n']} document(s) still pending ({rest['p']} pages, "
-                     f"~{rest['p'] * 0.032 / 60:.0f} min). Call again to continue.")
+                     f"~{rest['p'] * 0.032 / 60:.0f} min). Call index_pending() again "
+                     f"to resume — it picks up where this left off.")
     else:
         lines.append("Backlog clear — the whole corpus is searchable.")
     return "\n".join(lines)
