@@ -14,14 +14,16 @@ domain: agent
 ## Behavior
 1. Identify from the trace: the input that triggered the behavior, and the output property that made the run a success (or the failure worth pinning).
 2. Reduce the input to the minimal reproduction — strip session-specific noise while keeping what actually exercised the behavior. Fixtures stay tiny and live beside the case.
-3. Emit the native `claude plugin eval` layout (the shape `claude plugin eval init --bare` generates):
+3. Emit the native `claude plugin eval` layout (the shape `claude plugin eval init --bare` generates), grouped under the target's domain:
 
 ```
-evals/<case-id>/
+evals/<domain>/<case-id>/
   prompt.md            # the minimal input, verbatim — what the agent is given
   graders/criteria.md  # what a passing run must show, as checkable criteria
   fixtures/…           # optional tiny files the prompt references
 ```
+
+`<domain>` is the target skill's own `domain:` frontmatter value (`skills/<name>/SKILL.md`) — look it up, don't ask the user to supply it. A case targeting a command with no `domain:` field (most commands carry `flow:` only) falls back to `agent`, matching this repo's existing convention for meta/agent-facing tooling.
 
 4. `case-id` = `<target-name>-<short-slug>` (e.g. `symbol-lookup-find-def`). Routing cases get the `routing-` prefix and test that the *right skill lane fired*, not just that the answer was correct.
 5. Grader criteria law unchanged: **pick the weakest check that still catches the regression.** Prefer objectively checkable criteria (a command was used, a file exists, output contains a literal marker like `VERDICT:`) over prose-quality judgments — the LLM judge grades against criteria.md, and vague criteria make flaky evals.
