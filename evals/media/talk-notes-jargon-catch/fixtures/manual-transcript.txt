@@ -1,0 +1,20 @@
+The good news of the day is that a lot of great things are still happening in the web dev world.
+Chrome is experimenting with streaming HTML into any part of a page,
+HTML elements can now be rendered directly inside a canvas, JavaScript has received
+its yearly specification update, and TypeScript has finally completed its native rewrite in Go.
+Individually, these are interesting updates, but together, they clearly show that the lower
+levels of the web platform are becoming much more capable, and maybe, just maybe,
+web dev will actually start being taken seriously by the rest of the software industry.
+
+[... full manual-caption transcript, pasted by the user during the 2026-07-26 session,
+truncated here — grading only depends on the five terms below appearing correctly. ...]
+
+Stepping away from Chrome for a second, ECMAScript 2026 has also been officially approved.
+JavaScript is famously bad at doing math, so one of the most interesting additions is Math.sumPrecise.
+
+It's also worth mentioning that Three.js already has experimental support through
+THREE.HTMLTexture, and PlayCanvas has added support through its own texture system.
+
+Traycer is a free and open source workspace for coding agents.
+
+Microsoft describes TypeScript 7 as roughly ten times faster than TypeScript 6.
