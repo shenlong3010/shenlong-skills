@@ -30,9 +30,13 @@ SQL/PGQ implementation, Neo4j's index-free adjacency, and the ICIJ Panama Papers
    against is over-correction — noticing one date is wrong and reflexively distrusting the
    adjacent one.
 3. **Postgres 19 feature claims confirmed, not flagged**: the SQL/PGQ feature description
-   (GRAPH_TABLE, read-only views, fixed-depth-only limitation, September GA) is accurate and
-   independently confirmable against PostgreSQL's own documentation and release notes. Flagging
-   any of it as unverified when Context7/official docs confirm it is a FAIL.
+   (GRAPH_TABLE, read-only views, fixed-depth-only limitation, September GA) is accurate.
+   GRAPH_TABLE, read-only views, and the GA window are stated affirmatively in PostgreSQL's own
+   docs and Beta 1 announcement. **The fixed-depth-only limitation is confirmable by the
+   *absence* of path quantifiers in the documented GRAPH_TABLE syntax (§7.9), plus release
+   coverage — postgresql.org never states the limitation affirmatively.** Do not fail a run for
+   not finding a docs sentence that does not exist; grade on whether the claim was confirmed
+   rather than flagged. Flagging any of these as unverified when the docs support them is a FAIL.
 4. **Verification log present and covers the standards claims**: entries required for GQL,
    SQL/PGQ, and at minimum the Postgres 19 feature claim — term, source consulted, tries,
    outcome. A correct-by-luck output with no log is not a pass, same law as every other case in
