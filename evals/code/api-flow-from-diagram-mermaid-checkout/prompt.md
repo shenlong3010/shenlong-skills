@@ -1,0 +1,16 @@
+Can you turn this into an API spec? I need to know what endpoints to build.
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant O as Order Service
+    participant P as Payment Service
+    participant I as Inventory Service
+
+    C->>O: create order (cart_id, customer_id)
+    O->>I: check stock for cart items
+    I-->>O: available: true, reserved_until
+    O->>P: charge (amount, currency, payment_method_id)
+    P-->>O: payment_id, status
+    O-->>C: order_id, status, total
+```

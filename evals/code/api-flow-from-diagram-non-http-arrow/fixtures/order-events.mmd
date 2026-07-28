@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant C as Client
+    participant O as Order Service
+    participant DB as Orders DB
+    participant K as Kafka
+    participant N as Notification Service
+
+    C->>O: submit order (cart_id)
+    O->>DB: INSERT INTO orders
+    DB-->>O: order_id
+    O->>K: publish order.created
+    K->>N: consume order.created
+    N->>N: render email template
+    O-->>C: order_id, status

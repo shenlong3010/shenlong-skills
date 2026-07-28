@@ -1,0 +1,21 @@
+extract the API from this diagram
+
+```mermaid
+graph TD
+    LB[Load Balancer]
+    GW[API Gateway]
+    AUTH[Auth Service]
+    ORD[Order Service]
+    CAT[Catalog Service]
+    CACHE[(Redis)]
+    PG[(Postgres)]
+
+    LB --> GW
+    GW --> AUTH
+    GW --> ORD
+    GW --> CAT
+    ORD --> PG
+    CAT --> CACHE
+    CAT --> PG
+    AUTH --> PG
+```

@@ -40,3 +40,5 @@ claude plugin eval shenlong-skills --tag routing --runs 1 --max-cost-usd 2
 
 ## Boundaries
 Authoring cases only. Deciding *what* deserves an eval: any instructive failure, any routing miss (naive tool used where a skill should have fired), any gotcha proven in a session. Skill content fixes belong in the skill; an eval pins the fix.
+
+A skill with **no run history yet** has no trace for step 1 to read — that is `skill-bootstrap`'s job (human-seeded prompts, a real run, criteria drafted from that output and human-approved). It emits this same layout; extraction resumes here once real runs exist.
