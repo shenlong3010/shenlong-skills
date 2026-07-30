@@ -1,6 +1,6 @@
 ---
 name: daily-blog
-description: Pick one worth-reading engineering blog post from 43 verified feeds and read it at full fidelity, so a finished read is waiting at the next session start. Use for "what should I read today", "daily blog", "prepare tomorrow's read", "any good engineering posts", or when wiring the SessionEnd/SessionStart daily-read hooks. Do NOT use when handed a specific URL — that is read-eng-blog directly; not for multi-page crawls (crawl4ai) or paper feeds (paper-notes).
+description: Pick one worth-reading engineering blog post from 60 verified feeds and read it at full fidelity, so a finished read is waiting at the next session start. Use for "what should I read today", "daily blog", "prepare tomorrow's read", "any good engineering posts", or when wiring the SessionEnd/SessionStart daily-read hooks. Do NOT use when handed a specific URL — that is read-eng-blog directly; not for multi-page crawls (crawl4ai) or paper feeds (paper-notes).
 derivation: original
 flow: lookup
 domain: web
@@ -10,7 +10,7 @@ domain: web
 
 A reading habit dies from two things: not knowing what to read, and waiting for it. This skill kills both — it selects one post worth full-fidelity attention from a verified feed list, reads it via **read-eng-blog**, and leaves the finished notes on disk so the session that *displays* it waits on a file read, not a fetch.
 
-The selection step is the real work. At 43 feeds the daily candidate pool is mostly announcements, release notes, and org news. Reading a weak post costs the same as reading a good one, so triage is what makes the habit sustainable.
+The selection step is the real work. At 60 feeds the daily candidate pool is mostly announcements, release notes, and org news. Reading a weak post costs the same as reading a good one, so triage is what makes the habit sustainable.
 
 ## Mode: prepare
 
@@ -18,7 +18,7 @@ Runs unattended (detached, from the `SessionEnd` hook) or manually. Writes `note
 
 ### 1 — fetch the feeds
 
-`assets/feeds.json` holds the verified list (`feeds[]`, each with `name`, `feed`, `tier`). Fetch all in parallel; 43 feeds complete in about 5s, so fetch cost is not worth optimizing.
+`assets/feeds.json` holds the verified list (`feeds[]`, each with `name`, `feed`, `tier`). Fetch all in parallel; 60 feeds complete in about 5s, so fetch cost is not worth optimizing.
 
 Per feed: `curl -sSL --max-time 20 --range 0-524287 -A '<browser UA>'`.
 
@@ -29,7 +29,7 @@ Per feed: `curl -sSL --max-time 20 --range 0-524287 -A '<browser UA>'`.
 
 ### 2 — parse
 
-**Use `defusedxml.ElementTree`, never stdlib `xml.etree`.** These are 43 untrusted third-party XML documents parsed in an unattended background process. Verified on Python 3.14: stdlib rejects *external* entities (so XXE is not the exposure) but **does expand internal ones** — a 3-level billion-laughs bomb expanded to 3000 chars, and real bombs use 9-10 levels. `defusedxml` blocks entity expansion outright. Install it if absent (`pip install defusedxml`); it is the one non-stdlib dependency here and the tradeoff is memory-exhaustion safety in a process nobody is watching.
+**Use `defusedxml.ElementTree`, never stdlib `xml.etree`.** These are 60 untrusted third-party XML documents parsed in an unattended background process. Verified on Python 3.14: stdlib rejects *external* entities (so XXE is not the exposure) but **does expand internal ones** — a 3-level billion-laughs bomb expanded to 3000 chars, and real bombs use 9-10 levels. `defusedxml` blocks entity expansion outright. Install it if absent (`pip install defusedxml`); it is the one non-stdlib dependency here and the tradeoff is memory-exhaustion safety in a process nobody is watching.
 
 Handle both dialects — RSS `<item>` with `<link>` and `<pubDate>`, Atom `<entry>` with `<link href>` and `<updated>` under `{http://www.w3.org/2005/Atom}`. Extract **title, link, date only**; discard body text immediately even when the feed inlines it (Dan Luu's feed is 11 MB of full post text).
 
@@ -50,6 +50,10 @@ Score each candidate on the title, plus `tier` as a prior (tier 1 gets benefit o
 **Reject outright** — these are the noise the broad feed list buys: "now generally available" / "GA in", region and availability announcements ("now supports eu-west-2"), release notes and version bumps, hiring and org news ("we're hiring", "intern cohort", "welcome our new"), event and conference promos ("Bug Bash is coming to Europe"), award and analyst news ("named a Leader in the Gartner Magic Quadrant"), funding and money milestones ("$100 million for open source"), partnerships, pricing changes, pure product marketing.
 
 **Favour** — the shapes that carry an actual engineering decision: post-incident and postmortem writeups (reality, not plans), migrations ("we moved X to Y" — these always name the rejected alternative), removals and reversals ("we deleted", "why we moved back"), internals deep-dives, "how we made X N times faster" with a mechanism, and design-tradeoff arguments.
+
+**A second source on a story already read is a BOOST, not a penalty.** When two companies write about one incident, that is two sets of engineering decisions, not a duplicate: the researcher documents the attack chain, the provider explains what they are changing about their sandbox. The second perspective is the payoff. So if a candidate's title overlaps strongly with something in `seen`, and the **source differs**, add to its score — a known-interesting topic with fresh decisions in it beats an unknown topic. Only an identical URL is skipped, and step 3's 45-day rule handles that.
+
+**Favour blogs of widely used open-source products.** A project whose product thousands of people run writes about decisions with real consequences — inference batching, storage formats, runtime tradeoffs — and the reader can go look at the code. Hugging Face, vLLM, DuckDB, Deno, Astral, PyTorch, Rust, Go, Tailscale, Kubernetes and Bun are in the list for this reason. Treat "this project ships something I could `pip install` or `docker run`" as a positive signal, distinct from company size.
 
 **Two favour-patterns need narrowing — both produced false positives on the first real dry run over 179 candidates:**
 

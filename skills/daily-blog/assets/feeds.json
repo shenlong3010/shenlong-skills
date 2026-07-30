@@ -21,6 +21,24 @@
     { "name": "Hillel Wayne",    "tier": 1, "feed": "https://buttondown.com/hillelwayne/rss",        "home": "https://buttondown.com/hillelwayne" },
     { "name": "Chips and Cheese","tier": 1, "feed": "https://chipsandcheese.com/feed",               "home": "https://chipsandcheese.com/" },
 
+    { "name": "Hugging Face",    "tier": 1, "feed": "https://huggingface.co/blog/feed.xml",         "home": "https://huggingface.co/blog" },
+    { "name": "vLLM",            "tier": 1, "feed": "https://vllm.ai/blog/rss.xml",                 "home": "https://blog.vllm.ai/" },
+    { "name": "DuckDB",          "tier": 1, "feed": "https://duckdb.org/feed.xml",                  "home": "https://duckdb.org/news/" },
+    { "name": "Tailscale",       "tier": 1, "feed": "https://tailscale.com/blog/index.xml",         "home": "https://tailscale.com/blog" },
+    { "name": "Astral",          "tier": 1, "feed": "https://astral.sh/blog/rss.xml",               "home": "https://astral.sh/blog" },
+    { "name": "Deno",            "tier": 1, "feed": "https://deno.com/feed",                        "home": "https://deno.com/blog" },
+    { "name": "Rust Blog",       "tier": 1, "feed": "https://blog.rust-lang.org/feed.xml",          "home": "https://blog.rust-lang.org/" },
+    { "name": "Go Blog",         "tier": 1, "feed": "https://go.dev/blog/feed.atom",                "home": "https://go.dev/blog/" },
+    { "name": "PyTorch",         "tier": 1, "feed": "https://pytorch.org/feed/",                    "home": "https://pytorch.org/blog/" },
+    { "name": "Bun",             "tier": 2, "feed": "https://bun.sh/rss.xml",                       "home": "https://bun.sh/blog" },
+    { "name": "Qdrant",          "tier": 2, "feed": "https://qdrant.tech/blog/index.xml",           "home": "https://qdrant.tech/blog/" },
+    { "name": "Kubernetes",      "tier": 2, "feed": "https://kubernetes.io/feed.xml",               "home": "https://kubernetes.io/blog/" },
+    { "name": "Docker",          "tier": 2, "feed": "https://www.docker.com/feed/",                 "home": "https://www.docker.com/blog/" },
+    { "name": "Together AI",     "tier": 2, "feed": "https://www.together.ai/blog/rss.xml",         "home": "https://www.together.ai/blog" },
+    { "name": "Determinate Sys", "tier": 2, "feed": "https://determinate.systems/rss.xml",          "home": "https://determinate.systems/posts/" },
+    { "name": "Biome",           "tier": 2, "feed": "https://biomejs.dev/blog/rss.xml",             "home": "https://biomejs.dev/blog/" },
+    { "name": "Zig",             "tier": 2, "feed": "https://ziglang.org/news/index.xml",           "home": "https://ziglang.org/news/" },
+
     { "name": "Netflix",         "tier": 2, "feed": "https://netflixtechblog.com/feed",              "home": "https://netflixtechblog.com/" },
     { "name": "Meta",            "tier": 2, "feed": "https://engineering.fb.com/feed/",              "home": "https://engineering.fb.com/" },
     { "name": "Google Research", "tier": 2, "feed": "https://research.google/blog/rss/",             "home": "https://research.google/blog/" },
@@ -61,6 +79,12 @@
     "Prefect": "rss.xml + feed.xml return HTML, no autodiscovery tag",
     "Bytebase": "404, no autodiscovery tag",
     "Rachel by the Bay": "302 then connection timeout; parsed once then stopped responding mid-session",
-    "Val Town": "feed.xml verified at 109 items then 404'd within the same session -- feeds rot live"
+    "Val Town": "feed.xml verified at 109 items then 404'd within the same session -- feeds rot live",
+    "Oxide Computer": "no feed; feed.rss + rss.xml 404, no autodiscovery tag (their long-form writing is worth manual visits)",
+    "Prisma": "blog/feed.xml 404, no autodiscovery tag",
+    "Meilisearch": "blog/feed.xml 404, no autodiscovery tag",
+    "SQLite": "no feed at all; sqlite.org/news.html is hand-maintained HTML",
+    "Timescale": "rss endpoint returns a single item, effectively dead",
+    "Elastic / HashiCorp / Anyscale / Warp / W&B": "no autodiscovery tag on the engineering blog index"
   }
 }
