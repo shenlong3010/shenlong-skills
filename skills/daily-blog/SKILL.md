@@ -89,6 +89,22 @@ Then update state: **add the URL to `seen` with today's date as its value** (`se
 
 **`pending.md` is the only notes file this mode writes.** read-eng-blog step 4 would otherwise persist its own copy to `notes/eng-blogs/<slug>.md` — skip that here, since `show` mode rotates `pending.md` into `notes/daily-blog/<date>.md` and that dated file *is* the durable trail. Two copies of the same read is duplication, not a backup.
 
+### 8 — index the dated notes file for search
+
+Once `show` has rotated `pending.md` into `notes/daily-blog/<date>.md`, index it via the **book-corpus** MCP server:
+
+```
+ingest_blog(notes_path="notes/daily-blog/<date>.md",
+            url=<the post URL>, source=<feed name>, tier=<1|2>,
+            published=<post date>, read_at=<date>)
+```
+
+`grep` over `notes/` is fine at three files and painful at sixty — which is one month of this habit. Indexing each read as it lands means the search exists before you need it.
+
+- **Index the dated file, never `pending.md`.** `pending.md` is renamed on display, so indexing it would store the same read twice under two titles. Step 7 writes it; step 8 runs after the rename.
+- **`url` is the identity, not the file path.** Re-running the same day updates in place; the same URL read months later becomes a new row linked by `reread_of`, so two reads can be compared instead of one overwriting the other. That is what makes the 45-day re-read in step 3 useful rather than destructive.
+- **Blog notes go in `blogs`/`blog_chunks`, never `books`/`chunks`.** bm25 is length-normalised, so a 2,400-word note that says "mvcc" six times outranks a 613-page book's chapter on it — shorter, not better. `search_blogs` and `search_corpus` stay separate so that false comparison cannot be made; run both when you want both.
+
 Output stays full technical prose regardless of caveman level — the read *is* the deliverable, same rule read-eng-blog states.
 
 ## Mode: show

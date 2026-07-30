@@ -306,7 +306,60 @@ def main() -> None:
     assert before == after, f"re-index duplicated chunks: {before} -> {after}"
     assert nbooks == 8, f"re-sweep duplicated books: {nbooks}"   # 7 fixtures + the reading/ copy
 
-    print("\nOK — sweep, quality gating, search, page mapping, caps, idempotence all pass.")
+    # --- blog notes: a separate lane -------------------------------------
+    # The point of separate tables is that a short note cannot be ranked
+    # against a long book, so the test that matters is isolation.
+    note = TMP / "mvcc-note.md"
+    note.write_text(
+        "# PostgreSQL MVCC notes\n\n"
+        "## Problem\nDead tuples accumulate at write speed and are collected at "
+        "vacuum speed.\n\n"
+        "## Numbers\n7.1 WAL records per row with four secondary indexes.\n",
+        encoding="utf-8")
+    url = "https://example.test/posts/mvcc-notes/"
+
+    first = S.ingest_blog(str(note), url=url, source="example", tier=2,
+                          read_at="2026-01-10")
+    assert first.startswith("indexed #"), f"first ingest: {first}"
+
+    # Same url + same day updates in place rather than duplicating.
+    same = S.ingest_blog(str(note), url=url, source="example", read_at="2026-01-10")
+    assert "same day" in same, f"same-day re-ingest should update in place: {same}"
+
+    # Same url, later day = a NEW row linked to the earlier read, so two reads
+    # can be compared instead of one overwriting the other.
+    later = S.ingest_blog(str(note), url=url, source="example", read_at="2026-06-20")
+    assert "re-read" in later, f"later read should be a re-read row: {later}"
+
+    with S.db() as c:
+        n_blogs = c.execute("SELECT COUNT(*) n FROM blogs").fetchone()["n"]
+        rr = c.execute("SELECT reread_of FROM blogs WHERE read_at='2026-06-20'").fetchone()
+        n_books_now = c.execute("SELECT COUNT(*) n FROM books").fetchone()["n"]
+    assert n_blogs == 2, f"expected 2 blog rows (read + re-read), got {n_blogs}"
+    assert rr["reread_of"] is not None, "re-read must link to the earlier read"
+    assert n_books_now == 8, f"blog ingest must not touch books: {n_books_now}"
+
+    # Assert on the hit itself, not on where the snippet window happens to cut.
+    hits = S.search_blogs("dead tuples")
+    assert "#1" in hits and "PostgreSQL MVCC notes" in hits, f"blog search failed: {hits}"
+    assert S.search_blogs("dead tuples", blog_id=1).count("#1") >= 1, "blog_id filter broken"
+
+    # Isolation, both directions -- this is why the tables are separate.
+    assert "mvcc-note" not in S.search_corpus("vacuum", scope="all").lower(), \
+        "blog notes leaked into search_corpus"
+    assert "ERROR" in S.search_blogs(""), "empty blog query must error"
+    assert S.get_blog(99999).startswith("ERROR"), "unknown blog id must error"
+
+    log = S.list_blogs()
+    assert "re-read of #" in log, f"reading log should mark re-reads: {log}"
+    assert "2026-06-20" in log.split("2026-01-10")[0], "log must be newest-first"
+
+    # Date and source filters are the "what did I read this month" queries.
+    assert "2026-01-10" not in S.list_blogs(since="2026-06-01"), "since filter leaked"
+    assert "No notes match" in S.list_blogs(source="nosuchfeed"), "source filter leaked"
+
+    print("\nOK — sweep, quality gating, search, page mapping, caps, idempotence,")
+    print("     blog lane (re-read linking, filters, book/blog isolation) all pass.")
 
 
 if __name__ == "__main__":

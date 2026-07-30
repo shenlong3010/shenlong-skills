@@ -70,6 +70,28 @@ is the one failure this design exists to prevent.
 Typical loop: `ingest_dir` the library once, then move what you are reading into
 the reading folder and call `sync_focus`. Everything else follows from search.
 
+### Blog notes — a separate lane
+
+| tool | what it gives you |
+|---|---|
+| `ingest_blog(notes_path, url, source, tier, published, read_at)` | index one blog-post notes file |
+| `search_blogs(query, limit, blog_id, since, source)` | ranked section hits across notes you have read |
+| `list_blogs(limit, since, source)` | the reading log, newest first |
+| `get_blog(blog_id, section)` | one note, whole or one section |
+
+**Why a second pair of tables instead of a `kind` column on `books`.** bm25 is
+length-normalised. A 2,400-word blog note that says "mvcc" six times outranks a
+613-page book's chapter on it — shorter, not better. Ranking the two together is
+a false comparison, so `blogs`/`blog_chunks` is a separate FTS index and the two
+searches never mix. Run both when you want both; the results are honest
+side-by-side because nothing pretended the scores were comparable.
+
+**Identity is `(url, read_at)`, not the notes file.** Re-ingesting the same post
+on the same day updates in place. The same post read months later is a new row
+linked by `reread_of`, so a second read can be compared against the first
+instead of overwriting it. Books get their permanence from `focus` going 1→0;
+notes get theirs from never being deleted.
+
 ## Two things it gets right that are easy to get wrong
 
 **PDF page ≠ printed page.** Front matter offsets them, so "go to page 340"

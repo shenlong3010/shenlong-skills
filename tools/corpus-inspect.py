@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Inspect the book-corpus SQLite index — read-only, never writes.
 
-The corpus is ONE `books` table (entities) plus ONE `chunks` FTS5 table (their
-text). PDFs from the reading folder and any ingested markdown share both — there
-is no separate table per content type, which is what lets one query rank a book
-against a blog note.
+Two independent lanes, deliberately not one table:
+
+  books  + chunks       PDFs promoted by the reading folder
+  blogs  + blog_chunks  blog-post notes, 1-2/day
+
+bm25 is length-normalised, so a 2,400-word note that says "mvcc" six times
+outranks a 613-page book's chapter on it — shorter, not better. Separate FTS
+indexes make that false comparison unrepresentable rather than discouraged:
+`search` covers books, `blogsearch` covers notes.
 
 Usage:
   python tools/corpus-inspect.py                    # summary: counts, dirs, focus
@@ -19,6 +24,9 @@ Usage:
   python tools/corpus-inspect.py search "value separation" --phrase --all
   python tools/corpus-inspect.py toc 164            # one book's TOC
   python tools/corpus-inspect.py page 164 285       # print one chunk
+  python tools/corpus-inspect.py blogs              # reading log, newest first
+  python tools/corpus-inspect.py blogs --since 2026-07-01 --source Cloudflare
+  python tools/corpus-inspect.py blogsearch "dead tuples"   # notes index only
 
 Env:
   BOOK_CORPUS_DB   override index path (default ~/.local/share/book-corpus.db)
@@ -67,8 +75,17 @@ def cmd_summary(c, args):
           f"{kinds.get('note', 0)} notes)")
     print(f"indexed    {n_idx} full-indexed -> {n_chunks} searchable chunks")
     print(f"focus      {n_focus} in the reading folder (default search scope)")
-    print("\nONE books table + ONE chunks FTS index -- no per-type tables.")
-    print("That is what lets a single query rank a document against a note.")
+
+    if has_blogs(c):
+        nb = c.execute("SELECT COUNT(*) FROM blogs").fetchone()[0]
+        nbc = c.execute("SELECT COUNT(*) FROM blog_chunks").fetchone()[0]
+        rng = c.execute("SELECT MIN(read_at), MAX(read_at) FROM blogs").fetchone()
+        print(f"blogs      {nb} note(s) -> {nbc} searchable sections"
+              + (f"  ({rng[0]} .. {rng[1]})" if nb and rng[0] else ""))
+        print("\nTwo separate FTS indexes: chunks (books) and blog_chunks (notes).")
+        print("bm25 is length-normalised, so a short note outranks a long book's")
+        print("chapter on the same term -- shorter, not better. Kept apart so that")
+        print("false comparison cannot be made.")
 
     qual = collections.Counter(r["text_quality"] or "?"
                                for r in c.execute("SELECT text_quality FROM books"))
@@ -235,6 +252,78 @@ def cmd_search(c, args):
     return 0
 
 
+def has_blogs(c):
+    return bool(c.execute("SELECT name FROM sqlite_master WHERE type='table' "
+                          "AND name='blogs'").fetchone())
+
+
+def cmd_blogs(c, args):
+    if not has_blogs(c):
+        print("no blogs table yet -- ingest_blog() creates it on first use.")
+        return 0
+    rows = c.execute("""SELECT id, title, source, read_at, published, sections,
+                        word_count, reread_of, url, notes_path FROM blogs
+                        ORDER BY read_at DESC, id DESC""").fetchall()
+    if args.since:
+        rows = [r for r in rows if (r["read_at"] or "") >= args.since]
+    if args.source:
+        rows = [r for r in rows if (r["source"] or "") == args.source]
+    if not rows:
+        print("no blog notes match.")
+        return 0
+    print(f"{'id':>4} {'read':<11} {'§':>3} {'words':>6} {'src':<16} title")
+    print("-" * 96)
+    for r in rows:
+        rr = f"  (re-read of #{r['reread_of']})" if r["reread_of"] else ""
+        print(f"{r['id']:>4} {r['read_at'] or '?':<11} {r['sections'] or 0:>3} "
+              f"{r['word_count'] or 0:>6} {(r['source'] or '-')[:16]:<16} "
+              f"{(r['title'] or '?')[:40]}{rr}")
+    shown = sum(r["sections"] or 0 for r in rows)
+    n_all = c.execute("SELECT COUNT(*) FROM blogs").fetchone()[0]
+    n_chunks = c.execute("SELECT COUNT(*) FROM blog_chunks").fetchone()[0]
+    tail = f"  (of {n_all} note(s), {n_chunks} sections indexed)" if len(rows) != n_all else ""
+    print(f"\n{len(rows)} note(s), {shown} sections{tail}")
+    return 0
+
+
+def cmd_blogsearch(c, args):
+    if not has_blogs(c):
+        print("no blogs table yet -- ingest_blog() creates it on first use.")
+        return 1
+    q = f'"{args.query}"' if args.phrase else args.query
+    sql = """SELECT b.id, b.title, b.source, b.read_at, bc.section,
+                    snippet(blog_chunks, 0, '[', ']', ' ... ', 16) AS snip,
+                    bm25(blog_chunks) AS rank
+             FROM blog_chunks bc JOIN blogs b ON b.id = bc.blog_id
+             WHERE blog_chunks MATCH ?"""
+    params = [q]
+    if args.since:
+        sql += " AND b.read_at >= ?"
+        params.append(args.since)
+    if args.source:
+        sql += " AND b.source = ?"
+        params.append(args.source)
+    sql += " ORDER BY rank LIMIT ?"
+    params.append(args.limit)
+    try:
+        rows = c.execute(sql, params).fetchall()
+    except sqlite3.OperationalError as e:
+        print(f"ERROR: bad FTS query: {e}", file=sys.stderr)
+        return 2
+    if not rows:
+        print(f"no blog hits for {args.query!r}.")
+        return 1
+    for r in rows:
+        src = f" [{r['source']}]" if r["source"] else ""
+        print(f"id={r['id']} §{r['section']}  bm25={r['rank']:.1f}  read {r['read_at']}  "
+              f"{(r['title'] or '?')[:44]}{src}")
+        print(textwrap.fill(" ".join(r["snip"].split()), 78,
+                            initial_indent="      ", subsequent_indent="      "))
+        print()
+    print(f"{len(rows)} hit(s). Blog index only -- `search` covers books.")
+    return 0
+
+
 def cmd_toc(c, args):
     r = c.execute("SELECT title, path, toc_json, pages, page_offset "
                   "FROM books WHERE id=?", (args.book_id,)).fetchone()
@@ -302,12 +391,22 @@ def main(argv=None):
     g = sub.add_parser("page", help="print one chunk's text")
     g.add_argument("book_id", type=int)
     g.add_argument("page", type=int)
+    bl = sub.add_parser("blogs", help="blog notes read, newest first")
+    bl.add_argument("--since", default="", metavar="YYYY-MM-DD")
+    bl.add_argument("--source", default="", metavar="NAME")
+    bs = sub.add_parser("blogsearch", help="FTS over blog notes (separate index)")
+    bs.add_argument("query")
+    bs.add_argument("--limit", type=int, default=8)
+    bs.add_argument("--since", default="", metavar="YYYY-MM-DD")
+    bs.add_argument("--source", default="", metavar="NAME")
+    bs.add_argument("--phrase", action="store_true", help="exact phrase match")
 
     args = ap.parse_args(argv)
     handler = {None: cmd_summary, "summary": cmd_summary, "schema": cmd_schema,
                "books": cmd_books, "dirs": cmd_dirs, "focus": cmd_focus,
                "doctor": cmd_doctor, "search": cmd_search, "toc": cmd_toc,
-               "page": cmd_page}[args.cmd]
+               "page": cmd_page, "blogs": cmd_blogs,
+               "blogsearch": cmd_blogsearch}[args.cmd]
     c = connect(args.db)
     try:
         return handler(c, args)

@@ -80,6 +80,37 @@ def db() -> sqlite3.Connection:
             conn.execute(f"ALTER TABLE books ADD COLUMN {col} {decl}")
     conn.execute("""CREATE VIRTUAL TABLE IF NOT EXISTS chunks USING fts5(
         text, book_id UNINDEXED, pdf_page UNINDEXED, tokenize='porter')""")
+
+    # Blog notes live in their own table and their own FTS index, deliberately
+    # NOT in books/chunks. bm25 is length-normalised, so a 2,400-word note that
+    # says "mvcc" six times outranks a 613-page book's chapter on it — not
+    # because it is better but because it is shorter. Ranking the two together
+    # is a false comparison, and separate indexes make it unrepresentable
+    # rather than merely discouraged.
+    conn.execute("""CREATE TABLE IF NOT EXISTS blogs(
+        id INTEGER PRIMARY KEY,
+        url TEXT NOT NULL,               -- the post, not the notes file: stable
+                                         --   identity across re-reads
+        notes_path TEXT,                 -- local notes file, may move or vanish
+        title TEXT,
+        source TEXT,                     -- feed name: "Cloudflare", "Dan Luu"
+        tier INTEGER,                    -- feed tier at selection time
+        published TEXT,                  -- post's own date, ISO, may be NULL
+        read_at TEXT NOT NULL,           -- when WE read it, ISO date
+        reread_of INTEGER,               -- id of the earlier read, if this is one
+        sections INTEGER,                -- chunk count, the note's own "pages"
+        toc_json TEXT,
+        word_count INTEGER,
+        -- Identity is the post PLUS the day it was read, not the url alone: a
+        -- re-read months later is a new row (linked via reread_of) so two reads
+        -- can be compared, while re-running the same day's ingest updates in
+        -- place instead of duplicating.
+        UNIQUE(url, read_at)
+        )""")
+    conn.execute("""CREATE VIRTUAL TABLE IF NOT EXISTS blog_chunks USING fts5(
+        text, blog_id UNINDEXED, section UNINDEXED, tokenize='porter')""")
+    conn.execute("CREATE INDEX IF NOT EXISTS blogs_read_at ON blogs(read_at)")
+    conn.execute("CREATE INDEX IF NOT EXISTS blogs_url ON blogs(url)")
     return conn
 
 
@@ -765,6 +796,205 @@ def get_toc(book_id: int) -> str:
     for e in toc:
         lines.append(f"  pdf p.{e['pdf_page']} (printed p.{_printed(e['pdf_page'], off)})  {e['title']}")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- blog notes
+#
+# A separate lane from books, on purpose. Books are long, authoritative, and
+# read over weeks; blog notes are short, dated, and accumulate at 1-2/day. They
+# share the extraction helpers (_split_text, _extract_text_doc, _fts_query) and
+# nothing else — see the schema comment in db() for why the FTS indexes are
+# separate rather than one table with a `kind` column.
+
+
+@mcp.tool(annotations={"readOnlyHint": False, "idempotentHint": True})
+def ingest_blog(notes_path: str, url: str, source: str = "", tier: int = 0,
+                published: str = "", read_at: str = "", title: str = "") -> str:
+    """Index a blog-post notes file so it stays searchable after you forget it.
+
+    `url` is the identity, not `notes_path` — the same post re-read later is a
+    new row linked to the old one via reread_of, so you can compare two reads
+    instead of overwriting the first. Re-ingesting the SAME url on the same day
+    updates in place, which makes this safe to re-run.
+
+    Pass the dated notes file, never a transient scratch file: a file that gets
+    renamed later would be indexed twice under two titles.
+    """
+    p = Path(notes_path).expanduser()
+    if not p.is_file():
+        return f"ERROR: no such file: {p}"
+    if p.suffix.lower() not in TEXT_EXTS:
+        return (f"ERROR: {p.suffix or 'no extension'} is not a notes file. "
+                f"Expected one of {sorted(TEXT_EXTS)}.")
+    if not url.strip():
+        return "ERROR: url is required — it is the post's identity across re-reads."
+
+    read_at = read_at.strip() or time.strftime("%Y-%m-%d")
+    meta = _extract_text_doc(p)
+    body = _read_text_file(p)
+    chunks = _split_text(body)
+    words = len(body.split())
+
+    with db() as c:
+        # Most recent prior read of this url, so reread_of chains in order.
+        prior = c.execute("""SELECT id, read_at FROM blogs WHERE url=?
+                             ORDER BY read_at DESC, id DESC LIMIT 1""", (url,)).fetchone()
+        today_row = c.execute("SELECT id FROM blogs WHERE url=? AND read_at=?",
+                              (url, read_at)).fetchone()
+        if today_row:
+            blog_id = today_row["id"]
+            c.execute("DELETE FROM blog_chunks WHERE blog_id=?", (blog_id,))
+            c.execute("""UPDATE blogs SET notes_path=?, title=?, source=?, tier=?,
+                         published=?, sections=?, toc_json=?, word_count=? WHERE id=?""",
+                      (str(p.resolve()), title.strip() or meta["title"], source, tier,
+                       published or None, len(chunks), json.dumps(meta["toc"]),
+                       words, blog_id))
+            verb = "re-indexed (same day)"
+        else:
+            cur = c.execute("""INSERT INTO blogs(url, notes_path, title, source, tier,
+                               published, read_at, reread_of, sections, toc_json, word_count)
+                               VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+                            (url, str(p.resolve()), title.strip() or meta["title"],
+                             source, tier, published or None, read_at,
+                             prior["id"] if prior else None,
+                             len(chunks), json.dumps(meta["toc"]), words))
+            blog_id = cur.lastrowid
+            verb = f"re-read (earlier read #{prior['id']})" if prior else "indexed"
+        c.executemany("INSERT INTO blog_chunks(text, blog_id, section) VALUES(?,?,?)",
+                      [(ch, blog_id, i) for i, ch in enumerate(chunks, start=1)])
+
+    return (f"{verb} #{blog_id}: {title.strip() or meta['title']} — "
+            f"{len(chunks)} sections, {words} words, read {read_at}"
+            + (f", source {source}" if source else ""))
+
+
+@mcp.tool(annotations={"readOnlyHint": True})
+def search_blogs(query: str, limit: int = 10, blog_id: int = 0,
+                 since: str = "", source: str = "") -> str:
+    """Full-text search across blog notes you have read.
+
+    Separate from search_corpus by design: books and 2,000-word notes are not
+    comparably ranked, so this never mixes them. Run both when you want both.
+
+    since='YYYY-MM-DD' restricts to notes read on or after that date — the
+    "what did I read this month" query. source='Cloudflare' restricts to one
+    feed. Hyphenated and punctuated terms are handled automatically.
+    """
+    if not query.strip():
+        return "ERROR: empty query. Pass search terms, e.g. search_blogs('lsm compaction')."
+    fts_query = _fts_query(query)
+    lim = max(1, min(limit, MAX_HITS))
+
+    sql = """SELECT bc.blog_id, bc.section, b.title, b.source, b.read_at, b.url,
+                    snippet(blog_chunks, 0, '>>', '<<', ' … ', 12) AS snip
+             FROM blog_chunks bc JOIN blogs b ON b.id=bc.blog_id
+             WHERE blog_chunks MATCH ?"""
+    args: list = [fts_query]
+    if blog_id:
+        sql += " AND bc.blog_id=?"
+        args.append(blog_id)
+    if since.strip():
+        sql += " AND b.read_at >= ?"
+        args.append(since.strip())
+    if source.strip():
+        sql += " AND b.source = ?"
+        args.append(source.strip())
+    sql += " ORDER BY rank LIMIT ?"
+    args.append(lim)
+
+    try:
+        with db() as c:
+            rows = c.execute(sql, args).fetchall()
+            total = c.execute("SELECT COUNT(*) FROM blogs").fetchone()[0]
+    except sqlite3.OperationalError as e:
+        return (f"ERROR: could not run query {query!r}: {e}. Plain words and hyphenated "
+                f"terms are handled automatically; if you wrote your own \"quoted phrase\" "
+                f"or AND/OR/NOT operators, check they are balanced.")
+
+    if not total:
+        return ("No blog notes indexed yet. ingest_blog(notes_path, url) adds one; "
+                "the daily-blog skill does it automatically after each read.")
+    if not rows:
+        filt = "".join([f", since {since}" if since.strip() else "",
+                        f", source {source}" if source.strip() else ""])
+        return (f"No hits for {query!r} across {total} blog note(s){filt}. Keyword "
+                f"search misses paraphrase, and notes only cover what the post "
+                f"actually said — try search_corpus for book coverage of the topic.")
+
+    lines = [f"{len(rows)} hit(s) for {query!r} across {total} blog note(s):"]
+    for r in rows:
+        snip = re.sub(r"\s+", " ", r["snip"])[:SNIPPET_CHARS]
+        src = f" [{r['source']}]" if r["source"] else ""
+        lines.append(f"  #{r['blog_id']} {r['title']}{src} — §{r['section']}, read {r['read_at']}")
+        lines.append(f"      {snip}")
+    lines.append("Next: get_blog(blog_id) for the whole note, or "
+                 "get_blog(blog_id, section) for one section.")
+    return "\n".join(lines)
+
+
+@mcp.tool(annotations={"readOnlyHint": True})
+def list_blogs(limit: int = 30, since: str = "", source: str = "") -> str:
+    """List blog notes read, newest first — the reading log.
+
+    since='YYYY-MM-DD' for a date window, source='Dan Luu' for one feed.
+    Re-reads are marked with the earlier read they follow.
+    """
+    sql = """SELECT id, title, source, read_at, published, sections, word_count,
+                    reread_of, url FROM blogs WHERE 1=1"""
+    args: list = []
+    if since.strip():
+        sql += " AND read_at >= ?"
+        args.append(since.strip())
+    if source.strip():
+        sql += " AND source = ?"
+        args.append(source.strip())
+    sql += " ORDER BY read_at DESC, id DESC LIMIT ?"
+    args.append(max(1, min(limit, 200)))
+    with db() as c:
+        rows = c.execute(sql, args).fetchall()
+        total = c.execute("SELECT COUNT(*) FROM blogs").fetchone()[0]
+        srcs = c.execute("""SELECT source, COUNT(*) n FROM blogs WHERE source<>''
+                            GROUP BY source ORDER BY n DESC LIMIT 8""").fetchall()
+    if not rows:
+        return ("No blog notes indexed yet."
+                if not total else f"No notes match (of {total} total).")
+    lines = [f"{len(rows)} of {total} blog note(s), newest first:"]
+    for r in rows:
+        rr = f"  (re-read of #{r['reread_of']})" if r["reread_of"] else ""
+        src = f" [{r['source']}]" if r["source"] else ""
+        lines.append(f"  #{r['id']} {r['read_at']}  {r['title'][:58]}{src}")
+        lines.append(f"      {r['sections']} sections, {r['word_count'] or 0} words{rr}")
+    if srcs:
+        lines.append("Sources: " + ", ".join(f"{r['source']} ({r['n']})" for r in srcs))
+    return "\n".join(lines)
+
+
+@mcp.tool(annotations={"readOnlyHint": True})
+def get_blog(blog_id: int, section: int = 0) -> str:
+    """Read a blog note — one section, or the whole thing.
+
+    section=0 (default) returns every section. Notes are short enough that a
+    full read is usually fine; pass a section number from search_blogs to load
+    just the passage that matched.
+    """
+    with db() as c:
+        b = c.execute("SELECT * FROM blogs WHERE id=?", (blog_id,)).fetchone()
+        if not b:
+            return f"ERROR: no blog note with id {blog_id}. Call list_blogs() for valid ids."
+        sql = "SELECT section, text FROM blog_chunks WHERE blog_id=?"
+        args: list = [blog_id]
+        if section:
+            sql += " AND section=?"
+            args.append(section)
+        rows = c.execute(sql + " ORDER BY section", args).fetchall()
+    if not rows:
+        return (f"No section {section} in #{blog_id} "
+                f"('{b['title']}' has {b['sections']}).")
+    head = [f"# {b['title']}", f"Source: {b['source'] or '?'} — {b['url']}",
+            f"Read {b['read_at']}"
+            + (f", published {b['published']}" if b["published"] else "")
+            + (f" (re-read of #{b['reread_of']})" if b["reread_of"] else "")]
+    return "\n".join(head) + "\n\n" + "\n\n".join(r["text"] for r in rows)
 
 
 if __name__ == "__main__":
