@@ -70,9 +70,24 @@ Also say so if the live feed pool drops below ~10 — that means feed rot has qu
 
 Invoke **read-eng-blog** on the chosen URL. Do not restate its method here — it owns fetch-without-flattening, the figure branch, verbatim reproduction, and the "what the post omits" line.
 
+**Link-blog branch — check before reading.** Some tier-1 sources (Simon Willison especially) publish commentary that quotes another writeup rather than original work. Because triage scores the *title*, such a post inherits the primary document's score: on the first real run, a ~500-word commentary scored 13 on the strength of Hugging Face's incident-timeline title.
+
+If the fetched page is chiefly commentary on another source, decide and say which:
+
+- **Follow through to the primary** when the commentary is a pointer and the primary is the engineering document. That is usually the better read, and the day's notes should say the selection came via a link blog.
+- **Read the commentary** when its own analysis is the value (added attributions, industry framing). Then label it explicitly as commentary, name the primary URL, and keep quoted material distinct from the author's assertions.
+
+Either way the notes must not present a summary of someone else's writeup as if it were the original.
+
+**Fidelity floor.** A 500-word commentary yields thinner notes than a 5,000-word writeup, and that is a fact about the source, not a failed read. Say so in the notes rather than padding to look complete — but if the winner turns out to be *substanceless* on fetch (a stub, a redirect, a paywall), treat it as a failed candidate and fall back to the next-highest scorer rather than writing thin notes about nothing.
+
 ### 7 — write pending.md
 
-A short header block (source name, post title, URL, publish date, why it was selected) followed by the **complete** read-eng-blog notes. Append the URL to `seen` and set `prepared` to today.
+A short header block (source name, post title, URL, publish date, why it was selected) followed by the **complete** read-eng-blog notes.
+
+Then update state: **add the URL to `seen` with today's date as its value** (`seen[url] = "YYYY-MM-DD"` — it is a map, and the 45-day expiry in step 3 reads those dates; appending a bare string breaks expiry silently), and set `prepared` to today.
+
+**`pending.md` is the only notes file this mode writes.** read-eng-blog step 4 would otherwise persist its own copy to `notes/eng-blogs/<slug>.md` — skip that here, since `show` mode rotates `pending.md` into `notes/daily-blog/<date>.md` and that dated file *is* the durable trail. Two copies of the same read is duplication, not a backup.
 
 Output stays full technical prose regardless of caveman level — the read *is* the deliverable, same rule read-eng-blog states.
 
@@ -88,6 +103,8 @@ What the `SessionStart` hook does, in bash, without invoking this skill — `Ses
 - **`Start-Process` is the Windows detach.** `setsid` does not exist in Git Bash on Windows, so a POSIX detach silently spawns nothing (verified: the child never ran, and the failure was invisible). Use `powershell Start-Process -WindowStyle Hidden` there; `setsid nohup … &` on Linux. Detached-process survival past session exit is **undocumented** in Claude Code — the hooks carry a visible-failure fallback rather than assuming the spawn wins.
 - **Hook recursion is the expensive bug.** A `SessionEnd` hook that spawns `claude -p` produces a child whose own `SessionEnd` spawns another, unattended, forever. The guard is verified empirically: a headless child reports `CLAUDE_CODE_CHILD_SESSION=true` and `CLAUDE_CODE_ENTRYPOINT=mcp-stdio-cli`, while an interactive session reports unset and `cli`.
 - **`Stop` is the wrong hook event.** It fires after every agent response, not at session end — dozens of times per session. `SessionEnd` is the session-exit event, but it has a ~1.5s shared budget (raisable to 60s), so it can only *launch* a 60-90s read, never contain it.
+- **Title-based triage cannot tell a writeup from a link to one.** Measured on the first real run: Simon Willison's ~500-word link-blog commentary scored **13** — the highest of 179 candidates — because the title it carried was Hugging Face's incident-timeline title. The score was real; the attribution wasn't. Step 6's link-blog branch exists for this, and it is why a high score is not by itself evidence the page holds the substance.
+- **A feed can die between two runs in the same session.** Val Town's `feed.xml` verified at 109 items and 404'd minutes later; Rachel by the Bay parsed once, then began returning 302 into a connection timeout. Both are recorded in `_dropped`. Treat the feed list as perishable inventory, not configuration — the pool-below-10 warning in step 5 is the tripwire.
 
 ## Boundaries
 

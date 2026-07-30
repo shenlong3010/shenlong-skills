@@ -14,6 +14,8 @@ An engineering blog's value is its detail — the named standard, the wire forma
 
 A summarizing fetcher (WebFetch-class, backed by a small model) drops named standards, RFC numbers, and mechanics — it optimizes for gist, and gist is exactly what's not wanted here. Instead route retrieval to **web-research**'s extraction ladder: get *clean markdown* (raw fetch → article-container extraction with `bs4`/trafilatura), save it, and read the article body yourself. Save → read the section → never paste the whole page (search+read budget ≤ ~15% of context, per web-research).
 
+**Is this page the writeup, or a pointer to one?** Link blogs and "worth reading" posts quote another document at length and add commentary. Reading one as if it were primary attributes the engineering to the wrong author and inherits none of the detail. Once the text is extracted, check: does the body consist mainly of blockquotes plus framing? Does it link a source document early and repeatedly? Then either follow through to the primary (usually the better read) or read the commentary deliberately — and in the notes, name the primary URL and keep what the author *quotes* distinct from what the author *asserts*. Never present a summary of someone else's writeup as the original.
+
 ## Step 2 — get the diagrams (the structural branch)
 
 Architecture lives in the figures, and eng-blog figures are routinely **lazy-loaded via JS** — a static `curl`/`bs4` fetch sees only navigation icons and app-store badges, not Figure 1. Retrieving the article text does **not** retrieve the diagram. So branch on figure type:
