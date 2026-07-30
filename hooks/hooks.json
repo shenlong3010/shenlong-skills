@@ -9,6 +9,12 @@
     ],
     "PostToolUse": [
       { "matcher": "Edit|Write", "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/autoformat.sh" } ] }
+    ],
+    "SessionEnd": [
+      { "matcher": "*", "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/daily-blog-queue.sh" } ] }
+    ],
+    "SessionStart": [
+      { "matcher": "startup", "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/daily-blog-show.sh" } ] }
     ]
   }
 }
