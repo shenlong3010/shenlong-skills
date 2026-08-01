@@ -32,14 +32,24 @@ Architecture lives in the figures, and eng-blog figures are routinely **lazy-loa
 
 ## Step 4 — write the notes file
 
-Persist the read as a notes file (default `notes/eng-blogs/<slug>.md`; ask once if the repo has no obvious notes dir) — matching the **paper-notes** / **talk-notes** pattern, so a daily reading habit leaves a durable, greppable trail rather than vanishing into chat. Sections:
+Persist the read as a notes file — matching the **paper-notes** / **talk-notes** pattern, so a daily reading habit leaves a durable, greppable trail rather than vanishing into chat.
 
-- **Problem** — what forced this work, why it mattered.
-- **Architecture** — components + data flow, *incorporating the diagram read in Step 2*, not its alt-text.
-- **Key decisions & tradeoffs** — for each: the decision, the alternative rejected, and why. This is the substance; a list of components without the *why* is a degraded read.
-- **Standards / refs / tech** — verbatim (Step 3).
-- **Code / schemas** — reproduced (Step 3).
-- **What the post omits** — mandatory honest line, in the spirit of read-image's Uncertainties line. E.g. "architecture writeup only — no scale/throughput numbers, no code." Naming the gap is the difference between a limit of the post and a failure of the read.
+**Resolve the directory before writing, in this order:** an existing notes dir in the repo (`notes/`, `docs/notes/`, or wherever sibling reading notes already live — look, don't assume) → the path the user has given before in this session → **ask**. `notes/eng-blogs/<slug>.md` is the suggestion to *offer* when asking, not a default to fall back on silently: a skill that names a default and an ask in the same breath takes the default every time, which is how two runs in a row created a directory the user never chose. Creating a new top-level directory is the case that always asks.
+
+Sections:
+
+**Analysis sections are explanatory prose; lookup sections stay lists.** The first three sections below are written to be *read* — paragraphs that carry the reasoning. The last three are scanned, not read, so they stay terse.
+
+- **Problem** — what forced this work, why it mattered. Prose.
+- **Architecture** — components + data flow, *incorporating the diagram read in Step 2*, not its alt-text. Prose.
+- **Key decisions & tradeoffs** — for each: the decision, the alternative rejected, and why. This is the substance; a list of components without the *why* is a degraded read. Prose.
+- **Standards / refs / tech** — verbatim (Step 3). List.
+- **Code / schemas** — reproduced (Step 3). List/blocks.
+- **What the post omits** — mandatory honest line, in the spirit of read-image's Uncertainties line. E.g. "architecture writeup only — no scale/throughput numbers, no code." Naming the gap is the difference between a limit of the post and a failure of the read. List.
+
+**Decode jargon inline, in the prose sections.** A term of art gets its meaning *and* its significance on first use, in the same sentence that uses it — never a bare noun the reader must already know, and never a glossary bolted on at the end. Naming a mechanism is not explaining it: "stole a Kubernetes service-account token and moved laterally" names it; "stole a service-account token — the credential a workload uses to authenticate to the cluster's control plane, so this is the jump from *runs code in one container* to *can ask the cluster for things*" explains it. Decoding makes notes **longer** than the source, and that is correct — the notes are the artifact you keep, and a term you have to go look up is a gap in the read.
+
+Preserve the exact term while decoding it. Plain-language explanation replaces *unexplained* jargon, never the searchable handle itself (Step 3 governs: `HPKE` stays `HPKE`).
 
 Output is full technical prose **regardless of caveman level** — this read *is* the deliverable, so it stays uncompressed the way code and commits do. (If a whole reading session should run terse-free, the user sets `/caveman lite` or a session default; a skill cannot switch caveman itself.) A long post plus a diagram screenshot is also a clean **background sub-agent** job — offer it to keep the main session context lean.
 

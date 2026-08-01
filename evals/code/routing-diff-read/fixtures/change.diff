@@ -1,0 +1,817 @@
+diff --git a/src/auth/session.js b/src/auth/session.js
+index 711dacf..2289359 100644
+--- a/src/auth/session.js
++++ b/src/auth/session.js
+@@ -1,9 +1,9 @@
+ function isExpired(session, now) {
+-  return session.expiresAt < now;
++  return session.expiresAt <= now;
+   // sessions are checked on every request
+ }
+ 
+ async function refresh(session) {
+-  const res = await legacyClient.post('/refresh', session.id);
++  const res = await apiClient.post('/refresh', session.id);
+   return res.body;
+ }
+diff --git a/src/handlers/accounts.js b/src/handlers/accounts.js
+index 10c5683..4dfee4c 100644
+--- a/src/handlers/accounts.js
++++ b/src/handlers/accounts.js
+@@ -1,70 +1,70 @@
+ async function accountsOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function accountsOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/catalog.js b/src/handlers/catalog.js
+index 4b12f4e..ab7f34c 100644
+--- a/src/handlers/catalog.js
++++ b/src/handlers/catalog.js
+@@ -1,70 +1,70 @@
+ async function catalogOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function catalogOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/inventory.js b/src/handlers/inventory.js
+index fa5dca7..916d602 100644
+--- a/src/handlers/inventory.js
++++ b/src/handlers/inventory.js
+@@ -1,70 +1,70 @@
+ async function inventoryOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function inventoryOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/orders.js b/src/handlers/orders.js
+index 9d9760a..ba3230c 100644
+--- a/src/handlers/orders.js
++++ b/src/handlers/orders.js
+@@ -1,70 +1,70 @@
+ async function ordersOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function ordersOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/pricing.js b/src/handlers/pricing.js
+index fad14eb..f8a9355 100644
+--- a/src/handlers/pricing.js
++++ b/src/handlers/pricing.js
+@@ -1,70 +1,70 @@
+ async function pricingOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function pricingOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/returns.js b/src/handlers/returns.js
+index caab82c..310c79b 100644
+--- a/src/handlers/returns.js
++++ b/src/handlers/returns.js
+@@ -1,70 +1,70 @@
+ async function returnsOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function returnsOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/reviews.js b/src/handlers/reviews.js
+index b06f657..071fd00 100644
+--- a/src/handlers/reviews.js
++++ b/src/handlers/reviews.js
+@@ -1,70 +1,70 @@
+ async function reviewsOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function reviewsOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/search.js b/src/handlers/search.js
+index 5cf4b47..7afc5a7 100644
+--- a/src/handlers/search.js
++++ b/src/handlers/search.js
+@@ -1,70 +1,70 @@
+ async function searchOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function searchOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+diff --git a/src/handlers/shipping.js b/src/handlers/shipping.js
+index 36ed2b3..2139034 100644
+--- a/src/handlers/shipping.js
++++ b/src/handlers/shipping.js
+@@ -1,70 +1,70 @@
+ async function shippingOp0(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp1(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp2(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp3(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp4(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp5(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp6(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp7(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp8(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp9(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp10(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp11(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp12(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
+ async function shippingOp13(url) {
+-  const res = await legacyClient.fetch(url);
++  const res = await apiClient.fetch(url);
+   return res.body;
+ }
+ 
