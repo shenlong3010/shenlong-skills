@@ -43,8 +43,17 @@ if [ "$TERMS" -gt 0 ]; then
     W=$(hits "$term" literal)
     [ -n "$W" ] && { echo "WORDLIST hit(s):"; echo "$W"; FAIL=1; }
   done < "$WL"
+elif [ "${SCAN_ALLOW_NO_WORDLIST:-0}" = "1" ]; then
+  echo "scan: WARNING — .wordlist missing or has no non-blank terms; wordlist half of the scan is vacuous (allowed via SCAN_ALLOW_NO_WORDLIST=1)"
 else
-  echo "scan: WARNING — .wordlist missing or has no non-blank terms; wordlist half of the scan is vacuous"
+  # Fail closed, matching the git-diff failure above: repo law treats a vacuous
+  # wordlist as a failure, and a warning on stdout is not an enforcement — a
+  # fresh git worktree never carries the gitignored .wordlist, so the half of
+  # the scan that guards employer-internal terms would silently check nothing.
+  # Copy the wordlist in, or set SCAN_ALLOW_NO_WORDLIST=1 to accept a
+  # secrets-only scan deliberately.
+  echo "scan: .wordlist missing or has no non-blank terms; wordlist half of the scan is vacuous" >&2
+  FAIL=1
 fi
 
 [ "$FAIL" -eq 1 ] && { echo "scan: BLOCKED"; exit 1; }
