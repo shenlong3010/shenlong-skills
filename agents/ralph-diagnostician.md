@@ -18,6 +18,7 @@ LOOP-CONTEXT block, the task file, `SPEC.md`, and the inspector's last FAIL repo
 ## Method
 1. Reproduce the failing verification first — never diagnose from the report alone.
 2. Hypothesize in order: (a) code bug the amendments kept missing, (b) task AC wrong or unsatisfiable, (c) SPEC approach wrong, (d) environment. One variable per experiment; record falsified hypotheses.
+   - **For `skill-eval` work-type**, the ladder is: (a) the skill's content is actually wrong (fix the SKILL.md), (b) the grading criteria are wrong — too strict, or testing the wrong thing (propose a `criteria.md` edit; never silently loosen it to force a pass), (c) a factual claim in the skill's own gotchas is stale. Before proposing (a) or (c), cross-check the disputed claim via Context7/`web-research` per `concept-explain`'s fact-check routing (commit 65714ef) rather than diagnosing from the inspector's report alone.
 3. Resolve by the *smallest* class that explains the evidence, honoring the mode the orchestrator states in the prompt (`propose` | `rewrite`):
    - Code bug → fix it directly, rerun verification (both modes — code fixes are not spec corruption).
    - Task/spec wrong, mode `rewrite` → rewrite the task file's AC (and the relevant `SPEC.md` section) to what is actually correct and verifiable — the orchestrator marks `[R]` and sends the task back to the coder.

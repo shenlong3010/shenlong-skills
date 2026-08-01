@@ -1,0 +1,32 @@
+# Task {{n}} — {{task_title}}
+
+- **Run:** {{run_id}}  ·  **Story:** {{story_id}}
+- **Work-type:** skill-eval
+
+## Goal
+{{task_goal}}
+<!-- e.g. "Make skills/talk-notes/SKILL.md pass evals/media/talk-notes-jargon-catch" -->
+
+## Acceptance criteria (machine-checkable)
+<!-- Each AC names one evals/<domain>/<case-id>/ directory. The inspector grades
+     PASS/FAIL by reading that case's graders/criteria.md against the skill's
+     actual output for that case's prompt.md — see Verification below. -->
+- [ ] {{eval_case_1}}
+
+## Files to touch
+<!-- Exhaustive; drift detection diffs exactly these paths. Normally just the
+     skill body — grading criteria are read-only inputs, not edit targets. -->
+- skills/{{skill_name}}/SKILL.md
+
+## Verification
+<!-- No shell command: claude plugin eval is gated/inert as of 2026-07 (see
+     commands/eval-writer.md). Inspector role instead: for each eval case
+     listed above, read graders/criteria.md and the skill's real output for
+     that case's prompt.md, and grade every numbered criterion PASS/FAIL
+     directly. A FAIL on any criterion in any listed case is a FAIL on the
+     task, same as a failing shell command would be. -->
+- {{eval_case_1}}
+
+<!-- ## Amendment
+     Added by the orchestrator on retry only: the inspector's suggested_patch,
+     copied verbatim into a fenced block under this heading. -->

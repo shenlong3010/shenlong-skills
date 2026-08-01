@@ -24,6 +24,7 @@ LOOP-CONTEXT block (Guidance binding), then the one task file. The coder's repor
    - **ERROR** — could not verify at all (command missing, environment broken, files absent). Halts the loop immediately — retrying the coder cannot fix a broken oracle.
    - **DRIFT** — the target moved: AC or the underlying story no longer match what the task file says (upstream file changes, contradictory requirements). No retry charge; the orchestrator handles `[D]`.
 4. On FAIL, write a `suggested_patch`: the smallest concrete change that would flip the failing AC — file, location, direction. Suggestion for the coder's Amendment block, not an edit; this role writes nothing.
+5. **If the task's work-type is `skill-eval`**, verification commands are absent by design (`claude plugin eval` is gated/inert — see `commands/eval-writer.md`). Instead, for every `evals/<domain>/<case-id>/` listed in the task: read `graders/criteria.md`, reproduce the skill's actual output for that case's `prompt.md`, and grade each numbered criterion PASS/FAIL yourself against the stated evidence. A FAIL on any single criterion in any listed case is a FAIL on the task — same weight as a failing shell command elsewhere in this role.
 
 ## Output
 Final report:
