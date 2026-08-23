@@ -2,7 +2,7 @@
 
 - **Story id:** {{story_id}} ({{source_adapter}})
 - **Run:** {{run_id}}
-- **Work-type:** {{work_type}} <!-- feature | bugfix | refactor | chore -->
+- **Work-type:** {{work_type}} <!-- feature | bugfix | refactor | chore | skill-eval -->
 
 ## Problem
 {{problem_statement}}

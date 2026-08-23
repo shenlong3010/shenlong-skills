@@ -14,7 +14,10 @@ generic shapes.
 | `SPEC.md.template` | `SPEC.md` | ralph-plan, ralph-diagnostician (`[R]` rewrites) | roles |
 | `TASKS.md.template` | `TASKS.md` (marker table — state machine truth) | ralph-plan, ralph-next | ralph-next, /ralph status |
 | `task.md.template` | `task-<n>-<slug>.md` (one per task) | ralph-plan, replan | the one file a role subagent receives |
+| `skill-eval-task.md.template` | `task-<n>-skill-eval.md` (work-type `skill-eval`) | ralph-plan | ralph-coder |
 | `PROGRESS.md.template` | `PROGRESS.md` (iteration log + plan-sha) | ralph-next | ralph-next, /ralph status |
 | `LOOP-CONTEXT.md.template` | `LOOP-CONTEXT.md` (steering channel) | human (Guidance), ralph-next (Learned) | prepended to every subagent prompt |
 | `ralph.yml.template` | `.agents/ralph.yml` (budgets, repo-wide) | ralph-plan (first run only) | ralph-next |
 | `TICKETS.md.template` | `TICKETS.md` (ticket outbox — outward open loop) | ralph-next (proposals), /ralph tickets (flush/dismiss) | /ralph tickets, /ralph status |
+
+No template for `HANDOFF.md`: its shape is owned by the `/handoff-writer` command — `[H]` halts delegate there rather than duplicating a second handoff format here.
