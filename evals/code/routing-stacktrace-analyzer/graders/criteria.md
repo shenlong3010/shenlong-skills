@@ -1,4 +1,4 @@
-# Pass criteria — routing-stacktrace
+# Pass criteria — routing-stacktrace-analyzer
 
 1. Root cause identified: `prices` contains at least one `"amount"` value that is a string, so `sum()` mixes int and str.
 2. Structure shows the stacktrace-analyzer shape: ranked hypothesis/es with a concrete next check (e.g. print/inspect the offending element, `type()` probe) — not a single unhedged guess and not a generic "check your types" wave.
