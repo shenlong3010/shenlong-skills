@@ -1,6 +1,6 @@
 # shenlong-skills
 
-Personal Claude Code toolbox: 47 skills, 18 slash commands, 10 subagents, lifecycle hooks, MCP scaffolds, output styles, instruction templates, and a self-healing execution loop — packaged as a plugin so one install makes everything available in any project.
+Personal Claude Code toolbox: 58 skills, 7 slash commands, 7 subagents, lifecycle hooks, MCP scaffolds, output styles, instruction templates, and a self-healing execution loop — packaged as a plugin so one install makes everything available in any project.
 
 ## Install
 
@@ -18,16 +18,18 @@ Every artifact carries two orthogonal frontmatter axes — `flow:` (workflow sta
 
 | Flow | What lives there |
 |---|---|
-| **plan** | `/brainstorm` → `plan-writer` → adversarial reviewers (`plan-reviewer`, `pre-mortem`) → `/decompose` |
+| **plan** | `/brainstorm` → `plan-writer` → adversarial reviewers (`plan-reviewer`, `pre-mortem`) → `/decompose`; plus `read-ticket`, `skill-bootstrap` |
 | **execute** | the **ralph loop** (below), `tdd-loop`, `git-worktrees` |
 | **review** | `code-review` + `security-review` agents, `sql-review` |
 | **debug** | `systematic-debug`, `stacktrace-analyzer`, `log-triage` |
-| **lookup** | the efficiency ladder: `code-search` (incl. first-contact repo orientation), `symbol-lookup`, `file-find`, `git-search`, `diff-read`, `data-query`, `dependency-lookup`, `system-lookup`, `env-probe`, `repo-index`, `web-research`, `crawl4ai`, `read-image`, `read-diagram`, `image-prep`, `image-ocr`, `paper-notes`, `paper-deep-dive`, `talk-notes` |
+| **lookup** | the efficiency ladder — 26 skills spanning code (`code-search`, `symbol-lookup`, `trace-flow`, `explain-code`, `read-api-spec`, `api-flow-from-diagram`, …), data (`data-query`, `read-spreadsheet`), docs (`concept-explain`, `paper-notes`, `paper-deep-dive`, `read-pdf-doc`), media (`read-image`, `read-diagram`, `image-prep`, `image-ocr`, `talk-notes`), git (`git-search`, `diff-read`), system (`file-find`, `env-probe`, `system-lookup`, `repo-index`, `dependency-lookup`), process (`read-ticket`), web (`web-research`, `crawl4ai`, `read-eng-blog`, `daily-blog`) |
 | **deliver** | `docx`/`pptx`/`xlsx`/`pdf`, `adr-lite`, `runbook-writer` |
 | **session** | `/handoff-writer`, `caching`, `reasoning-budget-guidance` |
 | **util** | library how-tos: `http-requests`, `sqlite`, `config`, `data-csv`, `markup`, `archive`, `image` |
 | **meta** | `/create <kind>` scaffolder, `/eval-writer`, `mcp-builder`, `setup-instructions` |
 | **career** | `interview-drill`, `/resume-impact` |
+
+The generated catalogs (`skills/CLAUDE.md`, `commands/CLAUDE.md`, `agents/CLAUDE.md`) are the authoritative per-flow lists; this table is orientation only.
 
 Deliberately absent (the platform already does it better natively): codebase exploration agents, context accounting, commit/PR message writing, regex work, Mermaid generation, terse rewriting, test scaffolding, parallel-tool discipline, chart design. When Claude Code or the model ships the capability, the toolbox artifact retires — redundant descriptions cost routing accuracy, not just tokens.
 
@@ -73,10 +75,9 @@ mcp/              MCP configs and scaffolds (env-var keys only — never commit 
 styles/           output styles
 templates/        CLAUDE.md / AGENTS.md starters, settings presets, templates/ralph/ run scaffolds
 tools/            validate.py, skill-lint.py, knowledge-lint.py, gen-index.py, scaffold.py, scan.sh
-plan/             the build plans (PLAN-1 … PLAN-5)
 ```
 
-Instruction hierarchy: root `CLAUDE.md` is global; `skills/`, `agents/`, `commands/`, `tools/` each carry a directory `CLAUDE.md` with local conventions and a generated catalog; `archive/CLAUDE-v2-full.md` is the behavioral master; `AGENTS.md` and `.github/copilot-instructions.md` are global-only surface adapters.
+Instruction hierarchy: root `CLAUDE.md` is the behavioral master; `skills/`, `agents/`, `commands/`, `tools/` each carry a directory `CLAUDE.md` with local conventions and a generated catalog; `AGENTS.md` is its tool-agnostic mirror for non-Claude surfaces.
 
 ## Authoring
 

@@ -1,11 +1,10 @@
 # CLAUDE — Full Ruleset (v2 master)
 
-> Distribution copy bundled with the setup-instructions skill. Canonical source: `archive/CLAUDE-v2-full.md` in the shenlong-skills toolbox — sync from there when the master changes.
+> Distribution copy bundled with the setup-instructions skill, and the canonical full-text master — the surface files distill it.
 
-Surface-agnostic coding-behavior rules. This is the master; the surface files distill it:
-`CLAUDE.md` (Claude Code) · `AGENTS.md` (other agents) · `.github/copilot-instructions.md` (GitHub Copilot).
-Where a surface file and this master disagree on **behavior**, this master wins. Where they disagree on **repo mechanics** (commands, layout, frontmatter), the surface file wins — it tracks the built repo.
-History: `archive/CLAUDE-v1.md` is the original; rules 1–9 descend from it (adapted from [Karpathy's CLAUDE.md](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md)); 10–17 added from harness practice.
+Surface-agnostic coding-behavior rules. The surface files distill this master:
+`CLAUDE.md` (Claude Code) · `AGENTS.md` (other agents). Where a surface file and this master disagree on **behavior**, this master wins. Where they disagree on **repo mechanics** (commands, layout, frontmatter), the surface file wins — it tracks the built repo.
+History: rules 1–9 descend from [Karpathy's CLAUDE.md](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md); 10–17 added from harness practice.
 
 ## Index
 

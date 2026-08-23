@@ -1,6 +1,6 @@
 # CLAUDE.md — global
 
-Applies to the entire repository. Directory-specific conventions live in per-directory guides (below), auto-loaded when working in each directory. Behavioral master with full rule text: `archive/CLAUDE-v2-full.md` (v1 original preserved beside it). Precedence: master wins on behavior; this file and the directory guides win on repo mechanics.
+Applies to the entire repository. Directory-specific conventions live in per-directory guides (below), auto-loaded when working in each directory. This file is the behavioral master; the surface adapters (`AGENTS.md`) distill it.
 
 ## Hard constraints (read first)
 
@@ -22,7 +22,7 @@ Personal Claude Code toolbox — skills, slash commands, subagents, hooks, MCP s
 - `tools/CLAUDE.md` — stdlib-only, exit-code contract, scanner redaction, idempotence
 - `hooks/README.md` — hook wiring and handler conventions
 
-`AGENTS.md` (other agents) and `.github/copilot-instructions.md` (Copilot) are global-only distillations — those surfaces don't load directory files, so their authoring notes stay inline there.
+`AGENTS.md` (other agents) is the tool-agnostic mirror — that surface doesn't load directory files, so its authoring notes stay inline there.
 
 ## Commands
 
@@ -69,7 +69,7 @@ Before reaching for the naive tool, the matching skill applies — these fire on
 
 One law across all: search output ≤ ~15% of the context window; files-first, sections-second, full reads last.
 
-## Coding behavior (distilled — full form in archive/CLAUDE-v2-full.md)
+## Coding behavior
 
 1. **Think before coding** — surface assumptions; multiple interpretations → present them; unclear → stop and ask.
 2. **Simplicity first** — minimum code; no speculative features or abstractions; if 200 lines could be 50, rewrite.

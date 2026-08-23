@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instructions for any coding agent working in this repository. Tool-agnostic mirror of `CLAUDE.md`; behavioral master with full rule text: `archive/CLAUDE-v2-full.md`.
+Instructions for any coding agent working in this repository. Tool-agnostic mirror of `CLAUDE.md`, which is the behavioral master.
 
 ## Constraints
 
@@ -28,7 +28,7 @@ Note for non-Claude agents: `skills/`, `commands/`, and `agents/` are Claude-Cod
 
 Lookup tasks route to the matching skill doc before naive tooling: code text → `skills/code-search`, JSON/YAML → `skills/data-query`, filenames → `skills/file-find`, git history → `skills/git-search`, web pages → `skills/web-research`, runtime who/what → `skills/system-lookup`, dependency provenance → `skills/dependency-lookup`, log dumps → `skills/log-triage`. Search output stays ≤ ~15% of context.
 
-## Rules (distilled — full form in archive/CLAUDE-v2-full.md)
+## Rules
 
 1. Think before coding — surface assumptions; ambiguity → present options or ask.
 2. Simplicity first — minimum code; nothing speculative.
