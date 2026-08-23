@@ -1,6 +1,6 @@
 # AGENTS.md (starter)
 
-Instructions for any coding agent working in this repo. Keep in sync with CLAUDE.md; this file is the tool-agnostic mirror.
+Instructions for any coding agent working in this repo. Keep in sync with CLAUDE.md; this file is the tool-agnostic mirror. (Grown past a single page? `/setup-instructions` scaffolds the layered form with per-directory guides.)
 
 ## Setup
 <install/bootstrap commands>

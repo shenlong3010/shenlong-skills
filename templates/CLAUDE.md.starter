@@ -21,4 +21,4 @@ One paragraph: what this repo is, the stack, the one architectural fact that pre
 One line each, grown over time — add a line whenever the agent makes the same mistake twice.
 
 ## Scaling note
-Larger repos: keep this file global-only and add per-directory CLAUDE.md files (src/, tests/, infra/) for directory-specific conventions — Claude Code loads them when working in each directory. Never duplicate a rule at two levels; globals stay here, locals stay local.
+Larger repos: keep this file global-only and add per-directory CLAUDE.md files (src/, tests/, infra/) for directory-specific conventions — Claude Code loads them when working in each directory. Never duplicate a rule at two levels; globals stay here, locals stay local. When the repo outgrows this starter entirely, `/setup-instructions` scaffolds the full layered architecture (per-directory guides + behavioral rules master + surface mirrors).
