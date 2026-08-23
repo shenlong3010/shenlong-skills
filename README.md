@@ -1,6 +1,6 @@
 # shenlong-skills
 
-Personal Claude Code toolbox: 58 skills, 7 slash commands, 7 subagents, lifecycle hooks, MCP scaffolds, output styles, instruction templates, and a self-healing execution loop — packaged as a plugin so one install makes everything available in any project.
+Personal Claude Code toolbox: 62 skills, 8 slash commands, 8 subagents, lifecycle hooks, MCP scaffolds, output styles, instruction templates, and a self-healing execution loop — packaged as a plugin so one install makes everything available in any project.
 
 ## Install
 
@@ -20,14 +20,14 @@ Every artifact carries two orthogonal frontmatter axes — `flow:` (workflow sta
 |---|---|
 | **plan** | `/brainstorm` → `plan-writer` → adversarial reviewers (`plan-reviewer`, `pre-mortem`) → `/decompose`; plus `read-ticket`, `skill-bootstrap` |
 | **execute** | the **ralph loop** (below), `tdd-loop`, `git-worktrees` |
-| **review** | `code-review` + `security-review` agents, `sql-review` |
-| **debug** | `systematic-debug`, `stacktrace-analyzer`, `log-triage` |
+| **review** | `code-review` + `security-review` + `test-reviewer` agents, `sql-review` |
+| **debug** | `systematic-debug`, `stacktrace-analyzer`, `log-triage`, `perf-profile`, `flaky-suite-triage` |
 | **lookup** | the efficiency ladder — 26 skills spanning code (`code-search`, `symbol-lookup`, `trace-flow`, `explain-code`, `read-api-spec`, `api-flow-from-diagram`, …), data (`data-query`, `read-spreadsheet`), docs (`concept-explain`, `paper-notes`, `paper-deep-dive`, `read-pdf-doc`), media (`read-image`, `read-diagram`, `image-prep`, `image-ocr`, `talk-notes`), git (`git-search`, `diff-read`), system (`file-find`, `env-probe`, `system-lookup`, `repo-index`, `dependency-lookup`), process (`read-ticket`), web (`web-research`, `crawl4ai`, `read-eng-blog`, `daily-blog`) |
-| **deliver** | `docx`/`pptx`/`xlsx`/`pdf`, `adr-lite`, `runbook-writer` |
-| **session** | `/handoff-writer`, `caching`, `reasoning-budget-guidance` |
+| **deliver** | `docx`/`pptx`/`xlsx`/`pdf`, `adr-lite`, `runbook-writer`, `postmortem-writer` |
+| **session** | `/handoff-writer`, `/spend`, `caching`, `reasoning-budget-guidance` |
 | **util** | library how-tos: `http-requests`, `sqlite`, `config`, `data-csv`, `markup`, `archive`, `image` |
 | **meta** | `/create <kind>` scaffolder, `/eval-writer`, `mcp-builder`, `setup-instructions` |
-| **career** | `interview-drill`, `/resume-impact` |
+| **career** | `interview-drill`, `/resume-impact`, `recall-drill` |
 
 The generated catalogs (`skills/CLAUDE.md`, `commands/CLAUDE.md`, `agents/CLAUDE.md`) are the authoritative per-flow lists; this table is orientation only.
 
@@ -74,7 +74,7 @@ hooks/            lifecycle hook handlers (guard-dangerous, autoformat, notify, 
 mcp/              MCP configs and scaffolds (env-var keys only — never commit credentials)
 styles/           output styles
 templates/        CLAUDE.md / AGENTS.md starters, settings presets, templates/ralph/ run scaffolds
-tools/            validate.py, skill-lint.py, knowledge-lint.py, gen-index.py, scaffold.py, scan.sh
+tools/            validate.py, skill-lint.py, knowledge-lint.py, eval-lint.py, spend-report.py, gen-index.py, scaffold.py, scan.sh
 ```
 
 Instruction hierarchy: root `CLAUDE.md` is the behavioral master; `skills/`, `agents/`, `commands/`, `tools/` each carry a directory `CLAUDE.md` with local conventions and a generated catalog; `AGENTS.md` is its tool-agnostic mirror for non-Claude surfaces.
@@ -87,7 +87,7 @@ Use the creator — do not hand-roll files:
 /create <skill|command|agent|tool|hook> <name>
 ```
 
-It calls `tools/scaffold.py <kind> <name> [flow] [domain]`, which writes standard frontmatter and runs `tools/validate.py` immediately. Before any commit: all three linters green (`validate.py`, `skill-lint.py`, `knowledge-lint.py`) and `scan.sh` clean. On Windows, run the Python tools with `PYTHONUTF8=1`.
+It calls `tools/scaffold.py <kind> <name> [flow] [domain]`, which writes standard frontmatter and runs `tools/validate.py` immediately. Before any commit: all four linters green (`validate.py`, `skill-lint.py`, `knowledge-lint.py`, `eval-lint.py`) and `scan.sh` clean. On Windows, run the Python tools with `PYTHONUTF8=1`.
 
 ## Guard
 

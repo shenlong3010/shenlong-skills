@@ -27,6 +27,7 @@ Grouped by flow. Regenerate with `python3 tools/gen-index.py` after any add/rena
 
 **Session — context, cost, handoffs**
 - `handoff-writer` ·agent· — Capture the current session's state into a HANDOFF.md that a fresh session can act on without the transcript
+- `spend` ·agent· — Report Claude Code spend and session stats from the local usage log — totals by day, per-session averages, top…
 
 **Meta — build the toolbox itself**
 - `create` ·agent· — Scaffold a new skill, command, agent, tool, or hook in this toolbox — standard frontmatter, correct directory …
