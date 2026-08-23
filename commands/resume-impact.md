@@ -1,6 +1,6 @@
 ---
 name: resume-impact
-description: Rewrite a resume bullet into accomplished-X-by-Y-resulting-in-Z form with a defensibility check — every claim must survive a follow-up interview question. Use for "improve this bullet", "resume review", "make this sound stronger".
+description: Rewrite a resume bullet into accomplished-X-by-Y-resulting-in-Z form with a defensibility check — every claim must survive a follow-up interview question. Use for "improve this bullet", "make this sound stronger". Do NOT use for whole-document diagnosis (scan pattern, section structure, overall impact audit → `read-resume`).
 derivation: original
 flow: career
 domain: career
