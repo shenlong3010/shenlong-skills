@@ -1,6 +1,6 @@
 ---
 name: code-search
-description: Find code and context efficiently — the lexical → structural → semantic search ladder with token-budget discipline, plus the first-contact orientation pass for an unfamiliar repo. Use whenever locating code — "where is X defined", "who calls Y", "find the config for Z", tracing dependencies, any moment a plain grep is about to be fired at a repo — and on first contact with a codebase: "how does this codebase work", "where do I start", "map this repo". Covers ripgrep/ugrep flags that cut both wall time and output tokens, and when to escalate to ast-grep.
+description: Find code and context efficiently — the lexical → structural → semantic search ladder with token-budget discipline, plus the first-contact orientation pass for an unfamiliar repo. Use whenever locating code by text or usage — "find where this error string is produced", "find the config for Z", tracing dependencies, any moment a plain grep is about to be fired at a repo — and on first contact with a codebase: "how does this codebase work", "where do I start", "map this repo". Covers ripgrep/ugrep flags that cut both wall time and output tokens, and when to escalate to ast-grep. Do NOT use for scope-resolved symbol questions ("where is X defined", call hierarchy → `symbol-lookup`) or structured-data greps (JSON/YAML → `data-query`).
 derivation: original
 flow: lookup
 domain: code
@@ -12,7 +12,7 @@ Three layers; start at the cheapest, escalate only when the layer below can't ex
 
 ## The ladder
 
-**1. Lexical (default): ripgrep-class.** Exact strings and regex, gitignore-aware, parallel. This resolves the overwhelming majority of "where is / who uses" queries. Note the surface: recent Claude Code native builds run ugrep under Bash instead of the old rg-based Grep tool (Copilot CLI/Codex still ship rg) — the flags below are grep-compatible where it matters; verify the binary with `command -v rg ugrep`.
+**1. Lexical (default): ripgrep-class.** Exact strings and regex, gitignore-aware, parallel. This resolves the overwhelming majority of "where is / who uses" queries. Note the surface: recent Claude Code native builds run ugrep under Bash instead of the old rg-based Grep tool (Copilot CLI/Codex still ship rg) — the flags below are grep-compatible where it matters; verify the binary with `command -v rg ugrep` (PowerShell: `Get-Command rg,ugrep`; pipe caps become `| Select-Object -First 50`).
 
 **2. Structural: ast-grep (`sg`).** When the query is about code *shape*, not text: "calls to `foo` with exactly two args", "try blocks with empty catch", "this function renamed but not its overloads". Metavariables express what regex can't:
 
@@ -38,8 +38,9 @@ rg --max-columns 200 'minified'  # don't let one minified line eat the window
 rg -uu 'needle'                  # escape hatch when gitignore/hidden hides the target
 rg -z 'error' logs/*.gz          # search inside compressed files
 git grep --cached 'flag'         # tracked-content-only, index-fast
-fd 'Publisher'                   # FILENAME search — stop grepping for filenames
 ```
+
+Filename lookups live in `file-find` (`fd 'Publisher'` belongs there, not here) — don't fire content-search machinery at name hunts.
 
 - Add `-C n` context only when actually needed — context lines inflate output 2–6× depending on match density; default to bare matches, then read the file at the hit.
 - **Budget rule:** search output ≤ ~15% of the context window; hitting it means stop searching and proceed with what you have (context-economy rule, applied).

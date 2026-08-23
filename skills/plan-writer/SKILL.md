@@ -1,10 +1,7 @@
 ---
 name: plan-writer
 description: Write an execution-ready plan that another agent — Claude Code by default — can run top-to-bottom without prior context. Use this whenever the user wants a plan, build plan, spec, roadmap, or implementation plan, especially one to hand off to, export to, or execute in Claude Code or any coding agent. Trigger even when the user says "turn this into a plan," "write a plan for X," "something I can give to Claude Code," or describes a multi-step build they want captured as executable steps — not only when they say the words "plan" or "skill" explicitly. Produces a phased markdown plan with hard constraints up front, self-checkable acceptance per phase, explicit human gates for irreversible actions, and a Definition of Done.
-metadata:
-  owner: Luke
-  enforcement: advisory
-  derivation: original
+derivation: original
 flow: plan
 domain: process
 ---

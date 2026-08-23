@@ -42,8 +42,8 @@ Docs sites, APIs, and JSON endpoints beat rendered pages every time one exists.
 ## Step 4 — post-extract discipline (code-search loop, applied)
 
 ```bash
-trafilatura -u <url> --markdown > /tmp/page.md
-rg -n 'rate limit' /tmp/page.md | head -20     # grep the extraction, read the section
+trafilatura -u <url> --markdown > "$TMPDIR/page.md"    # POSIX; PowerShell: $env:TEMP\page.md
+rg -n 'rate limit' "$TMPDIR/page.md" | head -20     # grep the extraction, read the section
 ```
 
 Save → search → read the hit. Never paste a whole extraction into context when one section answers the question. Same budget: search+fetch output ≤ ~15% of the window; at the cap, stop and proceed with what's in hand.

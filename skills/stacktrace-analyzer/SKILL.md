@@ -17,3 +17,7 @@ domain: code
 
 ## Rules
 Never present one hypothesis as fact when the trace supports several. Line numbers may be stale against the working tree — check file versions before trusting them. Async/reactive traces: the scheduler frames hide the submission site; look for framework-provided assembly/cause markers before concluding.
+
+## Boundaries
+- Whole-dump triage (cluster errors, build a timeline, find the anomaly) → `log-triage`; this skill owns the single-trace root-cause question, even when that trace arrived inside a dump.
+- Confirming or killing the top hypothesis hands off to `systematic-debug` (this skill feeds its step 2); fix-and-regression-test loop → `tdd-loop`.

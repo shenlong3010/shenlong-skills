@@ -40,12 +40,7 @@ find . -name '*.yml' -mtime -2 -size +1M     # everywhere fd isn't installed (co
 
 Slower and noisier, but POSIX-ubiquitous; know the three flags above and skip the rest.
 
-## Size archaeology
-
-```bash
-du -xah . | sort -rh | head -20      # biggest things under here, one filesystem
-```
-
 ## Boundaries
 
 - Content inside files → `code-search`; deleted-but-open files eating disk → `system-lookup` (`lsof +L1`); archives' contents → `archive` skill's listing patterns (`unzip -l`, `tar -tf`).
+- Aggregate disk usage ("where did my space go" — `du` rollups per directory) → `system-lookup`, which owns that pipeline; this skill finds individual files by size (`fd -S`), it doesn't total them.

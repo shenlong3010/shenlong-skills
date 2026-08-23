@@ -58,7 +58,7 @@ handle.exe <path>                                            # who holds a file 
 Get-PSDrive C                                                # disk space; du equivalent: Get-ChildItem -Recurse | Measure-Object Length -Sum
 ```
 
-Git Bash on Windows has none of ss/lsof//proc — don't probe for them there (env-probe rule); go straight to PowerShell.
+Git Bash on Windows has none of ss/lsof//proc — don't probe for them there (env-probe rule); go straight to PowerShell. Windows gap, stated: there is no native `lsof +L1` equivalent — deleted-but-open space hogs need Sysinternals `handle.exe` (or a reboot); everything else in the lane above has a native cmdlet.
 
 ## Gotchas
 

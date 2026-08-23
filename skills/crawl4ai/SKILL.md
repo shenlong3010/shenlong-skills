@@ -280,11 +280,11 @@ Efficiently crawl multiple URLs:
 urls = ["https://site1.com", "https://site2.com", "https://site3.com"]
 
 async with AsyncWebCrawler() as crawler:
-    # Concurrent crawling with arun_many()
+    # Concurrent crawling with arun_many() — concurrency is dispatcher-managed
+    # (MemoryAdaptiveDispatcher by default); pass config, not a max_concurrent kwarg
     results = await crawler.arun_many(
         urls=urls,
         config=crawler_config,
-        max_concurrent=5  # Control concurrency
     )
 
     for result in results:
@@ -394,25 +394,29 @@ products = await crawler.arun_many(product_urls,
 ```python
 # Crawl multiple news sources concurrently
 news_urls = ["https://news1.com", "https://news2.com", "https://news3.com"]
-results = await crawler.arun_many(news_urls, max_concurrent=5)
+results = await crawler.arun_many(news_urls, config=run_config)
 
 # Extract articles with Fit Markdown
 for result in results:
     if result.success:
-        # Get only relevant content
-        article = result.fit_markdown
+        # Get only relevant content — fit text lives on result.markdown since v0.5
+        article = result.markdown.fit_markdown
 ```
 
 ### Research & Data Collection
 ```python
-# Academic paper collection with focused extraction
+# Academic paper collection with focused extraction.
+# Filtering is configured via a content filter inside the markdown generator —
+# there is no fit_markdown/fit_markdown_options param on CrawlerRunConfig.
+from crawl4ai import CrawlerRunConfig, DefaultMarkdownGenerator
+from crawl4ai.content_filter_strategy import BM25ContentFilter
+
 config = CrawlerRunConfig(
-    fit_markdown=True,
-    fit_markdown_options={
-        "query": "machine learning transformers",
-        "max_tokens": 10000
-    }
+    markdown_generator=DefaultMarkdownGenerator(
+        content_filter=BM25ContentFilter(user_query="machine learning transformers")
+    )
 )
+# filtered output: result.markdown.fit_markdown
 ```
 
 ## Resources
@@ -477,7 +481,7 @@ To explore examples:
 1. **Start with basic crawling** - Understand BrowserConfig, CrawlerRunConfig, and arun() before moving to advanced features
 2. **Use markdown generation** for documentation and content - Crawl4AI excels at clean markdown extraction
 3. **Try schema generation first** for structured data - 10-100x more efficient than LLM extraction
-4. **Enable caching during development** - `cache_mode=CacheMode.ENABLED` to avoid repeated requests
+4. **Enable caching during development** - `cache_mode=CacheMode.ENABLED` (import `CacheMode` from `crawl4ai`) to avoid repeated requests
 5. **Set appropriate timeouts** - 30s for normal sites, 60s+ for JavaScript-heavy sites
 6. **Respect rate limits** - Use delays and `max_concurrent` parameter
 7. **Reuse sessions** for authenticated content instead of re-logging

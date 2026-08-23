@@ -16,8 +16,19 @@ Two directions: **provides** (symbol → artifact) and **requires** (artifact �
 mvn dependency:tree -Dincludes=com.fasterxml.jackson.core       # who pulls this artifact in
 mvn dependency:tree -Dverbose | rg 'omitted for conflict'       # version-conflict hunt
 mvn dependency:build-classpath -Dmdep.outputFile=cp.txt         # the REAL resolved classpath
-# class -> jar (the NoClassDefFoundError question):
+# class -> jar (the NoClassDefFoundError question) — POSIX lane (`:` separator, unzip):
 for j in $(tr ':' '\n' < cp.txt); do unzip -l "$j" 2>/dev/null | rg -q 'ObjectMapper.class' && echo "$j"; done
+```
+
+Windows lane — Maven emits `;`-separated paths there, so the `tr ':'` split above yields garbage; use the separator-aware split:
+
+```powershell
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+(Get-Content cp.txt -Raw).Split(';') | Where-Object { $_ } | ForEach-Object {
+  $jar = [System.IO.Compression.ZipFile]::OpenRead($_)
+  if ($jar.Entries.FullName -match 'ObjectMapper\.class$') { $_ }
+  $jar.Dispose()
+}
 ```
 
 Runtime truth: `Class.forName("X").getProtectionDomain().getCodeSource().getLocation()` prints the jar the *running JVM* actually loaded — the final word when tree and reality disagree (shading, fat jars, container classpaths).
@@ -27,7 +38,7 @@ Runtime truth: `Class.forName("X").getProtectionDomain().getCodeSource().getLoca
 ```bash
 pip show -f requests                    # what files a package installed, and where
 python -c "import yaml; print(yaml.__file__, yaml.__version__)"   # what's ACTUALLY imported (venv confusion killer)
-pipdeptree -r -p urllib3               # reverse: who depends on this
+pipdeptree -r -p urllib3               # reverse: who depends on this (if installed — probe first)
 ```
 
 The `__file__` probe settles every "but I installed it" mystery — wrong interpreter/venv is the usual answer.

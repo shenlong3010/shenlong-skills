@@ -1,6 +1,6 @@
 ---
 name: paper-notes
-description: Summarize a paper or technical blog post into structured notes plus a relevance-to-my-stack verdict. Use for "summarize this paper", "notes on this article", "is this arXiv link worth my time". Do NOT use for a full deep read of method and math — that is paper-deep-dive.
+description: Summarize a paper or technical blog post into structured notes plus a relevance-to-my-stack verdict. Use for "summarize this paper", "notes on this article", "is this arXiv link worth my time". Do NOT use for engineering/architecture posts at full technical fidelity (`read-eng-blog`) or a full deep read of method and math (`paper-deep-dive`).
 derivation: original
 flow: lookup
 domain: docs

@@ -32,7 +32,7 @@ Architecture lives in the figures, and eng-blog figures are routinely **lazy-loa
 
 ## Step 4 — write the notes file
 
-Persist the read as a notes file — matching the **paper-notes** / **talk-notes** pattern, so a daily reading habit leaves a durable, greppable trail rather than vanishing into chat.
+Persist the read as a notes file — matching the **paper-notes** / **talk-notes** pattern, so a daily reading habit leaves a durable, greppable trail rather than vanishing into chat. Exception: when invoked **from `daily-blog`**, skip this step — its `pending.md` (rotated into `notes/daily-blog/<date>.md` on show) is the only write; a second copy here is duplication, not backup.
 
 **Resolve the directory before writing, in this order:** an existing notes dir in the repo (`notes/`, `docs/notes/`, or wherever sibling reading notes already live — look, don't assume) → the path the user has given before in this session → **ask**. `notes/eng-blogs/<slug>.md` is the suggestion to *offer* when asking, not a default to fall back on silently: a skill that names a default and an ask in the same breath takes the default every time, which is how two runs in a row created a directory the user never chose. Creating a new top-level directory is the case that always asks.
 
@@ -51,7 +51,7 @@ Sections:
 
 Preserve the exact term while decoding it. Plain-language explanation replaces *unexplained* jargon, never the searchable handle itself (Step 3 governs: `HPKE` stays `HPKE`).
 
-Output is full technical prose **regardless of caveman level** — this read *is* the deliverable, so it stays uncompressed the way code and commits do. (If a whole reading session should run terse-free, the user sets `/caveman lite` or a session default; a skill cannot switch caveman itself.) A long post plus a diagram screenshot is also a clean **background sub-agent** job — offer it to keep the main session context lean.
+Output is full technical prose **regardless of caveman level** — this read *is* the deliverable, so it stays uncompressed the way code and commits do. (If the whole session should run terse-free, that's a user-side output-style choice — e.g. a style like `terse-engineer` set to its lite level; no skill can switch it itself.) A long post plus a diagram screenshot is also a clean **background sub-agent** job — offer it to keep the main session context lean.
 
 ## Boundaries
 

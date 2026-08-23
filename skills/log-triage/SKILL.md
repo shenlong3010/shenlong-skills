@@ -17,3 +17,7 @@ domain: system
 
 ## Rules
 Quote exemplar lines exactly — paraphrased errors can't be grepped. Say explicitly when the dump's time window is too narrow to contain the cause.
+
+## Boundaries
+- One embedded stack trace is the question → `stacktrace-analyzer` (single-trace root cause); whole-dump clustering and timeline stay here.
+- Acting on the top hypothesis (reproduce, isolate, fix) → `systematic-debug`; this skill ends at "hypothesis + confirming query".

@@ -1,6 +1,6 @@
 ---
 name: ralph-plan
-description: Planner phase of the ralph loop — pull stories from whatever tracker exists (Jira MCP, GitHub issues, or a local BACKLOG.md/PRD.md), decompose each into 3–7 machine-verifiable tasks, and scaffold a run under .agents/runs/. Use for "/ralph plan", "plan the loop", "pull my stories", "set up a ralph run", or before any /ralph next when no run exists.
+description: Planner phase of the ralph loop — pull stories from whatever tracker exists (Jira MCP, GitHub issues, or a local BACKLOG.md/PRD.md), decompose each into 1–7 machine-verifiable tasks, and scaffold a run under .agents/runs/. Use for "/ralph plan", "plan the loop", "pull my stories", "set up a ralph run", or before any /ralph next when no run exists.
 derivation: adapted
 source: https://github.com/snarktank/ralph
 flow: execute
@@ -29,4 +29,4 @@ Turns tracker stories into on-disk run artifacts the ralph loop can execute with
 - Re-running plan for an existing story must not clobber a live run: if `run-*-<story-slug>/` exists, stop and route to `/ralph replan` instead.
 
 ## Boundaries
-Planning only — never spawns roles or executes tasks (that is `ralph-next`). Task-splitting method belongs to `decompose`; loop-state schema belongs to `templates/ralph/`. Regenerating tasks for a changed story is `/ralph replan`, not a fresh plan.
+Planning only — never spawns roles or executes tasks (that is `ralph-next`). Task-splitting method belongs to the `/decompose` command; loop-state schema belongs to `templates/ralph/`. Regenerating tasks for a changed story is `/ralph replan`, not a fresh plan.

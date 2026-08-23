@@ -18,3 +18,7 @@ domain: data
 
 ## Output
 Findings ranked by expected impact, each with the concrete rewrite or index DDL. State the assumed engine; semantics differ (Postgres vs MySQL vs Oracle) and the review must say which rules applied.
+
+## Boundaries
+- "Why is this slow" with no query in hand (runtime perf debugging: reproduce, profile, isolate) → `systematic-debug`; this skill reviews the statement itself.
+- Schema/DDL review in a diff → `code-review` agent; this skill covers the SQL statements it contains.

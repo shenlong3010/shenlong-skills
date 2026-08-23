@@ -46,5 +46,5 @@ wb.save("report.xlsx")
 - **1-indexed everywhere** — `ws.cell(row=1, column=1)` is A1; off-by-one from pandas habits is the #1 bug.
 - **Merged cells:** only the top-left cell holds the value; the rest read `None`. Unmerge or check `ws.merged_cells.ranges` before iterating.
 - **Large files:** `read_only=True` / `write_only=True` modes stream instead of loading everything; write-only requires append-style building (no random cell access).
-- **.xls (legacy)** unsupported — convert first or use `xlrd<2.0` read-only.
+- **.xls (legacy)** unsupported — convert first; `xlrd<2.0` reads it but is unmaintained with known crafted-file vulnerabilities, so only for trusted local files, never untrusted input.
 - Column letters ↔ numbers: `get_column_letter(n)` / `column_index_from_string("AB")` — don't hand-roll base-26.

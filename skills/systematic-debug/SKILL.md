@@ -18,7 +18,10 @@ domain: process
 5. **Write down falsified hypotheses.** A kill-list prevents re-testing the same theory an hour later — the most common debugging waste.
 6. **Isolate by bisection** when the ladder stalls: git bisect for "worked yesterday" (then diff code AND config AND data AND environment — regressions hide in all four), binary-search the input, comment-out halves, differential-test against the working environment.
 7. **Fix the cause, not the symptom.** A retry wrapped around a race is a snooze button. State in one line why the fix addresses the mechanism from step 6.
-8. **Close the loop:** add the regression test that would have caught it, and the log line/metric that would have made this diagnosis 10× faster. The bug's lasting value is the observability it forces.
+8. **Close the loop:** add the regression test that would have caught it (the `tdd-loop` discipline — failing test first), and the log line/metric that would have made this diagnosis 10× faster. The bug's lasting value is the observability it forces.
+
+## Boundaries
+- A pasted stack trace is the input → `stacktrace-analyzer` feeds step 2; a whole log dump → `log-triage` clusters it first. History archaeology ("when did this change?") → `git-search`.
 
 ## Anti-patterns this replaces
 Shotgun edits ("try this"), fixing the first plausible suspect, deleting the repro before the regression test exists, and declaring victory on "can't reproduce anymore" without knowing why.

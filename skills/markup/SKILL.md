@@ -40,9 +40,10 @@ for entry in root.findall("a:entry", ns):
 ```
 
 - **A namespaced document makes bare `findall("entry")` return nothing** — the #1 "my XML parse is empty" bug. Tags are really `{uri}entry`; supply the ns map or match the `{uri}tag` form.
+- **Trust boundary: untrusted XML goes through `defusedxml.ElementTree`**, never stdlib `xml.etree`. Feeds, scraped docs, uploads are attacker-controlled input; stdlib rejects *external* entities but still expands *internal* ones (billion-laughs memory exhaustion — verified on Python 3.14, real bombs need only ~9 nested levels). `defusedxml` blocks entity expansion outright and is API-compatible: `from defusedxml.ElementTree import parse`.
 - Namespace prefixes in the file (`atom:`, `ns0:`) are arbitrary — match on URIs via your own map, never on the file's prefixes.
 - Attributes are usually un-namespaced even in namespaced docs; `el.get("id")` works as-is.
 - Huge XML: `ET.iterparse(path, events=("end",))` + `elem.clear()` after processing — constant memory.
 
 ## Choosing
-HTML in the wild → BeautifulSoup. Well-formed XML → ElementTree (stdlib) or lxml for XPath. JSON hiding in a `<script>` tag → extract the tag text, then `json.loads` — don't parse JS with a markup parser.
+HTML in the wild → BeautifulSoup. Well-formed XML → ElementTree (stdlib) or lxml for XPath — via defusedxml when it's untrusted. JSON hiding in a `<script>` tag → extract the tag text, then `json.loads` — don't parse JS with a markup parser.

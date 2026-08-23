@@ -1,6 +1,6 @@
 ---
 name: data-query
-description: Query JSON/YAML/structured data precisely with jq, gron, and yq instead of grepping it. Use for "find the key/value in this JSON", "extract field X", "search this config/API response", or any moment grep is about to be aimed at structured data — grep on JSON is a false-positive machine (keys vs values, escaping, minified single lines).
+description: Query JSON/YAML/structured data precisely with jq, gron, and yq instead of grepping it. Use for "find the key/value in this JSON", "extract field X", "search this config/API response", or any moment grep is about to be aimed at structured data — grep on JSON is a false-positive machine (keys vs values, escaping, minified single lines). Do NOT use for source-code text searches (`code-search`) or human-authored spreadsheets where meaning is layout (`read-spreadsheet`).
 derivation: original
 flow: lookup
 domain: data
@@ -29,7 +29,7 @@ jq 'keys' big.json                            # probe structure FIRST — cheap 
 
 ```bash
 gron resp.json | rg 'apiKey'                  # JSON → flat assignments → rg finds path AND value
-gron resp.json | rg 'retries = ' | sed 's/3/5/' | gron -u   # edit via grep, back to JSON
+gron resp.json | rg 'retries = ' | sed 's/3/5/' | gron -u   # edit via grep, back to JSON (sed is POSIX; Git Bash on Windows carries it)
 ```
 
 The bridge tool when you don't know the structure: every leaf becomes one greppable line carrying its full path.

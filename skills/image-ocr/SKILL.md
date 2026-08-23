@@ -23,6 +23,14 @@ This skill enables accurate text extraction from image files (JPG, PNG, etc.) us
 
 ## Required Libraries
 
+`pip install pytesseract pillow` installs the *wrapper only* — the native **Tesseract binary** is a separate install, and pytesseract fails with `TesseractNotFoundError` until it can find it:
+
+- **Windows:** UB Mannheim installer (`winget install UB-Mannheim.TesseractInstaller`), then either add its install dir to PATH or point pytesseract at it: `pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"`.
+- **macOS:** `brew install tesseract`
+- **Debian/Ubuntu:** `sudo apt install tesseract-ocr`
+
+Verify before relying on it: `pytesseract.get_tesseract_version()`.
+
 The following Python libraries are required:
 
 ```python

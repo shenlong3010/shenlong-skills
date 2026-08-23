@@ -42,5 +42,5 @@ Type errors, cross-module inference, and guaranteed-complete hierarchies need a 
 
 ## Boundaries
 
-- Free-text/content search → `code-search`; which artifact *provides* a symbol → `dependency-lookup`; history of a symbol → `git-search -L`.
+- Free-text/content search → `code-search`; which artifact *provides* a symbol → `dependency-lookup`; line-range history of a symbol → `git-search` (`git log -L`).
 - Dynamic languages' runtime dispatch (Python duck typing, JS) caps static confidence — mark caller lists "static approximation" in any report.

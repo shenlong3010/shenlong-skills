@@ -27,3 +27,4 @@ Commit on green, per cycle. Small commits = cheap bisects later.
 - Spikes/throwaway exploration are exempt — but label the code `# SPIKE` and delete it before real implementation starts; spike code that survives becomes untested production code.
 - Behavior at external boundaries (HTTP, DB) → test through the repo's existing fake/mock idiom; find it first (grep the test dir for the project's fixture/mock pattern) — don't invent a new mocking style mid-TDD.
 - One assertion-concept per test; a test that checks five behaviors fails uninformatively.
+- The bug you're fixing has no failing test yet? That RED phase is step 7 of `systematic-debug` — root cause first, then this loop turns the fix into the regression test.
