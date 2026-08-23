@@ -43,6 +43,16 @@
       "$comment": "Author's memory server (npm package `cavemem`). Install it, then point command/args at your node + install path. Not required by any repo skill.",
       "command": "${PATH_TO_NODE}",
       "args": ["${PATH_TO_CAVEMEM}/dist/index.js", "mcp"]
+    },
+    "atlassian-jira": {
+      "$comment": "CONDITIONAL — only when a ralph run actually needs the Jira adapter (skills/ralph-plan/references/adapters.md ladder top). Official Atlassian remote MCP; verify the current URL and OAuth flow against Atlassian's MCP docs before enabling. Requires an Atlassian cloud site.",
+      "type": "http",
+      "url": "https://mcp.atlassian.com/v1/sse"
+    },
+    "sentry": {
+      "$comment": "CONDITIONAL — only once you run services with live error streams (perf-profile/systematic-debug feed on real stack traces). Official Sentry remote MCP; verify the current URL against Sentry's MCP docs before enabling.",
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
     }
   }
 }
