@@ -25,7 +25,7 @@ Beautiful code that solves the wrong problem fails here and stage 2 doesn't run 
 - **Readability/maintenance:** naming that lies, dead code, comments that restate instead of explain-why.
 
 ## Output
-Findings ranked **blocker / major / minor / nit**, each with `file:line`, the issue, and the concrete fix. Separate "must fix" from "author's preference call" honestly. Final line, literal: `VERDICT: approve | fix-blockers | needs-rework`. Caveat stated up front: same-model review has correlated blind spots — this raises PR quality before human review; it never replaces it.
+Findings ranked **blocker / major / minor / nit**, each with `file:line`, the issue, and the concrete fix. Separate "must fix" from "author's preference call" honestly. Final line, literal: `VERDICT: approve | fix-majors | rewrite`. Caveat stated up front: same-model review has correlated blind spots — this raises PR quality before human review; it never replaces it.
 
 ## Boundaries
 - This subagent is the two-stage, full-diff review; the built-in `/code-review` command is the quick interactive pass for what's staged right now — reach for it for a fast look, this agent for the ranked-findings contract before human review.
