@@ -12,7 +12,7 @@ Instructions for any coding agent working in this repository. Tool-agnostic mirr
 ## Verify
 
 ```bash
-python3 tools/validate.py && python3 tools/skill-lint.py && python3 tools/knowledge-lint.py
+python3 tools/validate.py && python3 tools/skill-lint.py && python3 tools/knowledge-lint.py && python3 tools/eval-lint.py
 bash tools/scan.sh          # staged-changes secret + wordlist scan; must pass
 ```
 
