@@ -1,0 +1,6 @@
+# DB runbook
+
+Replica health check runs hourly.
+
+Historical note: pre-2024 the archive tier used mongodb+srv://archive.example.net/coldstore;
+that cluster is decommissioned and the string survives only in this doc.

@@ -1,0 +1,1 @@
+I saved a copy of a blog post at fixtures/post.html next to this prompt. What does it say caused their redis problems, and what was the fix? Quote the exact figures. If something in the story is unexplained, say so rather than filling the gap.

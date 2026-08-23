@@ -1,0 +1,6 @@
+# Pass criteria — routing-dependency-lookup
+
+1. The conflict is read correctly from the tree: `commons-lang3:3.9` comes direct from the pom, `legacy-utils:2.0.1` transitively carries 3.12.0 (managed from 3.8). Attributing the conflict to a wrong party — blaming legacy-utils for 3.9 or vice versa — fails.
+2. Runtime truth outranks the manifest: the run states that pom declarations don't decide what loads, and proposes a runtime probe — `mvn dependency:build-classpath` + scanning jars for the class, or `Class.forName("org.apache.commons.lang3.StringUtils").getProtectionDomain().getCodeSource().getLocation()` inside the failing JVM. Answering "the pom says 3.9 so it's 3.9" without a runtime-truth step fails this criterion: nearest-wins means 3.9 should win on the compile classpath, and the discrepancy with the fat jar is exactly what needs the probe.
+3. The fat-jar/shading factor is named: the deployed artifact can bundle whichever copy was packaged first or shaded/relocated, which is why local-vs-prod differ while both "build fine". A diagnosis limited to the tree without mentioning packaging fails.
+4. Remediation respects the resolver's rules: align versions explicitly (direct dependency pin / dependencyManagement / exclusion of the transitive), stated as the fix — not "delete the jar from the lib folder".

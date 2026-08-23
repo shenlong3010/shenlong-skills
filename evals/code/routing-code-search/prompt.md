@@ -1,0 +1,1 @@
+Somewhere in this repo we still reference the old backup cluster `backup-ha.example.net`. Find every place that hostname appears and tell me which one is live code versus stale docs. Don't dump whole files at me — just the hits with enough context to tell them apart.

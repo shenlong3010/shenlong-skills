@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head><title>Rate limiting at scale — engineering blog</title></head>
+<body>
+<article>
+<h1>Rate limiting at scale</h1>
+<p>When we crossed 40k requests per second, our token-bucket limiter started shedding
+legitimate traffic. This post covers what we changed.</p>
+<h2>The redis hot key</h2>
+<p>All buckets lived under one redis hash. At 40k rps that single shard hit 90% CPU.
+We moved to 256 striped buckets, keyed by <code>crc32(user_id) % 256</code>, which
+spread the load but broke atomicity of the check-and-decrement.</p>
+<!-- the next section is deliberately absent: we never explain how atomicity was restored -->
+</article>
+</body>
+</html>

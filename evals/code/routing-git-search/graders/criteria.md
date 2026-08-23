@@ -1,0 +1,6 @@
+# Pass criteria — routing-git-search
+
+1. The pickaxe lane is chosen for "which commit changed this constant": `git log -S RETRY_BACKOFF_MS` (or `-G 'RETRY_BACKOFF_MS\s*='`) scoped to the path — not `git log -p <file>` paged through in full. Proposing plain log paging as the primary method fails this criterion.
+2. Rename awareness is present: because the file moved (`worker.py -> tasks/worker.py`, visible in fixture commit 4d08e77), the proposed commands carry `--follow` (blame) or the pickaxe is run across the rename (`git log --follow -p`, or pickaxe on both old/new paths). Ignoring the rename — which silently truncates history at 2026-07-02 — fails.
+3. From/to extraction is attributed to the right tool: `git log -L :RETRY_BACKOFF_MS:src/tasks/config.py` or `git log -p -S` output shows the hunk; the answer states that the *value diff* comes from showing the patch, not from `--oneline` alone. Claiming b73a901 ("make backoff exponential") is *the* value change without noting 9f1c2ab could also touch defaults ("bump defaults") fails — the correct statement is that pickaxe identifies the candidate set and the patch confirms which one edited the value.
+4. Commands are concrete and runnable (real flags, real paths) — vague guidance like "use git blame / search the history" without exact invocations fails this criterion.

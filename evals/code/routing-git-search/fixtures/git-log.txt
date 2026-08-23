@@ -1,0 +1,11 @@
+commit 9f1c2ab (tag: v2.3.0, 2026-07-14)
+    bump defaults for prod readiness
+
+commit 4d08e77 (2026-07-02)
+    rename worker.py -> tasks/worker.py, move under package
+
+commit b73a901 (2026-06-19)
+    retry: make backoff exponential
+
+commit 1ac55d4 (2026-06-11)
+    extract retry constants to config module
