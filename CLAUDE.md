@@ -72,20 +72,17 @@ One law across all: search output ≤ ~15% of the context window; files-first, s
 
 ## Coding behavior
 
-1. **Think before coding** — surface assumptions; multiple interpretations → present them; unclear → stop and ask.
-2. **Simplicity first** — minimum code; no speculative features or abstractions; if 200 lines could be 50, rewrite.
-3. **Surgical changes** — only what the request requires; match existing style; clean only the orphans your change created.
-4. **Read before write** — never edit a file from memory; re-read after any external change; earlier reads are stale.
-5. **Goal-driven** — machine-verifiable "done" before code; multi-step work gets a plan with a verify per step. *Deep: `decompose`.*
-6. **Verification** — reproducing test → fix → test passes = fixed; run the stated check before claiming done. *Deep: `tdd-loop`.*
-7. **Debugging** — read the actual error; reproduce first; one variable per experiment; record falsified hypotheses. *Deep: `systematic-debug`.*
-8. **Dependencies** — stdlib first; document why + tradeoff when adding; pin versions.
-9. **Environment assumptions** — probe tools and versions (`command -v`, import check); state platform assumptions aloud.
-10. **Secure by default** — parameterized queries; env-var secrets only; validate at trust boundaries; never log credentials/PII.
-11. **Reversibility** — classify before acting; irreversible (delete, push, publish, migrate, spend) → stop and confirm; prefer the reversible path.
-12. **Idempotence** — check-before-create; every step safe to re-run and resumable.
-13. **Checkpoint discipline** — commit at every green verifiable unit; small commits, real messages.
-14. **Context economy** — load sections, not repos; summarize verbose output once; when history dominates, hand off and restart. *Deep: `code-search` for search-output budgets.*
-15. **Honest uncertainty** — precise doubt ("unsure X supports streaming") beats confident vagueness ("should work").
-16. **Evidence over claims** — report what changed, the check run, and its output; never "successfully" without the check in this session.
-17. **Failure-mode self-recognition** — Kitchen Sink · Wrong Abstraction · Optimistic Path · Runaway Refactor · Groundhog Loop (identical retry, no new info) · Success Theater → stop, surface the pattern, ask.
+General coding behavior lives in `~/.claude/CLAUDE.md` (13-point list: think
+before coding, simplicity, surgical changes, read-before-write, verification,
+debugging, dependencies, reversibility, idempotence, comments-explain-why,
+context economy, evidence over claims, failure-mode self-recognition). This
+repo adds four points the general list doesn't cover:
+
+1. **Goal-driven** — machine-verifiable "done" before code; multi-step work gets a plan with a verify per step. *Deep: `decompose`.*
+2. **Environment assumptions** — probe tools and versions (`command -v`, import check); state platform assumptions aloud.
+3. **Secure by default** — parameterized queries; env-var secrets only; validate at trust boundaries; never log credentials/PII.
+4. **Checkpoint discipline** — commit at every green verifiable unit; small commits, real messages.
+
+Skill cross-references from the trimmed points, kept for discoverability:
+verification → `tdd-loop`; debugging → `systematic-debug`; context economy →
+`code-search` for search-output budgets.

@@ -6,8 +6,14 @@
   "plugins": [
     {
       "name": "shenlong-skills",
-      "description": "Personal toolbox: skills, commands, agents, hooks, MCP scaffolds, styles, templates.",
+      "description": "Personal toolbox core: code search and navigation, debug and triage, data and query, dependency lookup — plus commands, agents, hooks, MCP scaffolds, styles, templates. Always-on half.",
       "source": "./",
+      "category": "productivity"
+    },
+    {
+      "name": "shenlong-extra",
+      "description": "On-demand half of the personal toolbox: reading and research, document formats, writing, ralph loop, and other skills not needed in every session.",
+      "source": "./extra",
       "category": "productivity"
     }
   ]
