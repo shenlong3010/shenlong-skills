@@ -36,9 +36,23 @@ case "$cmd" in
     block "destructive SQL" ;;
 esac
 
-# Raw device writes.
+# Raw device writes. Anchored to command position (start, or after ;/&/|) so
+# prose mentioning "mkfs" or "dd if=" in a commit message, comment, or grep
+# pattern doesn't trip it — only actually invoking the tool does. (The prior
+# *"mkfs"*-style substring match fired on any mention of the word, including
+# this hook's own commit messages describing the fix — found 2026-09-13.)
 case "$cmd" in
-  *"mkfs"*|*"dd if="*"of=/dev/"*|*"> /dev/sd"*|*"> /dev/nvme"*)
+  mkfs*|*[\;\&\|]\ mkfs*)
+    block "raw device write" ;;
+esac
+case "$cmd" in
+  dd\ *|*[\;\&\|]\ dd\ *)
+    case "$cmd" in
+      *"of=/dev/"*) block "raw device write" ;;
+    esac ;;
+esac
+case "$cmd" in
+  *"> /dev/sd"*|*"> /dev/nvme"*)
     block "raw device write" ;;
 esac
 
