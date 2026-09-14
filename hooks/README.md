@@ -38,6 +38,64 @@ path containing `$(...)`. Both scripts pipe any Python-sourced value through
 `tr -d '\r'` (Windows Python emits CRLF; an unstripped `\r` breaks every
 downstream string comparison silently).
 
+## `guard-model-switch.sh`
+
+`PreModelSwitch`. Warns (exit 2 = confirmed block-and-ask for this event,
+verified against docs, not assumed) on a mid-session `/model` switch — each
+one invalidates the prompt cache prefix built so far. Measured on the home
+machine 2026-09-13: ~1.77M tokens/33 sessions attributable to mid-session
+switches specifically.
+
+Suppressed on a session's *first* switch (a marker file keyed on
+`session_id` under `~/.claude/.model-switch-state/`) so routine session-start
+model selection doesn't get warned and train a reflexive "just click through
+it" habit that would defeat the warning on the switches that actually matter.
+The script self-prunes markers older than 7 days on every invocation — no
+separate cleanup hook needed.
+
+## `audit-mcp-startup.sh`
+
+`SessionStart`, **must stay wired with `"async": true`**. Shells out to
+`claude mcp list` to log the real connected/failed MCP server set to
+`~/.claude/mcp-audit.log` — `SessionStart`'s own JSON payload carries no
+server-list field, so this is the only way to get real data.
+
+Measured directly on the home machine (not assumed): a real `claude mcp
+list` run against ~14 configured servers takes **~16 seconds** (each server
+gets a live health check). Wiring this synchronously would add 16s to every
+session start — exactly the overhead this hook exists to help reduce.
+`timeout 25` bounds the subprocess; a timeout or non-zero exit is logged
+explicitly (`TIMEOUT after 25s` / `FAILED rc=...`), never silently swallowed,
+so a broken PATH doesn't masquerade as "zero servers configured". Verified
+this does not itself trigger a nested `SessionStart` (ran `claude mcp list`
+manually while watching the log file — no new session-start event fired).
+
+**If porting to a machine with far fewer MCP servers, re-time this** — the
+16s figure and 25s timeout are specific to this machine's ~14-server count,
+not a universal constant.
+
+## `log-tool-failure.sh`
+
+`PostToolUseFailure` (no matcher — every tool failure). Logs failed-tool
+name + error to `~/.claude/tool-failures.log`, and separately writes the
+full raw JSON payload to `~/.claude/.last-tool-failure-raw.json` on every
+invocation (overwritten, not appended).
+
+The error/reason field name for this event is **not confirmed** against
+official docs as of 2026-09-13 (two fetch attempts didn't surface the exact
+schema) — the script tries `error`, `error_message`, and
+`tool_response.error` in that order. The raw-payload dump exists specifically
+so a wrong guess is correctable in one look (`cat` the raw file after a real
+failure) instead of silently logging an empty string indefinitely.
+
+**Known gap, not fixed:** the raw-payload file is meant to be
+access-restricted (`chmod 600`) since it can carry command args or file
+content from a failed call. On Windows/NTFS via Git Bash, `chmod` silently
+no-ops on this file class — verified with `stat` before/after, mode stayed
+`0644` with no error reported. On a Linux/macOS port, `chmod 600` in the
+script will actually take effect there; on Windows, treat the file as
+readable by anything running as the same OS user.
+
 A retired pair — `daily-blog-queue.sh` (SessionEnd) and `daily-blog-show.sh` (SessionStart:startup) — once served the **daily-blog** skill: the first launched a detached read after you left, the second printed the finished notes at the next day's first session. They were removed on 2026-08-01 in favour of the `engineering-blog-daily` local reader (browse + search + on-demand notes, no background process); recover them from commit `a2362f7` if the pattern is ever needed again. Their failure mode is itself the lesson: the pair sat wired-but-never-firing for days, because a plugin-delivered hook resolved `CLAUDE_PROJECT_DIR` to the wrong tree and the script's missing-state guard exited 0 in silence. Four things generalize to any hook that spawns work:
 
 - **`Stop` is not session end.** It fires after every agent response. `SessionEnd` is the exit event, but it has a ~1.5s shared budget — enough to launch, never to do.

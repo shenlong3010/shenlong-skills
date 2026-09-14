@@ -1,0 +1,101 @@
+# CLAUDE.md — user instructions (template)
+
+User-scope memory (`~/.claude/CLAUDE.md` — loads in every project on this
+machine, distinct from a project's own `CLAUDE.md`). This template carries
+only the rules that are genuinely portable across machines; sections that
+name specific facts about one machine or one set of personal repos are
+deliberately left out or marked for per-machine fill-in. Copy this file to
+`~/.claude/CLAUDE.md` on a new machine and adapt the marked sections — do not
+sync it verbatim between machines afterward, since the Environment section
+below is fill-in-per-machine by design.
+
+Portability audit (why each section is here, or isn't) is documented in the
+shenlong-skills repo's session history — see the split rationale in this
+repo's own root `CLAUDE.md` under "shenlong-skills plugin" for context on why
+this repo is the source of truth across machines in the first place.
+
+## Response style
+
+Adjust freely per user preference — nothing machine-specific here. Example
+from the source machine: a caveman-mode plugin injects a marker on every
+prompt, honored for the whole session with normal prose kept for code,
+commit messages, PR descriptions, security warnings, and confirmations of
+irreversible actions.
+
+## Environment
+
+<!-- FILL IN PER MACHINE — do not copy this section from another machine.
+     Everything here is OS/shell/runtime facts specific to one box: console
+     encoding, which shells are available and their syntax differences,
+     language-runtime quirks (e.g. a platform's stdlib emitting CRLF), PATH
+     ordering instability between multiple installed runtime versions, any
+     missing-standard-tool workarounds (e.g. a platform shipping a stub
+     instead of a real interpreter under an expected name). Probe the real
+     machine — `node --version`, `which python3`, encoding tests — rather
+     than assume any of the source machine's specifics apply here. -->
+
+- Probe before assuming a tool exists.
+
+## Coding behavior
+
+1. **Think before coding** — surface assumptions; multiple interpretations → present them; unclear → stop and ask.
+2. **Surgical changes** — only what the request requires; match existing style; clean only the orphans your change created.
+3. **Read before write** — never edit a file from memory; re-read after any external change.
+4. **Fail loudly** — silent wrong behavior is worse than a loud stop. Never swallow an error to make output look clean.
+5. **Verification** — run the stated check before claiming done. Verify against the **real contract**, not against your own expected output: a script echoing the string you intended proves nothing about whether the consumer honors it.
+6. **Debugging** — read the actual error; reproduce first; one variable per experiment.
+7. **Dependencies** — stdlib/vanilla first.
+8. **Reversibility** — irreversible (delete, push, publish, spend) → stop and confirm.
+9. **Idempotence** — check-before-create; keep every step safe to re-run.
+10. **Comments explain why** — the non-obvious constraint or the bug that forced the guard, not what the code does.
+11. **Context economy** — load sections, not repos; summarize verbose output once. Prefer Grep and targeted reads over whole files.
+12. **Evidence over claims** — report what changed, the check run, and its output; never "successfully" without the check in this session.
+13. **Failure-mode self-recognition** — Kitchen Sink · Wrong Abstraction · Optimistic Path · Runaway Refactor · Groundhog Loop (identical retry, no new info) · Success Theater → stop, surface the pattern, ask.
+
+## Hooks
+
+Hooks live in `~/.claude/hooks/` and are wired in `settings.json`. These
+contract rules are universal — they describe how Claude Code's hook system
+behaves, not anything about one machine:
+
+- **Block with exit code 2 + stderr**, never JSON. It is schema-independent and cannot silently break.
+- **Never emit `{"decision":"allow"}`** from a `PreToolUse` hook — that is real auto-approval and skips the interactive permission prompt. Pass-through paths exit 0 silently so normal permissions still apply.
+- If a JSON decision is ever needed, `PreToolUse` requires it nested under `hookSpecificOutput.permissionDecision`. A bare top-level `{"decision":"block"}` is **silently ignored** for that event.
+- Test every hook against real payloads including: paths with spaces, missing files, malformed JSON, and the false-positive cases a too-broad pattern would catch.
+- For a hook that shells out to a slow subcommand (e.g. `claude mcp list`), measure the real completion time on **this** machine before picking a timeout and before deciding sync-vs-async — a value copied from another machine's server count/network conditions can be wrong in either direction.
+
+If this repo's `hooks/` directory is installed as a plugin here, its
+`hooks.json` documents the specific hook set (guard-dangerous, bulk-read/cat
+guards, model-switch guard, MCP audit, tool-failure logger) and each one's
+machine-specific caveats — read `hooks/README.md` there rather than
+duplicating that detail in this template.
+
+## Artifacts
+
+- Republish to the **existing artifact URL** so links don't change; record new URLs in the project's own CLAUDE.md as pages ship.
+- Cross-page navigation must use full `https://claude.ai/code/artifact/...` URLs — each page is separately sandboxed, so relative filenames don't resolve.
+
+## Cache discipline
+
+Cache prefix order: system prompt -> tools -> MCP schemas -> skills -> memory
+-> conversation. A change early in that order invalidates everything after
+it, for the rest of the session.
+
+- Decide the MCP server set and enabled-plugin set before the first prompt,
+  not mid-session. `/mcp` and `/plugin` toggles both break cache from that
+  point down.
+- Set the model before starting a long session; avoid mid-session `/model`
+  unless the task genuinely needs it.
+- Idle-timeout cache expiry is not worth engineering around — stepping away
+  is the cause, not a config problem.
+
+<!-- Not included from the source machine's CLAUDE.md, and why:
+     - "Study-content repos" section: named specific personal repos
+       (system-design, cert-drill, leetcode, etc.) that are a home-machine
+       thing, not portable. If this machine has its own reference repos,
+       write a fresh section naming them.
+     - Specific measured numbers (e.g. "~1.77M tokens/33 sessions", "~19x
+       cheaper", "~16s for 14 servers") were left in the shenlong-skills
+       repo's hooks/README.md instead of here, since they're this-session's
+       or this-machine's data — cite them as historical precedent if useful,
+       but re-measure on a new machine rather than trust them as universal. -->
