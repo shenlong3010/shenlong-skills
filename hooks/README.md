@@ -109,6 +109,41 @@ no-ops on this file class — verified with `stat` before/after, mode stayed
 script will actually take effect there; on Windows, treat the file as
 readable by anything running as the same OS user.
 
+## `snapshot-precompact.sh`
+
+`PreCompact` (no matcher — fires on both manual and auto compaction).
+Logs `trigger` (`manual`/`auto`) + `session_id` + `cwd` to
+`~/.claude/compact.log` before context gets summarized — a breadcrumb for
+when/why compaction happened, since the summary itself can thin out detail
+the transcript had. Confirmed against docs 2026-09-15: exit 2 on this event
+**blocks compaction outright**. This hook is pure logging and must never
+exit non-zero on any path, including parse failure — a bug here would
+silently prevent the user from ever compacting.
+
+## `log-subagent-stop.sh`
+
+`SubagentStop` (no matcher — every subagent). Logs `agent_type` + `agent_id`
++ a 150-char tail of `last_assistant_message` to `~/.claude/subagent.log`.
+All three fields are already present in the documented payload — no
+shell-out needed, unlike `audit-mcp-startup.sh` which has to call the CLI
+because `SessionStart` carries no server list. Exit 2 on this event blocks
+the subagent from stopping (confirmed 2026-09-15) — logger only, always
+exits 0.
+
+## `log-config-change.sh`
+
+`ConfigChange` (no matcher). Logs which settings tier changed
+(`user_settings`/`project_settings`/`local_settings`/`policy_settings`/
+`skills`) to `~/.claude/config-change.log`.
+
+**Originally scoped as auto-backup-on-edit, cut back once the real payload
+was checked (2026-09-15):** the `ConfigChange` input has **no filename and
+no diff** — only `source` naming which tier changed. There is no way for
+this hook to know *which file* to back up, so it logs drift timing instead
+(an audit trail: "user_settings changed at TS") rather than claiming a
+backup capability it can't deliver. Exit 2 is a documented no-op for this
+event — the configuration change proceeds regardless of what the hook does.
+
 A retired pair — `daily-blog-queue.sh` (SessionEnd) and `daily-blog-show.sh` (SessionStart:startup) — once served the **daily-blog** skill: the first launched a detached read after you left, the second printed the finished notes at the next day's first session. They were removed on 2026-08-01 in favour of the `engineering-blog-daily` local reader (browse + search + on-demand notes, no background process); recover them from commit `a2362f7` if the pattern is ever needed again. Their failure mode is itself the lesson: the pair sat wired-but-never-firing for days, because a plugin-delivered hook resolved `CLAUDE_PROJECT_DIR` to the wrong tree and the script's missing-state guard exited 0 in silence. Four things generalize to any hook that spawns work:
 
 - **`Stop` is not session end.** It fires after every agent response. `SessionEnd` is the exit event, but it has a ~1.5s shared budget — enough to launch, never to do.
