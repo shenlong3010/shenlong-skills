@@ -23,12 +23,45 @@ payload=$(cat)
 PY=python3; [ "$(python3 -c 'print(1)' 2>/dev/null)" = "1" ] || PY=python
 ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 cwd=$(printf '%s' "$payload" | "$PY" -c "import json,sys; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null | tr -d '\r')
-servers=$(timeout 25 claude mcp list 2>&1 | tr '\n' ';' | tr -d '\r')
+raw=$(timeout 25 claude mcp list 2>&1)
 rc=$?
 if [ "$rc" -eq 124 ]; then
-  servers="TIMEOUT after 5s"
+  servers="TIMEOUT25"
 elif [ "$rc" -ne 0 ]; then
-  servers="FAILED rc=$rc: $servers"
+  servers="RUNFAIL_rc$rc"
+else
+  # Compact name:status pairs — raw CLI output is ~1-2KB/line (full URLs,
+  # command paths, prose per server); only connect/fail/pending/disabled
+  # status is ever queried later, so collapse to one char per server.
+  # Status legend: + connected, - failed, ~ pending approval, o disabled.
+  # PYTHONIOENCODING forces UTF-8 stdin — on Windows, python.exe defaults
+  # stdin to the console codepage (cp1252 on this dev machine), which
+  # mis-decodes claude mcp list's UTF-8 status symbols (✔/✘/⏸/⊘) into 3
+  # garbage chars each, so no symbol ever matches. Confirmed via direct
+  # repr()/ord() test 2026-09-15. No-op on Linux/macOS (already UTF-8
+  # default) — safe to set unconditionally.
+  servers=$(printf '%s' "$raw" | PYTHONIOENCODING=utf-8 "$PY" -c "
+import sys, re
+out = []
+for line in sys.stdin:
+    m = re.match(r'^([A-Za-z0-9_.:-]+):\s', line)
+    if not m:
+        continue
+    name = m.group(1)
+    if '✔' in line:
+        st = '+'
+    elif '✘' in line:
+        st = '-'
+    elif '⏸' in line:
+        st = '~'
+    elif '⊘' in line:
+        st = 'o'
+    else:
+        st = '?'
+    out.append(f'{name}:{st}')
+print(','.join(out))
+" 2>/dev/null | tr -d '\r')
+  [ -z "$servers" ] && servers="PARSEFAIL"
 fi
-echo "$ts cwd=$cwd servers=$servers" >> "$HOME/.claude/mcp-audit.log"
+echo "$ts $cwd $servers" >> "$HOME/.claude/mcp-audit.log"
 exit 0

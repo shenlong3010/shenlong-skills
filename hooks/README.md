@@ -65,10 +65,23 @@ list` run against ~14 configured servers takes **~16 seconds** (each server
 gets a live health check). Wiring this synchronously would add 16s to every
 session start — exactly the overhead this hook exists to help reduce.
 `timeout 25` bounds the subprocess; a timeout or non-zero exit is logged
-explicitly (`TIMEOUT after 25s` / `FAILED rc=...`), never silently swallowed,
-so a broken PATH doesn't masquerade as "zero servers configured". Verified
-this does not itself trigger a nested `SessionStart` (ran `claude mcp list`
+explicitly (`TIMEOUT25` / `RUNFAIL_rc...`), never silently swallowed, so a
+broken PATH doesn't masquerade as "zero servers configured". Verified this
+does not itself trigger a nested `SessionStart` (ran `claude mcp list`
 manually while watching the log file — no new session-start event fired).
+
+**Log format (revised 2026-09-15 — token efficiency pass):** raw `claude mcp
+list` output is ~1-2KB/line (full URLs, command paths, prose per server).
+Only connect/fail/pending/disabled status is ever queried later, so the hook
+parses it down to compact `name:status` pairs (`+` connected, `-` failed, `~`
+pending approval, `o` disabled, `?` unrecognized), comma-joined:
+`2026-09-15T05:53Z /c/Users/x/proj cavemem:+,serena:+,github:-`. Measured:
+**88% size reduction** (1779 -> 197 bytes/line on the home machine's
+14-server set). Requires `PYTHONIOENCODING=utf-8` on the parsing subprocess —
+on Windows, `python.exe` defaults stdin to the console codepage (cp1252 on
+the dev machine), which mis-decodes the CLI's UTF-8 status symbols into
+garbage, so no symbol ever matched before this fix. No-op on Linux/macOS
+(already UTF-8 by default), so safe to set unconditionally.
 
 **If porting to a machine with far fewer MCP servers, re-time this** — the
 16s figure and 25s timeout are specific to this machine's ~14-server count,
