@@ -216,105 +216,40 @@ would flag every code-heavy turn as drift.
 Exit 2 on `Stop` blocks the turn from ending, which would trap the session —
 pure logger, every path exits 0.
 
-## `anchor-caveman-drift.sh`
+## Retired: `anchor-caveman-drift.sh`, `nudge-underspecified.sh`
 
-**Shipped UNWIRED — present in this directory but deliberately not in
-`hooks.json`.** Wire it only if drift data justifies the cost. Reasoning
-below.
+Both were built 2026-09-17 as `UserPromptSubmit` hooks that inject context,
+and both were removed the same day after being measured. Kept here as a note
+because the reasoning generalizes to any hook of that shape.
 
-`UserPromptSubmit`. Re-anchors a terse-output mode, but **only on measured
-evidence** of drift, read from `measure-output-length.sh`'s log. Fires when 2
-of the last 3 turns exceed a mode-scaled cap; silent otherwise, and silent
-until at least 3 turns are logged.
+`nudge-underspecified.sh` appended a note when a prompt was a short bare
+imperative stating neither success criteria nor constraints. Across a full
+session of real work it fired **zero times**. The proximate cause was a
+guessed verb list missing `audit`, `review`, `check`, `explain` — trivially
+fixable — but widening it would have made it fire on exactly the prompts that
+need no help. Replaying the session's real prompts against it confirmed none
+of them would have benefited.
 
-**Why it is off by default.** The anchor costs ~110 tokens each time it
-fires, to fight a problem *caused by* context pressure — spending context to
-fix a too-much-context problem is structurally backwards, and it was never
-demonstrated to change behavior. A terseness plugin wins because its ruleset
-sits in the system prompt at `SessionStart`, a high-salience position; text
-injected into conversation competes with everything else at ordinary
-salience. Re-issuing the mode command (`/caveman ultra`) is cheaper and
-lands in the position that actually works. Keep the measurement (free, writes
-to disk, injects nothing); reach for the anchor only if logs show sustained
-decay that re-issuing does not fix.
+`anchor-caveman-drift.sh` re-anchored a terse-output mode when measurement
+showed sustained drift. Never fired live; unwired, then deleted.
 
-**Caps are calibrated, not guessed** — from the caveman plugin's own eval
-snapshot (10 prompts, claude-opus-4-6): `__baseline__` 121.1 avg words,
-`__terse__` 125.8, `caveman` (full) 60.8, `caveman-cn` 24.5, `compress` 91.9.
-Caps sit ~1.5x the measured average for each mode. Note that `"Answer
-concisely."` (125.8) scored *no better than no instruction at all* (121.1) —
-generic terseness instructions do nothing, which is precisely why an anchor
-must name specific structures rather than say "be brief". `ultra` has no eval
-arm, so its cap of 45 is extrapolated and flagged in-script as the one
-remaining guess.
+The shared flaw: **both spent context to fix a problem caused by context
+pressure.** A mode ruleset works because it sits in the system prompt at
+`SessionStart`, a high-salience position. Text injected into conversation
+competes at ordinary salience against everything already there, and each
+verbose turn already in history is a stronger example than a short
+instruction. Re-issuing the mode command is cheaper and lands where it works.
 
-**Why a second anchor exists at all.** A terseness plugin's own per-turn hook
-is (by its docs) "just an attention anchor" — roughly 26 words naming
-filler, articles, pleasantries, hedging. The full ruleset ships once at
-`SessionStart` and is then buried under the whole conversation. Measured on
-the source machine 2026-09-17: a 248-word verbose turn scored **filler=0**.
-That is the crux — the existing anchor's targets were already satisfied while
-the output was plainly not terse.
+What survived instead is `measure-output-length.sh` — it writes to disk,
+injects nothing, and answers whether drift is real before anything is spent
+fixing it. Measure first; only pay for a fix the data justifies.
 
-So drift is **structural, not lexical**: section headers, tables used for two
-or three items, recap paragraphs, transition sentences, closing summaries of
-work the user just watched happen. None of that is filler, so nothing in the
-original anchor pushes back on it. Self-reinforcement compounds it — each
-prose-heavy turn becomes the in-context example the next turn imitates, and
-recent context outweighs a short instruction.
-
-This hook names the structural dimension specifically, and fires only on
-evidence so it keeps its credibility. An unconditional second reminder would
-be duplicate context on every turn — the exact token cost the mode exists to
-cut.
-
-**Windows path trap, caught in testing.** The log path was first passed to
-Python as an argument. `$HOME` in Git Bash is a POSIX path (`/c/Users/...`)
-that Windows Python cannot `open()`, so it raised `FileNotFoundError` — which
-`2>/dev/null` swallowed, leaving a hook that exited 0 and silently never
-fired. It now pipes the log in on **stdin**, sidestepping path translation
-entirely. Caught only by testing the should-fire case; the should-stay-silent
-cases all passed while the hook was completely broken.
-
-Exit 2 on `UserPromptSubmit` **erases the user's prompt** — every path exits
-0.
-
-## `nudge-underspecified.sh`
-
-`UserPromptSubmit` (no matcher). Appends a context note when a prompt is a
-short bare imperative that states neither success criteria nor constraints,
-naming the missing fields so the model asks rather than guessing at an
-interpretation and building the wrong thing.
-
-Trigger is deliberately narrow: <=15 words, first word an action verb
-(`add`/`fix`/`build`/`refactor`/...), and **both** SUCCESS-language and
-CONSTRAINT-language absent. A question, a statement, a long prompt, or a
-prompt that already states either field is left alone — a half-framed
-request is fine, and nudging it is nagging. The whole point is that when it
-does fire, it is worth reading.
-
-Field vocabulary comes from a structured-prompt template
-(ROLE/TASK/CONTEXT/INPUTS/CONSTRAINTS/EXAMPLES/REASONING/OUTPUT/SUCCESS),
-but only SUCCESS and CONSTRAINTS are checked — they are the two a hook can
-honestly judge from prompt text alone. CONTEXT and INPUTS live in upstream
-artifacts (a brief, a plan file) that a `UserPromptSubmit` hook cannot see,
-so it does not pretend to check them.
-
-Two implementation constraints worth preserving on any port:
-
-- **Emits plain text, not JSON.** Docs confirm `UserPromptSubmit` adds plain
-  stdout to context on exit 0. If another hook shares this event array and
-  emits its own JSON (cavemem does, on the source machine), two JSON
-  emitters risk a parse collision — plain text sidesteps it entirely.
-- **Every path exits 0.** Exit 2 on this event does not merely block, it
-  **erases the prompt**. A bug in a hook like this could delete typed input,
-  so malformed JSON, an empty prompt, and a missing field all fall through
-  to 0 rather than erroring.
-
-No rate limiting, deliberately: whether this becomes noise is an empirical
-question, and `~/.claude/nudge.log` records every fire so the real rate can
-be measured before a suppression rule is invented for a problem that may not
-exist.
+Calibration data worth keeping, from the caveman plugin's own eval snapshot
+(10 prompts, claude-opus-4-6): `__baseline__` 121.1 avg words, `__terse__`
+125.8, `caveman` 60.8, `caveman-cn` 24.5, `compress` 91.9. **"Answer
+concisely." scored no better than no instruction at all** — generic brevity
+requests do nothing, which is why a useful instruction names specific
+structures to cut.
 
 ## `log-config-change.sh`
 
