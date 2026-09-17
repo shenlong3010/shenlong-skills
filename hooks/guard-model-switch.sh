@@ -29,5 +29,25 @@ if [ -n "$session_id" ] && [ ! -f "$marker" ]; then
   exit 0
 fi
 
-echo "guard-model-switch: switching $from_model -> $to_model mid-session breaks the prompt cache prefix (measured ~1.77M tokens/33 sessions from this exact action). Confirm this switch is worth the cache-break cost, or set the model before starting instead." >&2
+# BUG FIXED 2026-09-17: exit 2 has no "user confirmed, let it through" path —
+# re-running /model after seeing the warning re-triggers this same hook and
+# blocks again forever, with no way to ever actually switch. Real fix: a
+# per-(session,to_model) confirm-marker. First attempt at a given target
+# model blocks + drops a marker; a second attempt at the SAME target within
+# 5 minutes is treated as the deliberate confirm and let through. A
+# different target model (or after 5 min) blocks fresh, so this can't be
+# used to silently bypass the warning for an unrelated switch later.
+confirm_marker="$state_dir/confirm_${session_id}_${to_model}"
+if [ -f "$confirm_marker" ]; then
+  now=$(date +%s)
+  marker_time=$(date -r "$confirm_marker" +%s 2>/dev/null || stat -c %Y "$confirm_marker" 2>/dev/null)
+  if [ -n "$marker_time" ] && [ $((now - marker_time)) -le 300 ]; then
+    rm -f "$confirm_marker" 2>/dev/null
+    exit 0
+  fi
+  rm -f "$confirm_marker" 2>/dev/null
+fi
+touch "$confirm_marker" 2>/dev/null
+
+echo "guard-model-switch: switching $from_model -> $to_model mid-session breaks the prompt cache prefix (measured ~1.77M tokens/33 sessions from this exact action). Confirm this switch is worth the cache-break cost, or set the model before starting instead. Run the same /model command again within 5 minutes to confirm and proceed." >&2
 exit 2

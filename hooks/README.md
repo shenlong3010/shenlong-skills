@@ -53,6 +53,19 @@ it" habit that would defeat the warning on the switches that actually matter.
 The script self-prunes markers older than 7 days on every invocation — no
 separate cleanup hook needed.
 
+**Bug fixed 2026-09-17:** exit 2 has no built-in "user confirmed, proceed"
+signal — re-running `/model <target>` after seeing the warning just
+re-triggers this same hook and blocks again, with no way to ever actually
+switch. Found live: a real `/model opus` attempt stayed blocked on every
+retry. Fixed with a per-`(session_id, to_model)` confirm-marker: the block
+that shows the warning also drops a marker; running the *same* `/model
+<target>` again within 5 minutes reads that marker and lets the switch
+through once. A different target model, or waiting past 5 minutes, blocks
+fresh — so this can't be used to silently bypass the warning for an
+unrelated later switch. Tested against 4 real scenarios (first-switch
+suppress, block, confirm-through, re-block-after-consumed) plus malformed
+JSON and missing-`session_id` payloads before shipping.
+
 ## `audit-mcp-startup.sh`
 
 `SessionStart`, **must stay wired with `"async": true`**. Shells out to
