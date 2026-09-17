@@ -11,6 +11,23 @@ cmd=$(printf '%s' "$payload" | "$PY" -c "import json,sys; print(json.load(sys.st
 # not a read-into-context operation.
 case "$cmd" in *[\|\>]*) exit 0 ;; esac
 
+# BUG FIXED 2026-09-17: `head -50 big.log` reads 50 lines -- it IS the cheap
+# bounded read this hook exists to steer toward, and it was being blocked
+# exactly like a bare `cat`, with a message that said "instead of
+# cat/head/tail" and pointed at a subagent. That steered work away from the
+# correct answer toward spawning an agent to read 50 lines. Same failure class
+# as the model-switch guard: the guard blocked the legitimate escape and the
+# message never named a working one. guard-bulk-read.sh already exits 0 when
+# offset/limit is set; this is the Bash-side equivalent of that rule.
+case "$cmd" in
+  head\ *|tail\ *)
+    # An explicit count (-n 50, -50, -n50) bounds the read. No count means
+    # the default 10 lines for head/tail, which is also bounded -- so any
+    # head/tail invocation on a plain file is fine. Only cat/less/more read
+    # the whole thing.
+    exit 0 ;;
+esac
+
 file_path=""
 if echo "$cmd" | grep -qE '^(cat|head|tail|less|more) '; then
   args=$(echo "$cmd" | sed -E 's/^(cat|head|tail|less|more) +//')
@@ -35,5 +52,5 @@ lines=$(wc -l < "$file_path" 2>/dev/null | tr -d ' ') || exit 0
 [ -z "$lines" ] && exit 0
 [ "$lines" -le "$MIN_LINES" ] && exit 0
 
-echo "blocked by guard-bulk-cat.sh: $file_path is $lines lines (limit $MIN_LINES). Delegate to a Haiku subagent via the Agent tool (see the bulk-reader skill) instead of cat/head/tail." >&2
+echo "blocked by guard-bulk-cat.sh: $file_path is $lines lines (limit $MIN_LINES). Escapes, cheapest first: \`head -N\`/\`tail -N\` for a bounded slice (allowed, not blocked), \`grep\` for a targeted match, or delegate to a Haiku subagent via the Agent tool (see the bulk-reader skill) if you truly need the whole file. Override the threshold with BULK_READ_MIN_LINES if this file is a genuine exception." >&2
 exit 2

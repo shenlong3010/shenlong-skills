@@ -38,6 +38,24 @@ path containing `$(...)`. Both scripts pipe any Python-sourced value through
 `tr -d '\r'` (Windows Python emits CRLF; an unstripped `\r` breaks every
 downstream string comparison silently).
 
+**Bug fixed 2026-09-17 — the guard blocked its own recommended escape.**
+`head -50 big.log` reads 50 lines; it *is* the cheap bounded read this hook
+exists to steer toward. It was being blocked identically to a bare `cat`,
+and the block message read "instead of cat/head/tail" — actively steering
+work away from the correct answer and toward spawning a subagent to read 50
+lines. `head`/`tail` now exit 0 unconditionally (every invocation is bounded,
+defaulting to 10 lines with no flag); `cat`/`less`/`more` still block.
+
+Both guards' block messages now enumerate every real escape, cheapest first
+— `offset`/`limit` or `head -N`/`tail -N`, then `grep`, then the subagent,
+plus the `BULK_READ_MIN_LINES` env override — instead of naming only the
+most expensive option. **General rule this produced:** a hook that exits 2
+must name a working escape in its stderr, and that escape must actually be
+reachable. Test the path a user takes *after* reading the message, not just
+that the block fires. Two hooks in this directory failed that test on first
+real use (this one, and `guard-model-switch.sh`); both looked correct in
+isolation.
+
 ## `guard-model-switch.sh`
 
 `PreModelSwitch`. Warns (exit 2 = confirmed block-and-ask for this event,
@@ -142,6 +160,43 @@ shell-out needed, unlike `audit-mcp-startup.sh` which has to call the CLI
 because `SessionStart` carries no server list. Exit 2 on this event blocks
 the subagent from stopping (confirmed 2026-09-15) — logger only, always
 exits 0.
+
+## `nudge-underspecified.sh`
+
+`UserPromptSubmit` (no matcher). Appends a context note when a prompt is a
+short bare imperative that states neither success criteria nor constraints,
+naming the missing fields so the model asks rather than guessing at an
+interpretation and building the wrong thing.
+
+Trigger is deliberately narrow: <=15 words, first word an action verb
+(`add`/`fix`/`build`/`refactor`/...), and **both** SUCCESS-language and
+CONSTRAINT-language absent. A question, a statement, a long prompt, or a
+prompt that already states either field is left alone — a half-framed
+request is fine, and nudging it is nagging. The whole point is that when it
+does fire, it is worth reading.
+
+Field vocabulary comes from a structured-prompt template
+(ROLE/TASK/CONTEXT/INPUTS/CONSTRAINTS/EXAMPLES/REASONING/OUTPUT/SUCCESS),
+but only SUCCESS and CONSTRAINTS are checked — they are the two a hook can
+honestly judge from prompt text alone. CONTEXT and INPUTS live in upstream
+artifacts (a brief, a plan file) that a `UserPromptSubmit` hook cannot see,
+so it does not pretend to check them.
+
+Two implementation constraints worth preserving on any port:
+
+- **Emits plain text, not JSON.** Docs confirm `UserPromptSubmit` adds plain
+  stdout to context on exit 0. If another hook shares this event array and
+  emits its own JSON (cavemem does, on the source machine), two JSON
+  emitters risk a parse collision — plain text sidesteps it entirely.
+- **Every path exits 0.** Exit 2 on this event does not merely block, it
+  **erases the prompt**. A bug in a hook like this could delete typed input,
+  so malformed JSON, an empty prompt, and a missing field all fall through
+  to 0 rather than erroring.
+
+No rate limiting, deliberately: whether this becomes noise is an empirical
+question, and `~/.claude/nudge.log` records every fire so the real rate can
+be measured before a suppression rule is invented for a problem that may not
+exist.
 
 ## `log-config-change.sh`
 

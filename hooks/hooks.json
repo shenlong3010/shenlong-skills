@@ -10,6 +10,9 @@
     "PreModelSwitch": [
       { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard-model-switch.sh" } ] }
     ],
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/nudge-underspecified.sh" } ] }
+    ],
     "SessionStart": [
       { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/audit-mcp-startup.sh", "async": true } ] }
     ],
