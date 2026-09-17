@@ -167,21 +167,28 @@ exits 0.
 visibility. Extracts only scalars, so raw payload content (commands, paths,
 message text) never touches disk.
 
-**Known broken, 2026-09-17 — kept visible rather than silently wrong.** On
-the source machine this had written **2323 rows with every metric field
-`-`**: the field names `total_cost_usd` / `total_duration_ms` / `num_turns`
-were guessed and do not exist on that build's `Stop` payload, so the
-spend-visibility purpose never once worked, and every row looked exactly
-like a legitimately-zero session. Rather than guess a second set of names,
-the script now detects the all-empty case and appends
-`SCHEMA_MISS keys=...` listing the payload's real top-level keys — so the
-first firing after a port reveals the true schema from the log itself. A
-parse failure writes `PARSE_FAIL` for the same reason. Fix the field names
-from that evidence; do not re-guess.
+**Scope corrected 2026-09-17 after capturing a real payload.** This had
+written **2323 rows with every metric field `-`**. The cause was not a wrong
+field name: the `Stop` event carries **no cost, duration, or turn-count data
+at all**. Verified real top-level keys on Claude Code 2.x:
 
-This is the same lesson as `log-tool-failure.sh`'s raw-payload dump: when a
-field name is unconfirmed, make a wrong guess *visible and correctable*
-instead of letting it log an indistinguishable empty value indefinitely.
+```
+background_tasks, cwd, effort, hook_event_name, last_assistant_message,
+permission_mode, prompt_id, scratchpad_dir, session_crons, session_id,
+stop_hook_active, transcript_path
+```
+
+So per-turn spend is unobtainable here under any field name, and the honest
+fix was to stop claiming it rather than guess again. Cost data must come from
+the CLI's own usage reporting or the transcript. The hook now logs what the
+event does carry and what actually moves cost: session identity, `effort`,
+`permission_mode`, `stop_hook_active`.
+
+Two lessons worth keeping. First, a guessed field name that yields an empty
+value is indistinguishable from a legitimate zero — 2323 rows looked like
+real data. Second, the fix that found this was a five-line throwaway hook
+that dumped one raw payload; when a schema is unknown, capture it rather than
+iterating guesses.
 
 ## `measure-output-length.sh`
 
@@ -211,10 +218,35 @@ pure logger, every path exits 0.
 
 ## `anchor-caveman-drift.sh`
 
+**Shipped UNWIRED — present in this directory but deliberately not in
+`hooks.json`.** Wire it only if drift data justifies the cost. Reasoning
+below.
+
 `UserPromptSubmit`. Re-anchors a terse-output mode, but **only on measured
 evidence** of drift, read from `measure-output-length.sh`'s log. Fires when 2
-of the last 3 turns exceed 120 prose words; silent otherwise, and silent
+of the last 3 turns exceed a mode-scaled cap; silent otherwise, and silent
 until at least 3 turns are logged.
+
+**Why it is off by default.** The anchor costs ~110 tokens each time it
+fires, to fight a problem *caused by* context pressure — spending context to
+fix a too-much-context problem is structurally backwards, and it was never
+demonstrated to change behavior. A terseness plugin wins because its ruleset
+sits in the system prompt at `SessionStart`, a high-salience position; text
+injected into conversation competes with everything else at ordinary
+salience. Re-issuing the mode command (`/caveman ultra`) is cheaper and
+lands in the position that actually works. Keep the measurement (free, writes
+to disk, injects nothing); reach for the anchor only if logs show sustained
+decay that re-issuing does not fix.
+
+**Caps are calibrated, not guessed** — from the caveman plugin's own eval
+snapshot (10 prompts, claude-opus-4-6): `__baseline__` 121.1 avg words,
+`__terse__` 125.8, `caveman` (full) 60.8, `caveman-cn` 24.5, `compress` 91.9.
+Caps sit ~1.5x the measured average for each mode. Note that `"Answer
+concisely."` (125.8) scored *no better than no instruction at all* (121.1) —
+generic terseness instructions do nothing, which is precisely why an anchor
+must name specific structures rather than say "be brief". `ultra` has no eval
+arm, so its cap of 45 is extrapolated and flagged in-script as the one
+remaining guess.
 
 **Why a second anchor exists at all.** A terseness plugin's own per-turn hook
 is (by its docs) "just an attention anchor" — roughly 26 words naming
