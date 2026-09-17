@@ -209,6 +209,44 @@ would flag every code-heavy turn as drift.
 Exit 2 on `Stop` blocks the turn from ending, which would trap the session —
 pure logger, every path exits 0.
 
+## `anchor-caveman-drift.sh`
+
+`UserPromptSubmit`. Re-anchors a terse-output mode, but **only on measured
+evidence** of drift, read from `measure-output-length.sh`'s log. Fires when 2
+of the last 3 turns exceed 120 prose words; silent otherwise, and silent
+until at least 3 turns are logged.
+
+**Why a second anchor exists at all.** A terseness plugin's own per-turn hook
+is (by its docs) "just an attention anchor" — roughly 26 words naming
+filler, articles, pleasantries, hedging. The full ruleset ships once at
+`SessionStart` and is then buried under the whole conversation. Measured on
+the source machine 2026-09-17: a 248-word verbose turn scored **filler=0**.
+That is the crux — the existing anchor's targets were already satisfied while
+the output was plainly not terse.
+
+So drift is **structural, not lexical**: section headers, tables used for two
+or three items, recap paragraphs, transition sentences, closing summaries of
+work the user just watched happen. None of that is filler, so nothing in the
+original anchor pushes back on it. Self-reinforcement compounds it — each
+prose-heavy turn becomes the in-context example the next turn imitates, and
+recent context outweighs a short instruction.
+
+This hook names the structural dimension specifically, and fires only on
+evidence so it keeps its credibility. An unconditional second reminder would
+be duplicate context on every turn — the exact token cost the mode exists to
+cut.
+
+**Windows path trap, caught in testing.** The log path was first passed to
+Python as an argument. `$HOME` in Git Bash is a POSIX path (`/c/Users/...`)
+that Windows Python cannot `open()`, so it raised `FileNotFoundError` — which
+`2>/dev/null` swallowed, leaving a hook that exited 0 and silently never
+fired. It now pipes the log in on **stdin**, sidestepping path translation
+entirely. Caught only by testing the should-fire case; the should-stay-silent
+cases all passed while the hook was completely broken.
+
+Exit 2 on `UserPromptSubmit` **erases the user's prompt** — every path exits
+0.
+
 ## `nudge-underspecified.sh`
 
 `UserPromptSubmit` (no matcher). Appends a context note when a prompt is a

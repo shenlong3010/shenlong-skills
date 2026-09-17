@@ -11,7 +11,8 @@
       { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard-model-switch.sh" } ] }
     ],
     "UserPromptSubmit": [
-      { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/nudge-underspecified.sh" } ] }
+      { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/nudge-underspecified.sh" } ] },
+      { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/anchor-caveman-drift.sh" } ] }
     ],
     "SessionStart": [
       { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/audit-mcp-startup.sh", "async": true } ] }
