@@ -161,6 +161,54 @@ because `SessionStart` carries no server list. Exit 2 on this event blocks
 the subagent from stopping (confirmed 2026-09-15) — logger only, always
 exits 0.
 
+## `cost-logger.sh`
+
+`Stop`. Appends per-session scalar metrics to `~/.claude/usage.log` for spend
+visibility. Extracts only scalars, so raw payload content (commands, paths,
+message text) never touches disk.
+
+**Known broken, 2026-09-17 — kept visible rather than silently wrong.** On
+the source machine this had written **2323 rows with every metric field
+`-`**: the field names `total_cost_usd` / `total_duration_ms` / `num_turns`
+were guessed and do not exist on that build's `Stop` payload, so the
+spend-visibility purpose never once worked, and every row looked exactly
+like a legitimately-zero session. Rather than guess a second set of names,
+the script now detects the all-empty case and appends
+`SCHEMA_MISS keys=...` listing the payload's real top-level keys — so the
+first firing after a port reveals the true schema from the log itself. A
+parse failure writes `PARSE_FAIL` for the same reason. Fix the field names
+from that evidence; do not re-guess.
+
+This is the same lesson as `log-tool-failure.sh`'s raw-payload dump: when a
+field name is unconfirmed, make a wrong guess *visible and correctable*
+instead of letting it log an indistinguishable empty value indefinitely.
+
+## `measure-output-length.sh`
+
+`Stop` (no matcher). Logs word count, char count, and filler-word count of
+each turn's final assistant message to `~/.claude/output-length.log`, with
+fenced code blocks stripped before measuring.
+
+**Why measurement and not enforcement.** Verified against docs 2026-09-17:
+**no hook can rewrite assistant output before display.** `Stop` and
+`MessageDisplay` both receive the text read-only, and `MessageDisplay` is
+explicitly a display-only event. So a terse-output policy can only ever be
+enforced two ways — a reminder injected *before* generation
+(`UserPromptSubmit`), or measurement *after*. If a terseness plugin is
+already injecting a per-prompt reminder, adding a second identical reminder
+is duplicate context on every single turn: pure token cost, zero new signal.
+This hook supplies the half that is actually missing — evidence of whether
+the reminder is working, and whether output drifts verbose over a long
+session.
+
+Filler count is the real drift signal, not raw length: a long answer can
+still be terse, and a short one can still be padded. Code is excluded
+because terse-prose policies normally exempt code blocks, so counting them
+would flag every code-heavy turn as drift.
+
+Exit 2 on `Stop` blocks the turn from ending, which would trap the session —
+pure logger, every path exits 0.
+
 ## `nudge-underspecified.sh`
 
 `UserPromptSubmit` (no matcher). Appends a context note when a prompt is a
