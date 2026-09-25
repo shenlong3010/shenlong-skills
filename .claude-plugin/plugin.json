@@ -1,6 +1,6 @@
 {
   "name": "shenlong-skills",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Personal toolbox core: code search and navigation, debug and triage, data and query, dependency lookup — plus commands, agents, hooks, MCP scaffolds, styles, templates. The on-demand half lives in shenlong-extra.",
   "agents": [
     "./agents/code-review.md",
@@ -10,31 +10,6 @@
     "./agents/ralph-coder.md",
     "./agents/ralph-task-inspector.md",
     "./agents/ralph-diagnostician.md"
-  ],
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-dangerous.sh\"", "timeout": 5 }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/autoformat.sh\"", "timeout": 30 }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh\"", "timeout": 5 }
-        ]
-      }
-    ]
-  }
+  ]
 }
+

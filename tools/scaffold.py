@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared creator core. The five create-* slash commands call this.
+"""Shared creator core. The /create slash command calls this.
 
 Usage: python3 tools/scaffold.py <skill|command|agent|tool|hook> <name> [flow] [domain]
 
@@ -65,25 +65,34 @@ def main() -> int:
 if __name__ == "__main__":
     raise SystemExit(main())
 """,
-    "hook": """# {title} hook
+    # Real handler script, not a note. CLAUDE.md hook law baked in: block with
+    # exit 2 + stderr naming a WORKING escape; loggers always exit 0; never emit
+    # {{"decision":"allow"}}. Wire ONLY in hooks/hooks.json — adding the same
+    # (event,matcher,command) to .claude-plugin/plugin.json too makes it fire
+    # TWICE (both sources load; no within-plugin dedup). See hooks/README.md.
+    "hook": """#!/usr/bin/env bash
+# {title} hook. Event payload arrives on stdin as JSON.
+#
+# WIRING: add to hooks/hooks.json ONLY (never also to plugin.json — the same
+# entry in both files runs twice). Snippet (${{CLAUDE_PLUGIN_ROOT}}, not
+# $CLAUDE_PROJECT_DIR — the latter breaks outside this repo):
+#   "Stop": [{{ "matcher": "*", "hooks": [
+#     {{ "type": "command", "command": "bash \\"${{CLAUDE_PLUGIN_ROOT}}/hooks/{name}.sh\\"", "timeout": 5 }} ]}}]
+# Then add a case to hooks/test-hooks.sh and read hooks/README.md first.
+#
+# NO `set -e`: it makes a failed command (e.g. grep exits 2 on no-match) abort
+# with that non-zero code, which on a logger event BLOCKS the turn. No existing
+# hook uses it. Guard each risky command explicitly instead.
 
-Add to hooks/hooks.json:
-
-```json
-{{
-  "hooks": {{
-    "Stop": [{{ "matcher": "*", "hooks": [{{ "type": "command", "command": "$CLAUDE_PROJECT_DIR/hooks/{name}.sh" }}] }}]
-  }}
-}}
-```
-
-Handler script `hooks/{name}.sh`:
-
-```bash
-#!/usr/bin/env bash
-# TODO — hook behavior. Event payload arrives on stdin as JSON.
+# TODO pick ONE contract:
+#  - Guard (PreToolUse/PreModelSwitch): to block, `echo "reason + working escape" >&2; exit 2`.
+#    stderr MUST name an escape that actually reaches the user's goal. Never
+#    emit {{"decision":"allow"}} (real auto-approval, skips the permission prompt).
+#    Pass-through: exit 0 silently.
+#  - Logger (Stop/PreCompact/SubagentStop/PostToolUse*/ConfigChange/SessionStart):
+#    exit 2 on these either blocks the event or is a no-op — ALWAYS exit 0, even
+#    on parse failure. Never let a logger stop a turn.
 exit 0
-```
 """,
 }
 
@@ -92,8 +101,11 @@ DESTS = {
     "command": lambda n: ROOT / "commands" / f"{n}.md",
     "agent": lambda n: ROOT / "agents" / f"{n}.md",
     "tool": lambda n: ROOT / "tools" / f"{n}.py",
-    "hook": lambda n: ROOT / "hooks" / f"{n}.md",
+    "hook": lambda n: ROOT / "hooks" / f"{n}.sh",
 }
+
+# Kinds that get no YAML frontmatter (scripts, not markdown artifacts).
+SCRIPT_KINDS = {"tool", "hook"}
 
 
 def main() -> int:
@@ -110,7 +122,7 @@ def main() -> int:
     dest.parent.mkdir(parents=True, exist_ok=True)
     title = name.replace("-", " ").title()
     body = BODIES[kind].format(name=name, title=title)
-    content = body if kind == "tool" else FRONT.format(name=name, flow=flow, domain=domain) + body
+    content = body if kind in SCRIPT_KINDS else FRONT.format(name=name, flow=flow, domain=domain) + body
     dest.write_text(content, encoding="utf-8")
     print(f"created {dest}")
     if kind in ("skill", "command", "agent"):
