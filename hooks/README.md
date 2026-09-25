@@ -95,11 +95,21 @@ Measured directly on the home machine (not assumed): a real `claude mcp
 list` run against ~14 configured servers takes **~16 seconds** (each server
 gets a live health check). Wiring this synchronously would add 16s to every
 session start — exactly the overhead this hook exists to help reduce.
-`timeout 25` bounds the subprocess; a timeout or non-zero exit is logged
-explicitly (`TIMEOUT25` / `RUNFAIL_rc...`), never silently swallowed, so a
+`timeout 90` bounds the subprocess; a timeout or non-zero exit is logged
+explicitly (`TIMEOUT90` / `RUNFAIL_rc...`), never silently swallowed, so a
 broken PATH doesn't masquerade as "zero servers configured". Verified this
 does not itself trigger a nested `SessionStart` (ran `claude mcp list`
 manually while watching the log file — no new session-start event fired).
+
+**Raised 25s -> 90s on 2026-09-25 after the bound went stale.** The 25s came
+from a 14-server measurement (~16s). As plugins were added the count reached
+36 and a real run took **33.5s**, so the hook silently began failing: **17 of
+its 21 logged runs were `TIMEOUT25`** — ~81% dead, and the log read like an
+MCP outage rather than a too-tight bound. The generalizable trap: a timeout
+derived from a measurement of a *growing* quantity expires on its own, and
+because the failure is logged as a legitimate status value it never looks
+like a bug. 90s is ~2.7x the current measured time, so it absorbs roughly a
+doubling of the server count.
 
 **Log format (revised 2026-09-15 — token efficiency pass):** raw `claude mcp
 list` output is ~1-2KB/line (full URLs, command paths, prose per server).
@@ -114,9 +124,12 @@ the dev machine), which mis-decodes the CLI's UTF-8 status symbols into
 garbage, so no symbol ever matched before this fix. No-op on Linux/macOS
 (already UTF-8 by default), so safe to set unconditionally.
 
-**If porting to a machine with far fewer MCP servers, re-time this** — the
-16s figure and 25s timeout are specific to this machine's ~14-server count,
-not a universal constant.
+**Re-time this whenever the server count changes materially, in either
+direction** — the timings above are tied to a specific server count, not a
+universal constant. An earlier note here only warned about porting to a
+machine with *fewer* servers; the failure that actually happened was the same
+machine growing to *more*. If the log shows `TIMEOUT90` rows, re-measure
+(`time claude mcp list`) before assuming the servers are down.
 
 ## `log-tool-failure.sh`
 
@@ -161,16 +174,31 @@ because `SessionStart` carries no server list. Exit 2 on this event blocks
 the subagent from stopping (confirmed 2026-09-15) — logger only, always
 exits 0.
 
-## `cost-logger.sh`
+## `cost-logger.sh` — RETIRED 2026-09-25
 
-`Stop`. Appends per-session scalar metrics to `~/.claude/usage.log` for spend
-visibility. Extracts only scalars, so raw payload content (commands, paths,
-message text) never touches disk.
+**Deleted and unwired.** Kept here as the record of why, because the same
+mistake was made twice on the same hook.
 
-**Scope corrected 2026-09-17 after capturing a real payload.** This had
-written **2323 rows with every metric field `-`**. The cause was not a wrong
-field name: the `Stop` event carries **no cost, duration, or turn-count data
-at all**. Verified real top-level keys on Claude Code 2.x:
+The 2026-09-17 rewrite below narrowed the hook to fields the `Stop` payload
+was believed to carry. Audited 2026-09-25 against the log it had been
+writing since: **227 of its 231 post-rewrite rows were `-` in every column**
+— `effort` and `permission_mode` populate only rarely, and `stop_hook_active`
+is absent entirely. So the corrected version failed the same way the original
+did, for the same reason, and a second batch of empty rows again looked like
+data for eight days.
+
+Retired rather than narrowed a third time: after two rewrites the event has
+produced nothing worth a row. Per-turn spend comes from the CLI's usage
+reporting or the transcript. `~/.claude/usage.log` had also reached 4.8MB, of
+which 4.81MB was pre-2026-09-17 raw payloads containing full
+`last_assistant_message` text and file paths — a privacy leak, not just bloat;
+truncated to the 232 real TSV rows at retirement.
+
+**Historical record — scope corrected 2026-09-17 after capturing a real
+payload.** This had written **2323 rows with every metric field `-`**. The
+cause was not a wrong field name: the `Stop` event carries **no cost,
+duration, or turn-count data at all**. Verified real top-level keys on
+Claude Code 2.x:
 
 ```
 background_tasks, cwd, effort, hook_event_name, last_assistant_message,

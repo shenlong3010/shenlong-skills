@@ -139,12 +139,8 @@ run "measure malformed"          measure-output-length.sh 'not json'            
 run "measure empty msg"          measure-output-length.sh '{"last_assistant_message":""}'                         0
 run "measure no field"           measure-output-length.sh '{}'                                                    0
 
-# cost-logger
-L="$HOME/.claude/usage.log"; before=$(wc -l < "$L" 2>/dev/null || echo 0)
-run "cost-logger valid"          cost-logger.sh '{"session_id":"s","effort":"high","permission_mode":"default","stop_hook_active":false}' 0
-after=$(wc -l < "$L" 2>/dev/null || echo 0)
-[ "$after" -gt "$before" ] && ok "cost-logger wrote line" || bad "cost-logger wrote line" "no new line"
-run "cost-logger malformed"      cost-logger.sh 'not json'                                                        0
+# cost-logger: retired 2026-09-25 (Stop carries no usable cost data; 227 of
+# 231 post-rewrite rows were empty). Deliberately no test — the hook is gone.
 
 # autoformat (no formatter for .xyz => must still exit 0)
 run "autoformat unknown ext"     autoformat.sh "{\"tool_input\":{\"file_path\":\"$SANDBOX/x.xyz\"}}"              0
