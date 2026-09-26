@@ -23,7 +23,7 @@ All state read from disk under `.agents/runs/` at invocation time — never from
 - **`auto [run-id]`** — iterate `ralph-next` until a stop condition (all `[v]`, ERROR, `[H]`, budget caps from `.agents/ralph.yml`, or `PAUSE: true` in LOOP-CONTEXT.md). Iteration ceiling: open AC count × (1 + max_retries_per_task) + inspections, hard-capped by `max_subagent_calls`. Report a per-iteration summary line as it goes.
 - **`status`** — read-only, zero writes: generate the cross-run listing from `.agents/runs/` dirs (no INDEX file exists — the view is always derived, never stale); per run print the TASKS.md marker table, last PROGRESS entry (+ `## Summary` when complete), any `## Halts`, TICKETS.md proposal counts, and lock state; flag runs paused via PAUSE, locked by another session, or waiting on `[H]` (HANDOFF.md present).
 - **`replan [run-id]`** — inward open-loop refresh: re-fetch the story via the run's adapter, `git diff <plan-sha> -- <files-to-touch of open tasks>`, list affected open tasks. **Stop and confirm the list with the user before writing** (regeneration overwrites task files). On confirm: regenerate affected `task-*.md` + TASKS.md rows, preserve every `[v]` task untouched, bump `plan-sha`, log the replan event to PROGRESS.md.
-- **`tickets [run-id]`** — outward open-loop flush of the TICKETS.md outbox: list every `proposed` row with its full body → **stop and confirm per row with the user** (create / dismiss / leave). On confirm: create via the run adapter's `write` capability (see `skills/ralph-plan/references/adapters.md`), mark the row `flushed` with the ticket ref — or `dismissed`. No `write` capability available → say so and leave rows `proposed`; local-backlog adapter appends a `## Proposed:` story to `BACKLOG.md`.
+- **`tickets [run-id]`** — outward open-loop flush of the TICKETS.md outbox: list every `proposed` row with its full body → **stop and confirm per row with the user** (create / dismiss / leave). On confirm: create via the run adapter's `write` capability (see `extra/skills/ralph-plan/references/adapters.md`), mark the row `flushed` with the ticket ref — or `dismissed`. No `write` capability available → say so and leave rows `proposed`; local-backlog adapter appends a `## Proposed:` story to `BACKLOG.md`.
 
 ## Rules
 1. One role subagent per iteration — never two spawns from one `next`.
@@ -34,4 +34,11 @@ All state read from disk under `.agents/runs/` at invocation time — never from
 6. `tickets` is the only subcommand that writes outside the repo; it never runs unconfirmed, and nothing else — auto mode included — ever calls an adapter's `write` capability.
 
 ## Boundaries
-Loop mechanics live in `skills/ralph-next`; planning in `skills/ralph-plan`; role behavior in `agents/ralph-*.md`. This command is routing + confirmation gates only. Interval re-invocation ("run /ralph next every 10 minutes") is the built-in `/loop` command's job, composing with this one.
+Loop mechanics live in `extra/skills/ralph-next`; planning in `extra/skills/ralph-plan`; role behavior in `agents/ralph-*.md`. This command is routing + confirmation gates only. Interval re-invocation ("run /ralph next every 10 minutes") is the built-in `/loop` command's job, composing with this one.
+
+**Cross-split dependency:** this command ships in core (`commands/`) but its two
+skills live in `extra/skills/`. On the plugin path that is fine — both plugins
+resolve. On the flat-copy path it is not: `tools/sync-flat.sh` omits `extra/`
+unless `--include-extra` is passed, so the documented invocation produces a
+machine where `/ralph` routes to skills that are not there. Use
+`--include-extra` if this command is wanted on a flat install.
