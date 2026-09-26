@@ -1,6 +1,6 @@
 ---
 name: bulk-reader
-description: "Delegate bulk file reading to a Haiku subagent. Use when Read or cat/head/tail is blocked by guard-bulk-read.sh for exceeding the line threshold (~400 lines), when answering a question across 3+ files, or when summarizing a large diff — especially on Opus."
+description: "Delegate bulk file reading to a Haiku subagent so the file never enters the caller's context. Use when a Read or cat is blocked for exceeding ~400 lines AND the whole file is genuinely needed, when one question spans 3+ files, or when summarizing a large diff — worth ~19x on Opus, ~breakeven on Sonnet, never worth it when already running Haiku. Do NOT use when offset/limit, Grep, or head -N would answer the question: those are cheaper and are not blocked."
 derivation: original
 flow: util
 domain: agent

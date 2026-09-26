@@ -10,7 +10,10 @@
     "./agents/ralph-coder.md",
     "./agents/ralph-task-inspector.md",
     "./agents/ralph-diagnostician.md",
-    "./agents/test-reviewer.md"
+    "./agents/test-reviewer.md",
+    "./agents/silent-failure-reviewer.md",
+    "./agents/type-design-reviewer.md",
+    "./agents/comment-reviewer.md"
   ]
 }
 

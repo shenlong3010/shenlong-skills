@@ -12,7 +12,9 @@ Applies to the entire repository. Directory-specific conventions live in per-dir
 
 ## What this repo is
 
-Personal Claude Code toolbox — skills, slash commands, subagents, hooks, MCP scaffolds, styles, templates — packaged as a plugin (`.claude-plugin/plugin.json`), `install.sh` as symlink fallback. Company import = downstream cherry-pick at a tag, not the purpose.
+Personal Claude Code toolbox — skills, slash commands, subagents, hooks, MCP scaffolds, styles, templates — packaged as a plugin (`.claude-plugin/plugin.json`), with `install.sh` (symlink) and `tools/sync-flat.sh` (flat copy) as non-plugin delivery paths.
+
+Authored as a personal toolbox; the work machine is a **first-class consumer**, not an afterthought. The marketplace is blocked there, so this repo is the only source of skills on that machine and the flat-copy path is the only way in. Changes that break flat delivery break the machine that depends on it most — see `README.md` for the `sync-flat` invocation and the `--include-extra` caveat.
 
 ## Directory guides
 

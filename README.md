@@ -1,6 +1,6 @@
 # shenlong-skills
 
-Personal Claude Code toolbox: 62 skills, 8 slash commands, 8 subagents, lifecycle hooks, MCP scaffolds, output styles, instruction templates, and a self-healing execution loop — packaged as a plugin so one install makes everything available in any project.
+Personal Claude Code toolbox: 64 skills, 8 slash commands, 11 subagents, lifecycle hooks, MCP scaffolds, output styles, instruction templates, and a self-healing execution loop — packaged as a plugin so one install makes everything available in any project.
 
 ## Install
 
@@ -67,12 +67,12 @@ claude plugin eval shenlong-skills --tag routing --runs 1 --max-cost-usd 2
 ## Layout
 
 ```
-.claude-plugin/   plugin manifest (hooks wired here)
+.claude-plugin/   plugin manifest (agents listed here; hooks live in hooks/hooks.json)
 skills/           agent-consumed skills (folder per skill, SKILL.md + optional references/)
 commands/         slash commands (flat .md)
 agents/           subagents (flat .md)
 evals/            golden eval cases (native claude plugin eval layout)
-hooks/            lifecycle hook handlers (guard-dangerous, autoformat, notify, cost-logger)
+hooks/            lifecycle hook handlers (guards, loggers, autoformat, notify) + generated flat-install wiring
 mcp/              MCP configs and scaffolds (env-var keys only — never commit credentials)
 styles/           output styles
 templates/        CLAUDE.md / AGENTS.md starters, settings presets, templates/ralph/ run scaffolds
@@ -106,6 +106,12 @@ Third-party skills are pulled with `tools/vendor_anthropic.sh` (pins a SHA, remi
 - `plan-writer`, `read-diagram`, creators, and tooling: original.
 - Vendored skills: see each file's `source:` frontmatter line.
 - `image-ocr`: adapted from benchflow-ai/skillsbench (Apache-2.0).
+- Review-agent trio (`silent-failure-reviewer`, `type-design-reviewer`,
+  `comment-reviewer`): review dimensions adapted from the
+  [pr-review-toolkit](https://github.com/anthropics/claude-code-plugins) agents
+  `silent-failure-hunter`, `type-design-analyzer`, `comment-analyzer`
+  (Apache-2.0). Shapes pulled, prose original, output contract and severity
+  ranking conformed to this repo's reviewer convention.
 - Ralph loop set (`/ralph` command, `ralph-plan`/`ralph-next` skills, `ralph-coder`/`ralph-task-inspector`/`ralph-diagnostician` agents, `templates/ralph/`): loop concept adapted from [snarktank/ralph](https://github.com/snarktank/ralph); implementation original.
 - Anthropic doc skills: local-fetch only, proprietary — not part of this repo's published content.
 

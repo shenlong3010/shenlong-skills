@@ -1,6 +1,6 @@
 ---
 name: code-writer
-description: "Delegate boilerplate code generation to a Haiku subagent. Use for tests, config, docstrings, type stubs, or any generation where most of the output is predictable from a reference file — especially on Opus, where a subagent's tokens run far cheaper than the caller's."
+description: "Delegate boilerplate code generation to a Haiku subagent when the output is mostly predictable from a reference file — repetitive tests, config, docstrings, type stubs, fixtures, migrations. Point it at the reference and state the contract; worth it on Opus (~19x rate gap), never when already running Haiku. Do NOT use for code needing real design judgment, or where a wrong guess is expensive to detect — the cost is reviewing plausible-looking output, not generating it."
 derivation: original
 flow: util
 domain: agent
