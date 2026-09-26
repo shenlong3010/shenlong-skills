@@ -12,17 +12,22 @@ PY=python3; [ "$(python3 -c 'print(1)' 2>/dev/null)" = "1" ] || PY=python
 ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 raw_file="$HOME/.claude/.last-tool-failure-raw.json"
 printf '%s' "$payload" > "$raw_file" 2>/dev/null
-# Restrict to owner — real protection on Linux/macOS. VERIFIED NO-OP on
-# Windows/NTFS via Git Bash (tested 2026-09-13: stat showed mode stayed 0644
-# after this call, chmod itself reported no error). Kept because it costs
-# nothing and works on the other two platforms; on Windows treat this file
-# as readable by anything running as the same OS user regardless.
+# Restrict to owner — VERIFIED NO-OP on this machine's Windows/NTFS via Git
+# Bash (tested 2026-09-13: stat showed mode stayed 0644, chmod reported no
+# error). Kept anyway since it's free and this is a single-user login either
+# way; treat the raw payload as readable by anything running as this OS user.
 chmod 600 "$raw_file" 2>/dev/null
 line=$(printf '%s' "$payload" | "$PY" -c "
-import json,sys
+import json, re, sys
 d=json.load(sys.stdin)
 err = d.get('error') or d.get('error_message') or (d.get('tool_response') or {}).get('error') or ''
-print(f\"{d.get('tool_name','?')} | {str(err)[:200]}\")
+# Collapse ALL whitespace before truncating. A traceback or a multi-line tool
+# error carries embedded newlines, and [:200] bounds length but not lines --
+# one failure then wrote N log lines and broke the one-row-per-failure
+# contract (measured 2026-09-26: 69 of 106 rows were spill from a handful of
+# real failures, so every count off this file was wrong).
+err = re.sub(r'\s+', ' ', str(err)).strip()
+print(f\"{d.get('tool_name','?')} | {err[:200]}\")
 " 2>/dev/null | tr -d '\r')
 [ -z "$line" ] && exit 0
 echo "$ts $line" >> "$HOME/.claude/tool-failures.log"

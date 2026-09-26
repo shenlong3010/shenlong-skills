@@ -33,5 +33,5 @@ lines=$(wc -l < "$f" 2>/dev/null | tr -d ' ') || exit 0
 [ -z "$lines" ] && exit 0
 [ "$lines" -le "$MIN_LINES" ] && exit 0
 
-echo "blocked by guard-bulk-read.sh: $f is $lines lines (limit $MIN_LINES). Escapes, cheapest first: Read with offset/limit for the section you need (allowed, not blocked), Grep for a targeted match, or delegate to a Haiku subagent via the Agent tool (see the bulk-reader skill) if you truly need the whole file — cheaper on Opus even though it costs more raw tokens. Override the threshold with BULK_READ_MIN_LINES if this file is a genuine exception." >&2
+echo "blocked by guard-bulk-read.sh: $f is $lines lines (limit $MIN_LINES). Escapes, cheapest first: Read with offset/limit for the section you need (allowed, not blocked), Grep for a targeted match, or delegate to a Haiku subagent via the Agent tool (see the shenlong-bulk-reader skill) if you truly need the whole file — cheaper on Opus even though it costs more raw tokens. Override the threshold with BULK_READ_MIN_LINES if this file is a genuine exception." >&2
 exit 2
