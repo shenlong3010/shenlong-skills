@@ -11,6 +11,25 @@ domain: agent
 ## Purpose
 The lookup skills (`symbol-lookup`, `file-find`, `git-search`) degrade to slow full scans when no index exists. Ten seconds of index-building at session start converts every later lookup from O(repo) to O(1). This skill owns *building and refreshing* those indexes; the lookup skills own *querying* them.
 
+## Probe before building
+
+Every builder here is an external tool that may not exist on the machine. A
+missing one does not error loudly — the index simply never appears, and the
+lookup skill downstream reports "no results" instead of "no tool":
+
+```bash
+for t in ctags gron rg fd plocate; do
+  command -v "$t" >/dev/null || echo "MISSING: $t"
+done
+```
+
+On Windows none of `ctags`, `gron`, `plocate` ship by default. `winget install
+UniversalCtags.Ctags` and `winget install TomHudson.gron` cover the first two —
+but winget registers them as app-execution aliases that **Git Bash cannot see**,
+so shim them in `~/bin/` (same pattern as the `python3` shim) or they will still
+read as missing from a bash hook or skill. There is no `plocate` on Windows; use
+`fd` and skip that row.
+
 ## When to build
 - Long session ahead in a repo > ~5k files, or any monorepo.
 - The second time the same class of search runs slow — first slow search is information, second is waste.

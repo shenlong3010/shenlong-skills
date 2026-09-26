@@ -12,6 +12,20 @@ Grep finds text; symbols have scope. Three rungs, cheapest first — and an hone
 
 ## Rung 1 — ctags index (definitions)
 
+**Probe first — this rung is silently unavailable without it:**
+
+```bash
+command -v ctags >/dev/null || echo "no ctags: skip to Rung 2"
+```
+
+`ctags` is not installed by default on Windows and is absent on many work
+machines. Without it this rung does not error, it simply never produces an
+index — and the failure looks like "the symbol isn't there" rather than "the
+tool is missing". If absent: `winget install UniversalCtags.Ctags` (note the
+Windows app-execution alias is invisible to Git Bash — shim it in `~/bin/`), or
+skip to Rung 2, where `ast-grep` and `git grep -W` cover definitions structurally
+at higher cost per query.
+
 ```bash
 ctags -R --fields=+n -f .tags .          # universal-ctags; ~seconds, rerun after big pulls
 readtags -t .tags PaymentRouter          # definition site(s), with line numbers
