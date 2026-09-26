@@ -8,6 +8,8 @@ Personal Claude Code toolbox: 62 skills, 8 slash commands, 8 subagents, lifecycl
 
 **Symlink fallback:** `./install.sh` links leaf folders into `~/.claude/skills`, `~/.claude/commands`, and `~/.claude/agents`.
 
+**Flat copy with prefix (marketplace-blocked machine):** where you can't install the plugin and must clone + copy the setup over, `bash tools/sync-flat.sh --prefix shenlong- --apply` copies skills/commands/agents into `~/.claude/` with a `shenlong-` name prefix (rewriting the frontmatter `name:` the Skill tool resolves), so a flat un-namespaced copy doesn't collide with native/anthropic skills of the same name. Vendored `derivation: copied` skills keep their upstream identity. Dry-run without `--apply`. Canonical repo names stay unprefixed — the prefix lives only on the copy.
+
 **Copilot / other surfaces:** no auto-load; reference the SKILL.md text manually. Hooks and plugin machinery do not transfer.
 
 **Optional MCP:** the `talk-notes` skill uses a `youtube-transcript` MCP server to pull transcripts (it falls back to a pasted transcript without it). To opt in, copy `.mcp.json.sample` to `.mcp.json` — Claude Code prompts to trust it on first use. Requires `uv` (`uvx`) on PATH. Your live `.mcp.json` is gitignored. Personal MCP servers belong in your user config (`~/.claude.json`), not here.
