@@ -1,6 +1,6 @@
 {
   "name": "shenlong-skills",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Personal toolbox core: code search and navigation, debug and triage, data and query, dependency lookup — plus commands, agents, hooks, MCP scaffolds, styles, templates. The on-demand half lives in shenlong-extra.",
   "agents": [
     "./agents/code-review.md",
@@ -9,7 +9,8 @@
     "./agents/security-review.md",
     "./agents/ralph-coder.md",
     "./agents/ralph-task-inspector.md",
-    "./agents/ralph-diagnostician.md"
+    "./agents/ralph-diagnostician.md",
+    "./agents/test-reviewer.md"
   ]
 }
 
