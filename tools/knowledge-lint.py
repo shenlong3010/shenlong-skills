@@ -16,14 +16,20 @@ def main() -> int:
         # copied third-party skills: their internal reference docs keep upstream link
         # structure we don't own — surgical-changes rule; SKILL.md itself still linted.
         if md.name == "SKILL.md" or "references" not in md.parts: return False
+        # The skill dir is the parent of references/ — works under skills/ AND
+        # extra/skills/ (the earlier skills-index math missed the extra/ prefix).
         try:
-            idx = md.parts.index("skills")
-            sk = ROOT.joinpath(*md.parts[idx:idx+2]) / "SKILL.md"
+            rel = md.relative_to(ROOT).parts
+            ridx = rel.index("references")
+            sk = ROOT.joinpath(*rel[:ridx]) / "SKILL.md"
             return sk.exists() and "derivation: copied" in sk.read_text(encoding="utf-8", errors="replace")
         except ValueError:
             return False
     for md in sorted(ROOT.rglob("*.md")):
         if ".git" in md.parts: continue
+        # .claude/worktrees/ holds transient working copies (git-worktrees skill),
+        # not source we own — linting them double-counts every real finding.
+        if ".claude" in md.parts: continue
         if is_vendored_ref(md): continue
         text = md.read_text(encoding="utf-8", errors="replace")
         for target in LINK.findall(text):
