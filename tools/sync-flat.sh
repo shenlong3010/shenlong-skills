@@ -85,8 +85,10 @@ sync_skill() {
 sync_md() {
   # $1 = source .md, $2 = dest dir
   local src="$1" destdir="$2" base name target
+  # Skip directory guides — they are repo-internal, not shippable artifacts.
+  # Check the real filename BEFORE stripping .md (basename "$f" .md yields "CLAUDE").
+  [ "$(basename "$src")" = "CLAUDE.md" ] && return
   base="$(basename "$src" .md)"
-  [ "$base" = "CLAUDE.md" ] && return
   name="${PREFIX}${base}"
   target="$destdir/${name}.md"
   say "  ${base}.md -> ${name}.md"
