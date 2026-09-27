@@ -12,7 +12,7 @@ ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 line=$(printf '%s' "$payload" | PYTHONIOENCODING=utf-8 "$PY" -c "
 import json,sys
 d=json.load(sys.stdin)
-agent_type = d.get('agent_type','?')
+agent_type = '?' if 'agent_type' not in d else (d['agent_type'] or '-')
 agent_id = d.get('agent_id','?')
 msg = (d.get('last_assistant_message') or '').replace('\n',' ').strip()[:150]
 print(f'{agent_type} | {agent_id} | {msg}')
