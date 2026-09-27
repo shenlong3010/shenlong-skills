@@ -48,8 +48,18 @@ esac
 case "$cmd" in
   git\ *|*[\;\&\|]\ git\ *|*"&&"\ git\ *)
     case "$cmd" in
-      *"push --force-with-lease"*|*"push --force-if-includes"*) ;;  # safe forms: refuse if the remote moved
       *"push --force"*|*"push -f"*|*"push "*"--delete"*|*"push "*" +"*)
+        # --force-with-lease / --force-if-includes are the safe spellings
+        # (they refuse if the remote moved). Allow ONLY when the command
+        # contains no other force push: strip the safe spellings and
+        # re-test, so "lease ... && --force" still blocks. An allow arm
+        # placed before the deny arm would match on substring presence
+        # alone and let a real force push through -- measured bypass.
+        stripped=$(printf '%s' "$cmd" | sed -e "s/push --force-with-lease//g" -e "s/push --force-if-includes//g")
+        case "$stripped" in
+          *"push --force"*|*"push -f"*|*"push "*"--delete"*|*"push "*" +"*) ;;
+          *) exit 0 ;;   # lease-only: safe, pass through
+        esac
         block "force push or remote branch delete -- use --force-with-lease (refuses if the remote moved), or push to a new branch name" ;;
       *"reset --hard"*)
         block "git reset --hard discards uncommitted work -- commit or stash first; use git restore <path> for a single file" ;;
